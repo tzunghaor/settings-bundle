@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="tzunghaor_settings.default_scope">__all__</parameter>
+        <parameter key="tzunghaor_settings.default_scope_hierarchy" type="collection">
+            <parameter type="collection">
+                <parameter key="name">%tzunghaor_settings.default_scope%</parameter>
+            </parameter>
+        </parameter>
+    </parameters>
+
+    <services>
+        <service id="tzunghaor_settings.builtin_setting_converter"
+                 class="Tzunghaor\SettingsBundle\Service\BuiltinSettingConverter"
+                 public="false">
+            <tag name="tzunghaor_settings.setting_converter" priority="-1000" />
+        </service>
+
+        <service id="tzunghaor_settings.settings_service"
+                 class="Tzunghaor\SettingsBundle\Service\SettingsService">
+            <argument key="$settingsMetaService" type="service" id="tzunghaor_settings.settings_meta_service" />
+            <argument key="$store" type="service" id="tzunghaor_settings.settings_store"/>
+            <argument key="$cache" type="service" id="tzunghaor_settings.default_tag_aware_cache"/>
+            <argument key="$defaultScope">%tzunghaor_settings.default_scope%</argument>
+        </service>
+
+        <service id="Tzunghaor\SettingsBundle\Service\SettingsService" alias="tzunghaor_settings.settings_service"/>
+
+        <service id="tzunghaor_settings.settings_editor_service"
+                 class="Tzunghaor\SettingsBundle\Service\SettingsEditorService">
+            <argument key="$settingsService" type="service" id="tzunghaor_settings.settings_service"/>
+            <argument key="$settingsMetaService" type="service" id="tzunghaor_settings.settings_meta_service"/>
+            <argument key="$formFactory" type="service" id="form.factory"/>
+        </service>
+
+        <service id="Tzunghaor\SettingsBundle\Service\SettingsEditorService"
+                 alias="tzunghaor_settings.settings_editor_service"/>
+
+        <service id="tzunghaor_settings.settings_editor_type" class="Tzunghaor\SettingsBundle\Form\SettingsEditorType">
+            <argument key="$settingsMetaService" type="service" id="tzunghaor_settings.settings_meta_service"/>
+
+            <tag name="form.type" />
+        </service>
+
+        <service id="Tzunghaor\SettingsBundle\Form\SettingsEditorType" alias="tzunghaor_settings.settings_editor_type" />
+
+        <service id="tzunghaor_settings.settings_store" class="Tzunghaor\SettingsBundle\Service\SettingsStore">
+            <argument key="$em" type="service" id="doctrine.orm.entity_manager"/>
+            <argument key="$dataConverters" type="tagged_iterator" tag="tzunghaor_settings.setting_converter"/>
+            <argument key="$entityClass">Tzunghaor\SettingsBundle\Entity\PersistedSetting</argument>
+        </service>
+
+        <service id="tzunghaor_settings.editor_controller"
+                 class="Tzunghaor\SettingsBundle\Controller\SettingsEditorController">
+            <argument key="$settingsEditorService" type="service" id="tzunghaor_settings.settings_editor_service"/>
+            <argument key="$router" type="service" id="router"/>
+            <argument key="$twig" type="service" id="twig"/>
+
+            <tag name="controller.service_arguments" />
+        </service>
+
+        <service id="tzunghaor_settings.default_cache" class="Symfony\Component\Cache\Adapter\ArrayAdapter" />
+
+        <service id="tzunghaor_settings.default_tag_aware_cache" class="Symfony\Component\Cache\Adapter\TagAwareAdapter">
+            <argument key="$itemsPool" type="service" id="tzunghaor_settings.default_cache"/>
+        </service>
+
+        <service id="tzunghaor_settings.meta_data_extractor" class="Tzunghaor\SettingsBundle\Service\MetaDataExtractor">
+            <argument key="$annotationReader" type="service" id="annotation_reader"/>
+            <argument key="$propertyInfo" type="service" id="property_info"/>
+        </service>
+
+        <service id="tzunghaor_settings.settings_meta_service" class="Tzunghaor\SettingsBundle\Service\SettingsMetaService">
+            <argument key="$cache" type="service" id="tzunghaor_settings.default_cache"/>
+            <argument key="$metaDataExtractor" type="service" id="tzunghaor_settings.meta_data_extractor"/>
+            <argument key="$sectionClasses" type="collection" />
+            <argument key="$scopeHierarchy">%tzunghaor_settings.default_scope_hierarchy%</argument>
+
+            <tag name="kernel.cache_warmer" />
+        </service>
+    </services>
+</container>

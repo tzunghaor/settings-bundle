@@ -1,0 +1,30 @@
+<div class="tzunghaor_settings_editor">
+    <h3>Section "{{ form.vars.label }}" for scope "{{ currentScope }}"</h3>
+
+    {% if form.vars.help %}
+        <div class="tzunghaor_settings_section_description">
+            {{ form.vars.help }}
+        </div>
+    {% endif %}
+
+    {{ form_start(form) }}
+    {% for settingName, formField in form['settings'] %}
+        <div class="tzunghaor_setting_group">
+            {{ form_row(form['in_scope'][settingName]) }}
+            <div class="tzunghaor_setting_value">
+                <div class="tzunghaor_setting_labeled_widget">
+                    {{ form_label(formField) }}
+                    {{ form_widget(formField) }}
+                </div>
+                {{ form_help(formField) }}
+                {% if formField.vars.errors|length %}
+                <div class="tzunghaor_settings_error">
+                    {{ form_errors(formField) }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    <button type="submit">Save</button>
+    {{ form_end(form) }}
+</div>

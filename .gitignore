@@ -1,0 +1,6 @@
+/.idea
+/var
+/vendor
+/Tests/TestProject/var
+composer.lock
+.phpunit.result.cache

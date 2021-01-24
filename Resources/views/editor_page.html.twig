@@ -1,0 +1,24 @@
+{% extends '@TzunghaorSettings/base.html.twig' %}
+
+{% block body %}
+    <div class="tzunghaor_settings_page">
+        <div class="tzunghaor_settings_sidebar">
+        {{ include('@TzunghaorSettings/scope_selector.html.twig') }}
+        {{ include('@TzunghaorSettings/section_selector.html.twig') }}
+        </div>
+        {% if form is not null %}
+            {{ include('@TzunghaorSettings/setting_editor.html.twig') }}
+        {% endif %}
+    </div>
+{% endblock %}
+
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/tzunghaorsettings/css/tzunghaorsettings.css') }}" />
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="application/javascript" src="{{ asset('bundles/tzunghaorsettings/js/tzunghaorsettings.js') }}"></script>
+{% endblock %}

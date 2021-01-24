@@ -1,0 +1,105 @@
+
+
+.tzunghaor_setting_group {
+    background-color: #FFFFFF;
+    margin: 1rem 0;
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid #AAAAAA;
+    line-height: 180%;
+    flex-wrap: wrap;
+}
+
+.tzunghaor_setting_group.disabled .tzunghaor_setting_value {
+    background: #EEEEEE;
+    color: #888888;
+}
+
+.tzunghaor_setting_override,
+.tzunghaor_setting_value {
+    padding: 0.3rem 0.5rem;
+    vertical-align: top;
+}
+
+.tzunghaor_setting_value {
+    flex-grow: 2;
+}
+
+.tzunghaor_setting_changed {
+    background-color: #AADDFF;
+}
+
+.tzunghaor_setting_labeled_widget {
+    display: flex;
+    align-items: start;
+}
+
+.tzunghaor_setting_labeled_widget > label {
+    padding-right: 1rem;
+    font-weight: bold;
+}
+
+.tzunghaor_settings_page {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tzunghaor_settings_sidebar {
+    width: 15rem;
+}
+
+
+.tzunghaor_settings_selector {
+    padding: 0;
+}
+
+.tzunghaor_settings_selector ul {
+    list-style-type: none;
+    padding-left: 1rem;
+}
+
+.tzunghaor_settings_selector > ul {
+    margin: 0;
+    padding-left: 0;
+}
+
+.tzunghaor_settings_selector ul a {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.3rem;
+    color: #114455;
+    text-decoration: none;
+}
+
+.tzunghaor_settings_selector ul a:hover {
+    text-decoration: underline;
+}
+
+.tzunghaor_settings_current {
+    background-color: #EEEEEE;
+}
+
+.tzunghaor_settings_editor {
+    padding: 0 1rem;
+}
+
+.tzunghaor_settings_editor .help-text {
+    margin: 0.2rem 0 0 0;
+    font-size: 90%;
+}
+
+.tzunghaor_settings_editor textarea {
+    font-size: inherit;
+    min-height: 3rem;
+    height: 5rem;
+    min-width: 30rem;
+}
+
+.tzunghaor_settings_error {
+    color: #880000;
+}
+
+.tzunghaor_settings_error ul {
+    margin: 0.2rem 0 0 0;
+}

@@ -1,0 +1,10 @@
+services:
+  Tzunghaor\SettingsBundle\Tests\TestProject\TestHelperTwigExtension:
+    class: Tzunghaor\SettingsBundle\Tests\TestProject\TestHelperTwigExtension
+    tags:
+      - twig.extension
+
+  Tzunghaor\SettingsBundle\Tests\TestProject\Settings\:
+    resource: '../Settings/'
+    tags:
+      - { name: 'tzunghaor_settings.setting_section', remove_prefix: 'Tzunghaor\SettingsBundle\Tests\TestProject\Settings\' }

@@ -1,0 +1,11 @@
+tzunghaor_settings:
+  scopes:
+    - name: root
+      children:
+        - name: day
+          children:
+            - name: morning
+            - name: afternoon
+        - name: night
+
+  default_scope: root
