@@ -1,6 +1,8 @@
 Tzunghaor Settings Bundle
 ========================= 
 
+![editor](Resources/doc/editor.png)
+
 With this bundle you can define your settings as php classes. The settings
 will be stored in database - this is somewhat similar how you would define 
 doctrine entities, but in this case all settings are stored in a single table, 
@@ -191,7 +193,7 @@ class MyService
 Setting up the editor
 ---------------------
 
-> If you have **symfony/asset** installed then you can skip this paragraph.
+> If you have **symfony/asset** installed then you can skip to setting up the route.
 Otherwise you first have to 
 overwrite a twig template: create a new directory in your application 
 **templates/bundles/TzunghaorSettingsBundle**,
@@ -250,9 +252,6 @@ tzunghaor_settings:
         - name: morning
         - name: afternoon
     - name: night
-      children:
-        - name: evening
-        - name: night
 ```
 
 The scope names are used in different contexts, therefore it's best to use only
