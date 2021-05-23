@@ -3,20 +3,11 @@ Tzunghaor Settings Bundle
 
 ![editor](Resources/doc/editor.png)
 
-With this bundle you can define your settings as php classes. The settings
-will be stored in database - this is somewhat similar how you would define 
-doctrine entities, but in this case all settings are stored in a single table, 
-and if you don't have record for a setting in database, it will use the 
-default value in your php class.
-
-In this bundle you get a controller to edit your settings, and a service that
-returns the current settings as an object. You can use symfony dependency 
-injection to inject such setting objects as services. (See examples in the
-Setup section below).
-
-Furthermore you can define scopes (as a hierarchy tree): each setting can
-have different values in different scopes or inherit the setting value
-from the parent scope.
+* Define your settings as php classes.
+* Settings are stored in database.
+* One record per setting: only one initial migration is needed.
+* GUI to edit settings, customisable in setting definition classes.
+* You can define scopes as a hierarchy tree - child scopes inherit settings.
 
 
 Installation
@@ -145,32 +136,18 @@ sensible default values in your class.
 
 [More about setting classes](Resources/doc/define_section.md)
 
-Then tag your file with `tzunghaor_settings.setting_section`
+Then configure where your settings classes are:
 
 ```yaml
-# services.yaml
-services:
-  App\Settings\BoxSettings:
-    tags:
-      - 'tzunghaor_settings.setting_section'
+# config/packages/tzunghaor_settings.yaml
+tzunghaor_settings:
+  mappings:
+    default:
+      dir: '%kernel.project_dir%/src/Settings'
+      prefix: App\Settings\
 ```
 
-Then you can get your settings either directly via dependency injection:
-
-```php
-use App\Settings\BoxSettings;
-
-class MyService
-{
-    // ...
-    
-    public function __construct(BoxSettings $boxSettings)
-    {
-        $doublePadding = $boxSettings->padding * 2; 
-```
-
-Or you can get your settings from the service provided by the bundle. This
-will be especially useful if you define multiple scopes (see below).
+That's it, now you can get your settings from the service provided by the bundle. 
 
 ```php
 use App\Settings\BoxSettings;

@@ -100,19 +100,30 @@ class BoxSettings
 Section names
 -------------
 
-The fully qualified class name will be used as the section name with backslashes 
-converted to dots: this is used in urls, and in the database. If you want to make
-this shorter, you can do so by adding the **remove_prefix** to your service tag:
+The section name is used in urls and in the database. It is 
+based on the fully qualified class name, controlled by
+the mapping configuration:
+
+1. The **prefix** part of the namespace is removed
+1. Namespace separators are converted to dots
+1. If the mapping name is not **default**, then the name is prefixed with it.
 
 ```yaml
-# services.yaml
-services:
-  App\Settings\:
-    resource: '../src/Settings/'
-    tags:
-      - name: 'tzunghaor_settings.setting_section'
-        remove_prefix: 'App\Settings\'
+# config/packages/tzunghaor_settings.yaml
+tzunghaor_settings:
+  mappings:
+    default:
+      dir: '%kernel.project_dir%/src/Settings'
+      prefix: App\Settings\
+    custom:
+      dir: '%kernel.project_dir%/src/Custom/Settings'
+      prefix: App\Custom\Settings\
 ```
+
+examples:
+
+App\Settings\Project\ExportSettings => Project.ExportSettings  
+App\Custom\Settings\Project\ExportSettings => custom.Project.ExportSettings
 
 Setting and section definition
 ------------------------------

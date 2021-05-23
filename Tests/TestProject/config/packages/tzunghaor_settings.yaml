@@ -9,3 +9,8 @@ tzunghaor_settings:
         - name: night
 
   default_scope: root
+
+  mappings:
+    default:
+      dir: '%kernel.project_dir%/Settings'
+      prefix: Tzunghaor\SettingsBundle\Tests\TestProject\Settings\

@@ -175,7 +175,7 @@ class MetaDataExtractor
 
             foreach ($commentLines as $commentLine) {
                 $commentLine = trim(ltrim($commentLine, "\t *"));
-                if (empty($commentLine) || $commentLine{0} === '@') {
+                if (empty($commentLine) || $commentLine[0] === '@') {
                     continue;
                 }
 
