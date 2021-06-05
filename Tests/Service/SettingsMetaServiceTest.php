@@ -4,11 +4,11 @@ namespace Tzunghaor\SettingsBundle\Tests\Service;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\CacheItem;
-use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Contracts\Cache\CacheInterface;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Service\MetaDataExtractor;
+use Tzunghaor\SettingsBundle\Service\ScopeProviderInterface;
 use Tzunghaor\SettingsBundle\Service\SettingsMetaService;
 
 class SettingsMetaServiceTest extends TestCase
@@ -22,16 +22,15 @@ class SettingsMetaServiceTest extends TestCase
 
     private $classes = ['name1' => 'Class1', 'name2' => 'Class2'];
 
-    private $scopeHierarchy = [['name' => 'all', 'children' =>
-        [['name' => 'foo'], ['name' => 'bar', 'children' =>
-            [['name' => 'bar1'], ['name' => 'bar2']]
-        ]]
-    ]];
-
     /**
      * @var CacheInterface|MockObject
      */
     private $mockCache;
+
+    /**
+     * @var ScopeProviderInterface|MockObject
+     */
+    private $mockScopeProvider;
 
     public function setUp(): void
     {
@@ -50,12 +49,13 @@ class SettingsMetaServiceTest extends TestCase
             ->withConsecutive(['name1', 'Class1'], ['name2', 'Class2'])
             ->willReturnOnConsecutiveCalls($this->fakeSectionMeta['Class1'], $this->fakeSectionMeta['Class2'])
         ;
+        $this->mockScopeProvider = $this->createMock(ScopeProviderInterface::class);
 
         $this->settingsMetaService = new SettingsMetaService(
             $this->mockCache,
             $mockExtractor,
-            $this->classes,
-            $this->scopeHierarchy
+            $this->mockScopeProvider,
+            $this->classes
         );
     }
 
@@ -91,14 +91,9 @@ class SettingsMetaServiceTest extends TestCase
 
     public function testGetScopeHierarchy()
     {
-        self::assertSame($this->scopeHierarchy, $this->settingsMetaService->getScopeHierarchy());
-    }
+        $this->mockScopeProvider->expects(self::once())->method('getScopeHierarchy')->willReturn(['foo']);
 
-    public function testHasScope()
-    {
-        self::assertTrue($this->settingsMetaService->hasScope('foo'));
-        self::assertTrue($this->settingsMetaService->hasScope('bar2'));
-        self::assertFalse($this->settingsMetaService->hasScope('foo-bar'));
+        self::assertSame(['foo'], $this->settingsMetaService->getScopeHierarchy());
     }
 
     public function testHasSectionClass()
@@ -108,28 +103,23 @@ class SettingsMetaServiceTest extends TestCase
         self::assertFalse($this->settingsMetaService->hasSectionClass('Class3'));
     }
 
-    public function testSectionPath()
+
+    public function testGetScope()
     {
-        self::assertEquals([], $this->settingsMetaService->getScopePath('all'));
-        self::assertEquals(['all'], $this->settingsMetaService->getScopePath('foo'));
-        self::assertEquals(['all', 'bar'], $this->settingsMetaService->getScopePath('bar1'));
+        $obj = new class() {};
+        $this->mockScopeProvider->expects(self::once())->method('getScope')
+            ->with($obj)->willReturn('foo');
+
+        self::assertEquals('foo', $this->settingsMetaService->getScope($obj));
+
     }
 
-    public function testDuplicateScope()
+    public function testGetScopePath()
     {
-        $mockCache = $this->createMock(CacheInterface::class);
-        $mockExtractor = $this->createMock(MetaDataExtractor::class);
+        $this->mockScopeProvider->expects(self::once())->method('getScopePath')
+            ->with('bar')->willReturn(['foo']);
 
-        self::expectException(InvalidConfigurationException::class);
-
-        new SettingsMetaService(
-            $mockCache,
-            $mockExtractor,
-            [],
-            [['name' => 'foo', 'children' =>
-                [['name' => 'bar'], ['name' => 'foo']]
-            ]]
-        );
+        self::assertEquals(['foo'], $this->settingsMetaService->getScopePath('bar'));
     }
 
     public function testCacheWarmer()

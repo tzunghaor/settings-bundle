@@ -36,6 +36,21 @@ class StaticScopeProvider implements ScopeProviderInterface
         $this->defaultScope = $defaultScope;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getScope($subject = null): string
+    {
+        if ($subject === null) {
+            return $this->defaultScope;
+        }
+
+        if (!array_key_exists($subject, $this->scopeLookup)) {
+            throw new \DomainException(sprintf('Unknown scope "%s"', $subject));
+        }
+
+        return $subject;
+    }
 
     /**
      * @inheritdoc

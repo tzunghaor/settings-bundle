@@ -94,7 +94,7 @@ class SettingsEditorService
         $sections = $this->settingsMetaService->getSectionMetaDataArray();
         $scopes = $this->settingsMetaService->getScopeHierarchy();
         $sectionMeta = $sectionName === '' ? null : $this->settingsMetaService->getSectionMetaDataByName($sectionName);
-        $currentScope = $scope === '' ? $this->settingsService->getDefaultScope() : $scope;
+        $currentScope = $scope === '' ? $this->settingsMetaService->getScope() : $scope;
 
         return [
             'scopes' => $scopes,

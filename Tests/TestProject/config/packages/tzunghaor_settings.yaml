@@ -1,16 +1,23 @@
 tzunghaor_settings:
-  scopes:
-    - name: root
-      children:
-        - name: day
-          children:
-            - name: morning
-            - name: afternoon
-        - name: night
+  default:
+    scopes:
+      - name: root
+        children:
+          - name: day
+            children:
+              - name: morning
+              - name: afternoon
+          - name: night
 
-  default_scope: root
+    default_scope: root
 
-  mappings:
-    default:
-      dir: '%kernel.project_dir%/Settings'
-      prefix: Tzunghaor\SettingsBundle\Tests\TestProject\Settings\
+    mappings:
+      default:
+        dir: '%kernel.project_dir%/Settings'
+        prefix: Tzunghaor\SettingsBundle\Tests\TestProject\Settings\
+
+  other:
+    mappings:
+      default:
+        dir: '%kernel.project_dir%/OtherSettings'
+        prefix: Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\

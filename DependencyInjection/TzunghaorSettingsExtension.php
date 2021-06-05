@@ -7,11 +7,15 @@ namespace Tzunghaor\SettingsBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Finder\Finder;
 use Tzunghaor\SettingsBundle\Entity\AbstractPersistedSetting;
+use Tzunghaor\SettingsBundle\Service\SettingsMetaService;
+use Tzunghaor\SettingsBundle\Service\SettingsService;
+use Tzunghaor\SettingsBundle\Service\StaticScopeProvider;
 
 class TzunghaorSettingsExtension extends Extension
 {
@@ -35,8 +39,36 @@ class TzunghaorSettingsExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $settingsMetaServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_meta_service');
-        $settingsServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_service');
+        foreach ($config as $name => $collectionConfig) {
+            $this->configureCollection($name, $collectionConfig, $container);
+        }
+    }
+
+    private function configureCollection(string $name, array $config, ContainerBuilder $container): void
+    {
+        $defaultSettingsMetaServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_meta_service');
+        $defaultSettingsServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_service');
+
+        if ($name === Configuration::DEFAULT_COLLECTION) {
+            $settingsMetaServiceDefinition = $defaultSettingsMetaServiceDefinition;
+            $settingsServiceDefinition = $defaultSettingsServiceDefinition;
+        } else {
+            $settingsMetaServiceDefinition = new Definition(
+                SettingsMetaService::class,
+                $defaultSettingsMetaServiceDefinition->getArguments()
+            );
+            $container
+                ->setDefinition('tzunghaor_settings.settings_meta_service.' . $name, $settingsMetaServiceDefinition);
+
+            $settingsServiceDefinition = new Definition(
+                SettingsService::class,
+                $defaultSettingsServiceDefinition->getArguments()
+            );
+            $settingsServiceDefinition->replaceArgument('$settingsMetaService', $settingsMetaServiceDefinition);
+            $container
+                ->setDefinition('tzunghaor_settings.settings_service.' . $name, $settingsServiceDefinition);
+        }
+
 
         $settingsMetaServiceDefinition->replaceArgument(
             '$sectionClasses',
@@ -49,7 +81,18 @@ class TzunghaorSettingsExtension extends Extension
         }
 
         if (isset($config[Configuration::SCOPES])) {
-            $settingsMetaServiceDefinition->replaceArgument('$scopeHierarchy', $config[Configuration::SCOPES]);
+            $defaultScope = $config[Configuration::DEFAULT_SCOPE] ??
+                $container->getParameter('tzunghaor_settings.default_scope');
+
+            $scopeProviderDefinition = new Definition(
+                StaticScopeProvider::class,
+                [
+                    '$scopeHierarchy' => $config[Configuration::SCOPES],
+                    '$defaultScope' => $defaultScope,
+                ]
+            );
+
+            $settingsMetaServiceDefinition->replaceArgument('$scopeProvider', $scopeProviderDefinition);
         }
 
         if (isset($config[Configuration::ENTITY])) {
@@ -57,15 +100,11 @@ class TzunghaorSettingsExtension extends Extension
             $expectedClass = AbstractPersistedSetting::class;
             if (!is_subclass_of($entityClass, $expectedClass)) {
                 throw new InvalidConfigurationException(sprintf('%s.%s must be a subclass of %s',
-                    Configuration::CONFIG_ROOT, Configuration::ENTITY, $expectedClass));
+                                                                Configuration::CONFIG_ROOT, Configuration::ENTITY, $expectedClass));
             }
 
             $settingsStoreDefinition = $container->getDefinition('tzunghaor_settings.settings_store');
             $settingsStoreDefinition->replaceArgument('$entityClass', $entityClass);
-        }
-
-        if (isset($config[Configuration::DEFAULT_SCOPE])) {
-            $settingsServiceDefinition->replaceArgument('$defaultScope', $config[Configuration::DEFAULT_SCOPE]);
         }
     }
 

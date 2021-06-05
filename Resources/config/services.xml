@@ -5,7 +5,7 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="tzunghaor_settings.default_scope">__all__</parameter>
+        <parameter key="tzunghaor_settings.default_scope">default</parameter>
         <parameter key="tzunghaor_settings.default_scope_hierarchy" type="collection">
             <parameter type="collection">
                 <parameter key="name">%tzunghaor_settings.default_scope%</parameter>
@@ -25,7 +25,6 @@
             <argument key="$settingsMetaService" type="service" id="tzunghaor_settings.settings_meta_service" />
             <argument key="$store" type="service" id="tzunghaor_settings.settings_store"/>
             <argument key="$cache" type="service" id="tzunghaor_settings.default_tag_aware_cache"/>
-            <argument key="$defaultScope">%tzunghaor_settings.default_scope%</argument>
         </service>
 
         <service id="Tzunghaor\SettingsBundle\Service\SettingsService" alias="tzunghaor_settings.settings_service"/>
@@ -74,11 +73,16 @@
             <argument key="$propertyInfo" type="service" id="property_info"/>
         </service>
 
+        <service id="tzunghaor_settings.default_scope_provider" class="Tzunghaor\SettingsBundle\Service\StaticScopeProvider">
+            <argument key="$scopeHierarchy">%tzunghaor_settings.default_scope_hierarchy%</argument>
+            <argument key="$defaultScope">%tzunghaor_settings.default_scope%</argument>
+        </service>
+
         <service id="tzunghaor_settings.settings_meta_service" class="Tzunghaor\SettingsBundle\Service\SettingsMetaService">
             <argument key="$cache" type="service" id="tzunghaor_settings.default_cache"/>
             <argument key="$metaDataExtractor" type="service" id="tzunghaor_settings.meta_data_extractor"/>
             <argument key="$sectionClasses" type="collection" />
-            <argument key="$scopeHierarchy">%tzunghaor_settings.default_scope_hierarchy%</argument>
+            <argument key="$scopeProvider">@tzunghaor_settings.default_scope_provider</argument>
 
             <tag name="kernel.cache_warmer" />
         </service>

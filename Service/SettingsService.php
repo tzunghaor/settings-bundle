@@ -18,11 +18,6 @@ use Tzunghaor\SettingsBundle\Model\SettingsCacheEntry;
 class SettingsService
 {
     /**
-     * @var string
-     */
-    private $defaultScope;
-
-    /**
      * @var SettingsMetaService
      */
     private $settingsMetaService;
@@ -40,37 +35,28 @@ class SettingsService
     public function __construct(
         SettingsMetaService $settingsMetaService,
         SettingsStoreInterface $store,
-        CacheInterface $cache,
-        string $defaultScope
+        CacheInterface $cache
     ) {
         $this->settingsMetaService = $settingsMetaService;
         $this->store = $store;
-        $this->defaultScope = $defaultScope;
         $this->cache = $cache;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDefaultScope(): string
-    {
-        return $this->defaultScope;
     }
 
     /**
      * Retrieves the setting section object filled with values for the given scope
      *
      * @param string $sectionClass
-     * @param string $scope '' = use default scope configured in this service
+     * @param mixed|null $subject Can be scope name or an object or anything your ScopeProvider supports.
+     *                            If null, default scope is used.
      *
      * @return object
      *
      * @throws SettingsException
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function getSection(string $sectionClass, string $scope = '')
+    public function getSection(string $sectionClass, $subject = null)
     {
-        $scope = $scope == '' ? $this->defaultScope : $scope;
+        $scope = $this->settingsMetaService->getScope($subject);
 
         return $this->getCacheEntry($sectionClass, $scope)->getObject();
     }
@@ -125,10 +111,6 @@ class SettingsService
      */
     private function getCacheEntry(string $sectionClass, string $scope): SettingsCacheEntry
     {
-        if (!$this->settingsMetaService->hasScope($scope)) {
-            throw new SettingsException(sprintf('Unknown settings scope "%s"', $scope));
-        }
-
         if (!$this->settingsMetaService->hasSectionClass($sectionClass)) {
             throw new SettingsException(sprintf('Unknown settings class "%s"', $sectionClass));
         }

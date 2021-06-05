@@ -7,8 +7,16 @@ namespace Tzunghaor\SettingsBundle\Service;
 interface ScopeProviderInterface
 {
     /**
-     * @param mixed|null $subject can be scope name or an object or anything you support
-     *                            if null, default scope path is returned
+     * @param mixed|null $subject Can be scope name or an object or anything you support.
+     *                            If null, default scope name is returned.
+     *
+     * @return string scope name of subject
+     */
+    public function getScope($subject = null): string;
+
+    /**
+     * @param mixed|null $subject Can be scope name or an object or anything you support.
+     *                            If null, default scope path is returned.
      *
      * @return string[] inheritance path of the subject [$topScope, ... , $parentScope]
      */

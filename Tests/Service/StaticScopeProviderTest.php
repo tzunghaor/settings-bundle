@@ -3,6 +3,7 @@
 namespace Tzunghaor\SettingsBundle\Tests\Service;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Tzunghaor\SettingsBundle\Service\StaticScopeProvider;
 
 class StaticScopeProviderTest extends TestCase
@@ -77,4 +78,17 @@ class StaticScopeProviderTest extends TestCase
 
         self::assertEquals($expected, $hierarchy);
     }
+
+    public function testDuplicateScope()
+    {
+        self::expectException(InvalidConfigurationException::class);
+
+        new StaticScopeProvider(
+            [['name' => 'foo', 'children' =>
+                [['name' => 'bar'], ['name' => 'foo']]
+            ]],
+            'default'
+        );
+    }
+
 }

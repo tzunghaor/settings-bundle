@@ -4,7 +4,6 @@
 namespace Tzunghaor\SettingsBundle\Service;
 
 
-use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -29,11 +28,6 @@ class SettingsMetaService implements CacheWarmerInterface
     private $sectionClasses;
 
     /**
-     * @var array
-     */
-    private $scopeLookup;
-
-    /**
      * @var SectionMetaData[] [$sectionClass => $metaData, ...]
      */
     private $sectionMetaDataArray;
@@ -42,28 +36,22 @@ class SettingsMetaService implements CacheWarmerInterface
      * @var MetaDataExtractor
      */
     private $metaDataExtractor;
-
     /**
-     * @var array
+     * @var ScopeProviderInterface
      */
-    private $scopeHierarchy;
+    private $scopeProvider;
 
 
     public function __construct(
         CacheInterface $cache,
         MetaDataExtractor $metaDataExtractor,
-        array $sectionClasses,
-        array $scopeHierarchy
+        ScopeProviderInterface $scopeProvider,
+        array $sectionClasses
     ) {
         $this->sectionClasses = $sectionClasses;
         $this->cache = $cache;
         $this->metaDataExtractor = $metaDataExtractor;
-        $this->scopeHierarchy = $scopeHierarchy;
-
-        // create scope lookup from config and pass it to the settings service
-        $scopeLookup = [];
-        $this->addToScopeLookup($scopeLookup, $scopeHierarchy, []);
-        $this->scopeLookup = $scopeLookup;
+        $this->scopeProvider = $scopeProvider;
     }
 
     /**
@@ -100,18 +88,9 @@ class SettingsMetaService implements CacheWarmerInterface
      */
     public function getScopeHierarchy(): array
     {
-        return $this->scopeHierarchy;
+        return $this->scopeProvider->getScopeHierarchy();
     }
 
-    /**
-     * @param string $scope
-     *
-     * @return bool true if scope with the given name exists
-     */
-    public function hasScope(string $scope): bool
-    {
-        return array_key_exists($scope, $this->scopeLookup);
-    }
 
     /**
      * @param string $sectionClass
@@ -124,13 +103,24 @@ class SettingsMetaService implements CacheWarmerInterface
     }
 
     /**
-     * @param string $scope
+     * @param mixed $scope
      *
      * @return array inheritance path of the scope [$topScope, ... , $parentScope]
      */
-    public function getScopePath(string $scope): array
+    public function getScopePath($scope): array
     {
-        return $this->scopeLookup[$scope];
+        return $this->scopeProvider->getScopePath($scope);
+    }
+
+    /**
+     * @param mixed|null $subject Can be scope name or an object or anything you support.
+     *                            If null, default scope name is returned.
+     *
+     * @return string scope name of subject
+     */
+    public function getScope($subject = null): string
+    {
+        return $this->scopeProvider->getScope($subject);
     }
 
     /**
@@ -170,31 +160,6 @@ class SettingsMetaService implements CacheWarmerInterface
         return $this->getSectionMetaData($sectionClass);
     }
 
-    /**
-     * Turns the hierarchical scope definition into flat lookup
-     *
-     * @param array $lookup
-     * @param array $scopeHierarchy
-     * @param array $parents
-     */
-    private function addToScopeLookup(array& $lookup, array $scopeHierarchy, array $parents): void
-    {
-        foreach ($scopeHierarchy as $scope) {
-            $scopeName = $scope['name'];
-            if(array_key_exists($scopeName, $lookup)) {
-                throw new InvalidConfigurationException('Scope name used multiple times: ' . $scopeName);
-            }
-
-            $scopePath = $parents;
-            $lookup[$scopeName] = $scopePath;
-
-            if (isset($scope['children'])) {
-                array_push($scopePath, $scopeName);
-                $this->addToScopeLookup($lookup, $scope['children'], $scopePath);
-            }
-        }
-    }
-
     // cache warmup functions:
 
     /**
@@ -207,6 +172,7 @@ class SettingsMetaService implements CacheWarmerInterface
 
     /**
      * {@inheritdoc}
+     * @throws
      */
     public function warmUp(string $cacheDir)
     {
