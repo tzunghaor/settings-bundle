@@ -1,0 +1,1 @@
+Integration tests using the Symfony project defined in Tests/TestProject

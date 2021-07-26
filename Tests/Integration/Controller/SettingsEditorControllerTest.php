@@ -1,6 +1,6 @@
 <?php
 
-namespace Tzunghaor\SettingsBundle\Tests\Controller;
+namespace Tzunghaor\SettingsBundle\Tests\Integration\Controller;
 
 use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;

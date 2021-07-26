@@ -65,11 +65,16 @@ class TzunghaorSettingsExtension extends Extension
                 $defaultSettingsServiceDefinition->getArguments()
             );
             $settingsServiceDefinition->replaceArgument('$settingsMetaService', $settingsMetaServiceDefinition);
-            $container
-                ->setDefinition('tzunghaor_settings.settings_service.' . $name, $settingsServiceDefinition);
+            $settingsServiceId = 'tzunghaor_settings.settings_service.' . $name;
+            $container->setDefinition($settingsServiceId, $settingsServiceDefinition);
+
+            // add autowiring support for this service with using specific argument names
+            $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name);
+            $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name . '_settings');
         }
 
 
+        $settingsMetaServiceDefinition->replaceArgument('$collectionName', $name);
         $settingsMetaServiceDefinition->replaceArgument(
             '$sectionClasses',
             $this->getSectionClasses($config[Configuration::MAPPINGS])
@@ -80,7 +85,7 @@ class TzunghaorSettingsExtension extends Extension
             $settingsServiceDefinition->replaceArgument('$cache', new Reference($config[Configuration::CACHE]));
         }
 
-        if (isset($config[Configuration::SCOPES])) {
+        if (isset($config[Configuration::SCOPES]) && !empty($config[Configuration::SCOPES])) {
             $defaultScope = $config[Configuration::DEFAULT_SCOPE] ??
                 $container->getParameter('tzunghaor_settings.default_scope');
 

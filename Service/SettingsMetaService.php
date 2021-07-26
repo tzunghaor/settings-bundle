@@ -40,18 +40,24 @@ class SettingsMetaService implements CacheWarmerInterface
      * @var ScopeProviderInterface
      */
     private $scopeProvider;
+    /**
+     * @var string
+     */
+    private $collectionName;
 
 
     public function __construct(
         CacheInterface $cache,
         MetaDataExtractor $metaDataExtractor,
         ScopeProviderInterface $scopeProvider,
+        string $collectionName,
         array $sectionClasses
     ) {
         $this->sectionClasses = $sectionClasses;
         $this->cache = $cache;
         $this->metaDataExtractor = $metaDataExtractor;
         $this->scopeProvider = $scopeProvider;
+        $this->collectionName = $collectionName;
     }
 
     /**
@@ -62,7 +68,7 @@ class SettingsMetaService implements CacheWarmerInterface
     public function getSectionMetaDataArray(): array
     {
         if ($this->sectionMetaDataArray === null) {
-            $cacheKey = 'tzunghaor_settings_sections_metadata';
+            $cacheKey = 'tzunghaor_settings_sections_metadata.' . $this->collectionName;
             $sectionClasses = $this->sectionClasses;
 
             $this->sectionMetaDataArray = $this->cache->get(

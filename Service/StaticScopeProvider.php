@@ -32,6 +32,10 @@ class StaticScopeProvider implements ScopeProviderInterface
         // create scope lookup from config and pass it to the settings service
         $scopeLookup = [];
         $this->addToScopeLookup($scopeLookup, $scopeHierarchy, []);
+        if (!array_key_exists($defaultScope, $scopeLookup)) {
+            throw new \LogicException(sprintf('Default scope "%s" is not found in available scopes', $defaultScope));
+        }
+
         $this->scopeLookup = $scopeLookup;
         $this->defaultScope = $defaultScope;
     }

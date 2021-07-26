@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Tzunghaor\SettingsBundle\Tests\Service;
+namespace Tzunghaor\SettingsBundle\Tests\Unit\Service;
 
 
 use Doctrine\Common\Annotations\Reader;

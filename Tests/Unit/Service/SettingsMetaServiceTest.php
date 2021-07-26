@@ -1,5 +1,5 @@
 <?php
-namespace Tzunghaor\SettingsBundle\Tests\Service;
+namespace Tzunghaor\SettingsBundle\Tests\Unit\Service;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -55,6 +55,7 @@ class SettingsMetaServiceTest extends TestCase
             $this->mockCache,
             $mockExtractor,
             $this->mockScopeProvider,
+            'default',
             $this->classes
         );
     }
