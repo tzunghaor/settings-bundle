@@ -3,6 +3,7 @@
 
 namespace Tzunghaor\SettingsBundle\Service;
 
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -17,24 +18,23 @@ class SettingsEditorService
      * @var FormFactoryInterface
      */
     private $formFactory;
-
     /**
-     * @var SettingsService
+     * @var ServiceLocator
      */
-    private $settingsService;
-
+    private $settingsServiceLocator;
     /**
-     * @var SettingsMetaService
+     * @var string
      */
-    private $settingsMetaService;
+    private $defaultCollectionName;
 
     public function __construct(
-        SettingsService $settingsService,
-        FormFactoryInterface $formFactory
+        ServiceLocator $settingsServiceLocator,
+        FormFactoryInterface $formFactory,
+        string $defaultCollectionName
     ) {
         $this->formFactory = $formFactory;
-        $this->settingsService = $settingsService;
-        $this->settingsMetaService = $settingsService->getSettingsMetaService();
+        $this->settingsServiceLocator = $settingsServiceLocator;
+        $this->defaultCollectionName = $defaultCollectionName;
     }
 
     /**
@@ -42,22 +42,27 @@ class SettingsEditorService
      *
      * @param string $sectionName
      * @param string $scope
+     * @param string|null $collectionName if null then default collection is used
      *
      * @return FormInterface|null returns null if $sectionName + $scope is not sufficient
      *
      * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function createForm(string $sectionName, string $scope): ?FormInterface
+    public function createForm(string $sectionName, string $scope, ?string $collectionName = null): ?FormInterface
     {
         if ($sectionName === '') {
             return null;
         }
 
-        $sectionMeta = $this->settingsMetaService->getSectionMetaDataByName($sectionName);
+        /** @var SettingsService $settingsService */
+        $settingsService = $this->settingsServiceLocator->get($collectionName ?? $this->defaultCollectionName);
+        $settingsMetaService = $settingsService->getSettingsMetaService();
+
+        $sectionMeta = $settingsMetaService->getSectionMetaDataByName($sectionName);
         $sectionClass = $sectionMeta->getDataClass();
-        $sectionSettings = $this->settingsService->getSection($sectionClass, $scope);
-        $valueScopes = $this->settingsService->getValueScopes($sectionClass, $scope);
+        $sectionSettings = $settingsService->getSection($sectionClass, $scope);
+        $valueScopes = $settingsService->getValueScopes($sectionClass, $scope);
         $inCurrentScope = [];
         foreach ($sectionMeta->getSettingMetaDataArray() as $settingMeta) {
             $settingName = $settingMeta->getName();
@@ -79,27 +84,31 @@ class SettingsEditorService
     /**
      * Returns an array that contains the expected variables of editor.html.twig
      *
-     * @param array $collections
-     * @param string $collection
      * @param string $sectionName
-     * @param string $scope
+     * @param string $scope passe empty string to use default scope
      * @param FormInterface $form
+     * @param string|null $collectionName if null then default collection is used
      *
      * @return array
      *
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
      */
-    public function getTwigContext(array $collections, string $collection, string $sectionName, string $scope, ?FormInterface $form): array
+    public function getTwigContext(string $sectionName, string $scope, ?FormInterface $form, ?string $collectionName = null): array
     {
-        $sections = $this->settingsMetaService->getSectionMetaDataArray();
-        $scopes = $this->settingsMetaService->getScopeHierarchy();
-        $sectionMeta = $sectionName === '' ? null : $this->settingsMetaService->getSectionMetaDataByName($sectionName);
-        $currentScope = $scope === '' ? $this->settingsMetaService->getScope() : $scope;
+        $currentCollection = $collectionName ?? $this->defaultCollectionName;
+        /** @var SettingsService $settingsService */
+        $settingsService = $this->settingsServiceLocator->get($currentCollection);
+        $settingsMetaService = $settingsService->getSettingsMetaService();
+
+        $sections = $settingsMetaService->getSectionMetaDataArray();
+        $scopes = $settingsMetaService->getScopeHierarchy();
+        $sectionMeta = $sectionName === '' ? null : $settingsMetaService->getSectionMetaDataByName($sectionName);
+        $currentScope = $scope === '' ? $settingsMetaService->getScope() : $scope;
 
         return [
-            'collections' => $collections,
-            'currentCollection' => $collection,
+            'collections' => array_keys($this->settingsServiceLocator->getProvidedServices()),
+            'currentCollection' => $currentCollection,
             'scopes' => $scopes,
             'currentScope' => $currentScope,
             'sections' => $sections,
@@ -114,13 +123,18 @@ class SettingsEditorService
      * @param array $formData of SettingsEditorType
      * @param string $sectionName
      * @param string $scope
+     * @param string|null $collectionName if null then default collection is used
      *
      * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function save(array $formData, string $sectionName, string $scope): void
+    public function save(array $formData, string $sectionName, string $scope, ?string $collectionName = null): void
     {
-        $sectionMeta = $this->settingsMetaService->getSectionMetaDataByName($sectionName);
+        /** @var SettingsService $settingsService */
+        $settingsService = $this->settingsServiceLocator->get($collectionName ?? $this->defaultCollectionName);
+        $settingsMetaService = $settingsService->getSettingsMetaService();
+
+        $sectionMeta = $settingsMetaService->getSectionMetaDataByName($sectionName);
         $settingMetaArray = $sectionMeta->getSettingMetaDataArray();
 
         $sectionObject = $formData[SettingsEditorType::DATA_SETTINGS];
@@ -138,6 +152,6 @@ class SettingsEditorService
             $values[$settingName] = $propertyAccessor->getValue($sectionObject, $settingName);
         }
 
-        $this->settingsService->save($sectionMeta->getDataClass(), $scope, $values);
+        $settingsService->save($sectionMeta->getDataClass(), $scope, $values);
     }
 }

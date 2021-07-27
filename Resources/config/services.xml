@@ -33,8 +33,9 @@
 
         <service id="tzunghaor_settings.settings_editor_service"
                  class="Tzunghaor\SettingsBundle\Service\SettingsEditorService">
-            <argument key="$settingsService" type="service" id="tzunghaor_settings.settings_service"/>
+            <argument key="$settingsServiceLocator" type="tagged_locator" tag="tzunghaor_settings.settings_service" index-by="key"/>
             <argument key="$formFactory" type="service" id="form.factory"/>
+            <argument key="$defaultCollectionName">%tzunghaor_settings.default_collection%</argument>
         </service>
 
         <service id="Tzunghaor\SettingsBundle\Service\SettingsEditorService"
@@ -54,9 +55,7 @@
 
         <service id="tzunghaor_settings.editor_controller"
                  class="Tzunghaor\SettingsBundle\Controller\SettingsEditorController">
-            <!--<argument key="$settingsServiceLocator" type="service" id="tzunghaor_settings.locator"/>-->
-            <argument key="$settingsServiceLocator" type="tagged_locator" tag="tzunghaor_settings.settings_service" index-by="key"/>
-            <argument key="$formFactory" type="service" id="form.factory" />
+            <argument key="$settingsEditorService" type="service" id="tzunghaor_settings.settings_editor_service"/>
             <argument key="$router" type="service" id="router"/>
             <argument key="$twig" type="service" id="twig"/>
 

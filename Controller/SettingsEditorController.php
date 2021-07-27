@@ -4,8 +4,6 @@
 namespace Tzunghaor\SettingsBundle\Controller;
 
 
-use Symfony\Component\DependencyInjection\ServiceLocator;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,26 +26,20 @@ class SettingsEditorController
      * @var Environment
      */
     private $twig;
+    /**
+     * @var SettingsEditorService
+     */
+    private $settingsEditorService;
 
-    /**
-     * @var ServiceLocator
-     */
-    private $settingsServiceLocator;
-    /**
-     * @var FormFactoryInterface
-     */
-    private $formFactory;
 
     public function __construct(
-        ServiceLocator $settingsServiceLocator,
-        FormFactoryInterface $formFactory,
+        SettingsEditorService $settingsEditorService,
         RouterInterface $router,
         Environment $twig
     ) {
         $this->router = $router;
         $this->twig = $twig;
-        $this->settingsServiceLocator = $settingsServiceLocator;
-        $this->formFactory = $formFactory;
+        $this->settingsEditorService = $settingsEditorService;
     }
 
     /**
@@ -63,16 +55,14 @@ class SettingsEditorController
      */
     public function edit(Request $request, string $collection, string $section, string $scope)
     {
-        $settingsService = $this->settingsServiceLocator->get($collection);
-        $settingsEditorService = new SettingsEditorService($settingsService, $this->formFactory);
-        $form = $settingsEditorService->createForm($section, $scope);
+        $form = $this->settingsEditorService->createForm($section, $scope, $collection);
 
         // $form might be null if $section is not defined
         if ($form !== null) {
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $settingsEditorService->save($form->getData(), $section, $scope);
+                $this->settingsEditorService->save($form->getData(), $section, $scope, $collection);
                 $uri = $this->router->generate('tzunghaor_settings_edit', [
                     'collection' => $collection, 'section' => $section, 'scope' => $scope]);
 
@@ -80,8 +70,7 @@ class SettingsEditorController
             }
         }
 
-        $collections = array_keys($this->settingsServiceLocator->getProvidedServices());
-        $twigContext = $settingsEditorService->getTwigContext($collections, $collection, $section, $scope, $form);
+        $twigContext = $this->settingsEditorService->getTwigContext($section, $scope, $form, $collection);
 
         return new Response($this->twig->render('@TzunghaorSettings/editor_page.html.twig', $twigContext));
     }
