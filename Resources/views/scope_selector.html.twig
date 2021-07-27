@@ -1,15 +1,16 @@
-{% macro list(scopes, currentScope, currentSection) %}
+{% macro list(scopes, currentCollection, currentScope, currentSection) %}
     <ul>
         {% for scope in scopes %}
             <li>
-                <a href="{{ url('tzunghaor_settings_edit', {'scope': scope.name, 'section': currentSection}) }}"
+                <a href="{{ url('tzunghaor_settings_edit', {
+                    'collection': currentCollection, 'scope': scope.name, 'section': currentSection }) }}"
                    {% if scope.name == currentScope %} class="tzunghaor_settings_current"{% endif %}
                     >
                     {{ scope.name }}
                 </a>
 
                 {% if scope.children is defined %}
-                    {{ _self.list(scope.children, currentScope, currentSection) }}
+                    {{ _self.list(scope.children, currentCollection, currentScope, currentSection) }}
                 {% endif %}
             </li>
         {% endfor %}
@@ -19,5 +20,5 @@
 <div class="tzunghaor_settings_scope_selector tzunghaor_settings_selector">
     <h3>Scopes</h3>
 
-    {{ _self.list(scopes, currentScope, currentSection) }}
+    {{ _self.list(scopes, currentCollection, currentScope, currentSection) }}
 </div>

@@ -3,6 +3,7 @@
 {% block body %}
     <div class="tzunghaor_settings_page">
         <div class="tzunghaor_settings_sidebar">
+            {{ include('@TzunghaorSettings/collection_selector.html.twig') }}
         {{ include('@TzunghaorSettings/scope_selector.html.twig') }}
         {{ include('@TzunghaorSettings/section_selector.html.twig') }}
         </div>

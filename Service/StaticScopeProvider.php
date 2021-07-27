@@ -3,7 +3,6 @@
 namespace Tzunghaor\SettingsBundle\Service;
 
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use Tzunghaor\SettingsBundle\DependencyInjection\Configuration;
 
 /**
  * Scope provider using a static scope hierarchy - used when scopes are defined in configuration
@@ -86,23 +85,23 @@ class StaticScopeProvider implements ScopeProviderInterface
             foreach ($scopePath as $currentScopeName) {
                 if (!array_key_exists($currentScopeName, $matchingHierarchyLookup)) {
                     $matchingHierarchyLookup[$currentScopeName] = [
-                        Configuration::SCOPE_NAME => $currentScopeName,
-                        Configuration::SCOPE_CHILDREN => [],
+                        self::SCOPE_NAME => $currentScopeName,
+                        self::SCOPE_CHILDREN => [],
                     ];
                     $currentLevel[] = &$matchingHierarchyLookup[$currentScopeName];
                 }
 
-                if (!array_key_exists(Configuration::SCOPE_CHILDREN, $matchingHierarchyLookup[$currentScopeName])) {
-                    $matchingHierarchyLookup[$currentScopeName][Configuration::SCOPE_CHILDREN] = [];
+                if (!array_key_exists(self::SCOPE_CHILDREN, $matchingHierarchyLookup[$currentScopeName])) {
+                    $matchingHierarchyLookup[$currentScopeName][self::SCOPE_CHILDREN] = [];
                 }
 
                 // next level becomes current
-                $currentLevel = &$matchingHierarchyLookup[$currentScopeName][Configuration::SCOPE_CHILDREN];
+                $currentLevel = &$matchingHierarchyLookup[$currentScopeName][self::SCOPE_CHILDREN];
             }
 
             if (!array_key_exists($scopeName, $currentLevel)) {
                 $matchingHierarchyLookup[$scopeName] = [
-                    Configuration::SCOPE_NAME => $scopeName,
+                    self::SCOPE_NAME => $scopeName,
                 ];
                 $currentLevel[] = &$matchingHierarchyLookup[$scopeName];
             }
@@ -122,7 +121,7 @@ class StaticScopeProvider implements ScopeProviderInterface
     private function addToScopeLookup(array& $lookup, array $scopeHierarchy, array $parents): void
     {
         foreach ($scopeHierarchy as $scope) {
-            $scopeName = $scope[Configuration::SCOPE_NAME];
+            $scopeName = $scope[self::SCOPE_NAME];
             if(array_key_exists($scopeName, $lookup)) {
                 throw new InvalidConfigurationException('Scope name used multiple times: ' . $scopeName);
             }
@@ -130,9 +129,9 @@ class StaticScopeProvider implements ScopeProviderInterface
             $scopePath = $parents;
             $lookup[$scopeName] = $scopePath;
 
-            if (isset($scope[Configuration::SCOPE_CHILDREN])) {
+            if (isset($scope[self::SCOPE_CHILDREN])) {
                 array_push($scopePath, $scopeName);
-                $this->addToScopeLookup($lookup, $scope[Configuration::SCOPE_CHILDREN], $scopePath);
+                $this->addToScopeLookup($lookup, $scope[self::SCOPE_CHILDREN], $scopePath);
             }
         }
     }

@@ -8,9 +8,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 class Configuration implements ConfigurationInterface
 {
     public const CONFIG_ROOT = 'tzunghaor_settings';
-    public const DEFAULT_COLLECTION = 'default';
     public const MAPPINGS = 'mappings';
-    public const DEFAULT_MAPPING = 'default';
     public const DIR = 'dir';
     public const PREFIX = 'prefix';
     public const CACHE = 'cache';

@@ -30,12 +30,11 @@ class SettingsEditorService
 
     public function __construct(
         SettingsService $settingsService,
-        SettingsMetaService $settingsMetaService,
         FormFactoryInterface $formFactory
     ) {
         $this->formFactory = $formFactory;
         $this->settingsService = $settingsService;
-        $this->settingsMetaService = $settingsMetaService;
+        $this->settingsMetaService = $settingsService->getSettingsMetaService();
     }
 
     /**
@@ -71,7 +70,7 @@ class SettingsEditorService
         ];
 
         return $this->formFactory->create(SettingsEditorType::class, $formData, [
-            SettingsEditorType::OPTION_SECTION => $sectionName,
+            SettingsEditorType::OPTION_SECTION_META => $sectionMeta,
             'label' => $sectionMeta->getTitle(),
             'help' => $sectionMeta->getDescription(),
         ]);
@@ -80,6 +79,8 @@ class SettingsEditorService
     /**
      * Returns an array that contains the expected variables of editor.html.twig
      *
+     * @param array $collections
+     * @param string $collection
      * @param string $sectionName
      * @param string $scope
      * @param FormInterface $form
@@ -89,7 +90,7 @@ class SettingsEditorService
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
      */
-    public function getTwigContext(string $sectionName, string $scope, ?FormInterface $form): array
+    public function getTwigContext(array $collections, string $collection, string $sectionName, string $scope, ?FormInterface $form): array
     {
         $sections = $this->settingsMetaService->getSectionMetaDataArray();
         $scopes = $this->settingsMetaService->getScopeHierarchy();
@@ -97,6 +98,8 @@ class SettingsEditorService
         $currentScope = $scope === '' ? $this->settingsMetaService->getScope() : $scope;
 
         return [
+            'collections' => $collections,
+            'currentCollection' => $collection,
             'scopes' => $scopes,
             'currentScope' => $currentScope,
             'sections' => $sections,

@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Tzunghaor\SettingsBundle\Helper\ObjectHydrator;
-use Tzunghaor\SettingsBundle\Service\SettingsMetaService;
+use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 
 /**
  * Form Type for editing a settings section
@@ -22,7 +22,7 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
 {
     /**
      * I want to support form validation with validation constraint annotations in the setting section class,
-     * but I want to having the validation component as a hard dependency. Therefore the data of this form type is
+     * but I dont't want to have the validation component as a hard dependency. Therefore the data of this form type is
      * an array with keys defined here. (And not an object which would require explicitly propagating validation.)
      */
     public const DATA_SETTINGS = 'settings';
@@ -31,29 +31,14 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
     /**
      * Name of setting section
      */
-    public const OPTION_SECTION = 'section';
-
-    /**
-     * @var SettingsMetaService
-     */
-    private $settingsMetaService;
-
-    public function __construct(SettingsMetaService $settingsMetaService)
-    {
-        $this->settingsMetaService = $settingsMetaService;
-    }
+    public const OPTION_SECTION_META = 'section_meta';
 
     /**
      * {@inheritdoc}
-     *
-     * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
-     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $sectionName = $options[self::OPTION_SECTION];
-
-        $metaData = $this->settingsMetaService->getSectionMetaDataByName($sectionName);
+        $metaData = $options[self::OPTION_SECTION_META];
 
         $builder->add(self::DATA_SETTINGS, FormType::class, [
             'label' => false,
@@ -100,7 +85,8 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setRequired([self::OPTION_SECTION]);
+        $resolver->setRequired([self::OPTION_SECTION_META]);
+        $resolver->setAllowedTypes(self::OPTION_SECTION_META, SectionMetaData::class);
         // use PATCH so that non-submitted values are not cleared, but remain the current inherited values
         $resolver->setDefault('method', Request::METHOD_PATCH);
     }

@@ -22,7 +22,7 @@ class SettingsEditorControllerTest extends KernelTestCase
         $cases['day'] = [
             'edits' => [
                 [
-                    'uri' => '/day/Ui.BoxSettings',
+                    'uri' => '/default/day/Ui.BoxSettings',
                     'formEdits' => [
                         // set value for "margin" but not the "in_scope" radio button => it should not be saved
                         'settings_editor' => [
@@ -57,7 +57,7 @@ class SettingsEditorControllerTest extends KernelTestCase
             'edits' => [
                 // first set margin and borders in root
                 [
-                    'uri' => '/root/Ui.BoxSettings',
+                    'uri' => '/default/root/Ui.BoxSettings',
                     'formEdits' => [
                         'settings_editor' => [
                             'settings' => ['padding' => 12, 'margin' => 14],
@@ -70,7 +70,7 @@ class SettingsEditorControllerTest extends KernelTestCase
 
                 // then set custom margin and borders in the lower level 'day'
                 [
-                    'uri' => '/day/Ui.BoxSettings',
+                    'uri' => '/default/day/Ui.BoxSettings',
                     'formEdits' => [
                         'settings_editor' => [
                             'settings' => ['padding' => 0, 'margin' => 22],
@@ -83,7 +83,7 @@ class SettingsEditorControllerTest extends KernelTestCase
 
                 // and last unset margin but set padding and different borders in root
                 [
-                    'uri' => '/root/Ui.BoxSettings',
+                    'uri' => '/default/root/Ui.BoxSettings',
                     'formEdits' => [
                         'settings_editor' => [
                             'settings' => ['padding' => 8, 'margin' => 62],

@@ -19,7 +19,6 @@ use Tzunghaor\SettingsBundle\Service\StaticScopeProvider;
 
 class TzunghaorSettingsExtension extends Extension
 {
-
     /**
      * Loads a specific configuration.
      *
@@ -48,8 +47,12 @@ class TzunghaorSettingsExtension extends Extension
     {
         $defaultSettingsMetaServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_meta_service');
         $defaultSettingsServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_service');
+        $defaultCollectionName = $container->getParameter('tzunghaor_settings.default_collection');
+        $defaultMappingName = $container->getParameter('tzunghaor_settings.default_mapping');
 
-        if ($name === Configuration::DEFAULT_COLLECTION) {
+        if ($name === $defaultCollectionName) {
+            $settingsServiceId = 'tzunghaor_settings.settings_service.' . $defaultCollectionName;
+            $container->setAlias($settingsServiceId, 'tzunghaor_settings.settings_service');
             $settingsMetaServiceDefinition = $defaultSettingsMetaServiceDefinition;
             $settingsServiceDefinition = $defaultSettingsServiceDefinition;
         } else {
@@ -73,11 +76,12 @@ class TzunghaorSettingsExtension extends Extension
             $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name . '_settings');
         }
 
+        $settingsServiceDefinition->addTag('tzunghaor_settings.settings_service', ['key' => $name]);
 
         $settingsMetaServiceDefinition->replaceArgument('$collectionName', $name);
         $settingsMetaServiceDefinition->replaceArgument(
             '$sectionClasses',
-            $this->getSectionClasses($config[Configuration::MAPPINGS])
+            $this->getSectionClasses($config[Configuration::MAPPINGS], $defaultMappingName)
         );
 
         if (isset($config[Configuration::CACHE])) {
@@ -120,7 +124,7 @@ class TzunghaorSettingsExtension extends Extension
      *
      * @return array
      */
-    private function getSectionClasses(array $mappings): array
+    private function getSectionClasses(array $mappings, string $defaultMappingName): array
     {
         $sectionClasses = [];
 
@@ -138,7 +142,7 @@ class TzunghaorSettingsExtension extends Extension
 
                 $sectionClass = $prefix . implode('\\', $nameArray);
                 $sectionName = implode('.', $nameArray);
-                if ($mappingName !== Configuration::DEFAULT_MAPPING) {
+                if ($mappingName !== $defaultMappingName) {
                     $sectionName = $mappingName . '.' . $sectionName;
                 }
 

@@ -1,0 +1,16 @@
+{% if collections | length > 1 %}
+<div class="tzunghaor_settings_collection_selector tzunghaor_settings_selector">
+    <h3>Collections</h3>
+    <ul>
+        {% for collection in collections %}
+            <li>
+                <a href="{{ url('tzunghaor_settings_edit', { 'collection': collection }) }}"
+                        {% if collection == currentCollection %} class="tzunghaor_settings_current"{% endif %}
+                >
+                    {{ collection }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
