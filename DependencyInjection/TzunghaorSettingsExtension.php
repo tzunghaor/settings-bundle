@@ -89,7 +89,10 @@ class TzunghaorSettingsExtension extends Extension
             $settingsServiceDefinition->replaceArgument('$cache', new Reference($config[Configuration::CACHE]));
         }
 
-        if (isset($config[Configuration::SCOPES]) && !empty($config[Configuration::SCOPES])) {
+        if (isset($config[Configuration::SCOPE_PROVIDER])) {
+            $settingsMetaServiceDefinition->replaceArgument(
+                '$scopeProvider', new Reference($config[Configuration::SCOPE_PROVIDER]));
+        } elseif (isset($config[Configuration::SCOPES]) && !empty($config[Configuration::SCOPES])) {
             $defaultScope = $config[Configuration::DEFAULT_SCOPE] ??
                 $container->getParameter('tzunghaor_settings.default_scope');
 

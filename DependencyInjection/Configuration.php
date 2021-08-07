@@ -13,6 +13,7 @@ class Configuration implements ConfigurationInterface
     public const PREFIX = 'prefix';
     public const CACHE = 'cache';
     public const SCOPES = 'scopes';
+    public const SCOPE_PROVIDER = 'scope_provider';
     public const SCOPE_NAME = 'name';
     public const SCOPE_CHILDREN = 'children';
     public const DEFAULT_SCOPE = 'default_scope';
@@ -69,6 +70,10 @@ class Configuration implements ConfigurationInterface
                     ->end()
 
                     ->variableNode(self::DEFAULT_SCOPE)
+                    ->end()
+
+                    ->scalarNode(self::SCOPE_PROVIDER)
+                        ->info('Scope provider service - must implement ScopeProviderInterface')
                     ->end()
                 ->end()
             ->end()

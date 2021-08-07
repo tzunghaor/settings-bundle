@@ -90,11 +90,13 @@ class SettingsMetaService implements CacheWarmerInterface
     }
 
     /**
+     * @param string|null $searchString scope provider decides what part of the hierarchy it returns
+     *
      * @return array nested array of scopes
      */
-    public function getScopeHierarchy(): array
+    public function getScopeHierarchy(?string $searchString = null): array
     {
-        return $this->scopeProvider->getScopeHierarchy();
+        return $this->scopeProvider->getScopeHierarchy($searchString);
     }
 
 
