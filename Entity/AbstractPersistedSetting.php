@@ -2,12 +2,13 @@
 namespace Tzunghaor\SettingsBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Tzunghaor\SettingsBundle\Model\PersistedSettingInterface;
 
 /**
  * Unmapped superclass of the persisted setting entity.
  * You can create your own subclass of it, and set it in the bundle config.
  */
-abstract class AbstractPersistedSetting
+abstract class AbstractPersistedSetting implements PersistedSettingInterface
 {
     /**
      * @var string

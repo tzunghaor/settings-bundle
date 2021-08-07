@@ -12,7 +12,8 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Finder\Finder;
-use Tzunghaor\SettingsBundle\Entity\AbstractPersistedSetting;
+use Tzunghaor\SettingsBundle\Model\PersistedSettingInterface;
+use Tzunghaor\SettingsBundle\Service\DoctrineSettingsStore;
 use Tzunghaor\SettingsBundle\Service\SettingsMetaService;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 use Tzunghaor\SettingsBundle\Service\StaticScopeProvider;
@@ -109,14 +110,19 @@ class TzunghaorSettingsExtension extends Extension
 
         if (isset($config[Configuration::ENTITY])) {
             $entityClass = $config[Configuration::ENTITY];
-            $expectedClass = AbstractPersistedSetting::class;
-            if (!is_subclass_of($entityClass, $expectedClass)) {
-                throw new InvalidConfigurationException(sprintf('%s.%s must be a subclass of %s',
-                                                                Configuration::CONFIG_ROOT, Configuration::ENTITY, $expectedClass));
+            $expectedInterface = PersistedSettingInterface::class;
+            if (!in_array($expectedInterface, class_implements($entityClass), true)) {
+                throw new InvalidConfigurationException(
+                    sprintf('%s.%s must implement %s',
+                            Configuration::CONFIG_ROOT, Configuration::ENTITY, $expectedInterface)
+                );
             }
 
-            $settingsStoreDefinition = $container->getDefinition('tzunghaor_settings.settings_store');
-            $settingsStoreDefinition->replaceArgument('$entityClass', $entityClass);
+            $settingsStoreDefinition = new Definition(DoctrineSettingsStore::class, [
+                '$em' => new Reference('doctrine.orm.entity_manager'),
+                '$entityClass' => $entityClass,
+            ]);
+            $settingsServiceDefinition->replaceArgument('$store', $settingsStoreDefinition);
         }
     }
 

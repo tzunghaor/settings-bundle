@@ -25,7 +25,8 @@
         <service id="tzunghaor_settings.settings_service"
                  class="Tzunghaor\SettingsBundle\Service\SettingsService">
             <argument key="$settingsMetaService" type="service" id="tzunghaor_settings.settings_meta_service" />
-            <argument key="$store" type="service" id="tzunghaor_settings.settings_store"/>
+            <argument key="$store" type="service" id="tzunghaor_settings.doctrine_settings_store"/>
+            <argument key="$dataConverters" type="tagged_iterator" tag="tzunghaor_settings.setting_converter"/>
             <argument key="$cache" type="service" id="tzunghaor_settings.default_tag_aware_cache"/>
         </service>
 
@@ -47,9 +48,8 @@
 
         <service id="Tzunghaor\SettingsBundle\Form\SettingsEditorType" alias="tzunghaor_settings.settings_editor_type" />
 
-        <service id="tzunghaor_settings.settings_store" class="Tzunghaor\SettingsBundle\Service\SettingsStore">
+        <service id="tzunghaor_settings.doctrine_settings_store" class="Tzunghaor\SettingsBundle\Service\DoctrineSettingsStore">
             <argument key="$em" type="service" id="doctrine.orm.entity_manager"/>
-            <argument key="$dataConverters" type="tagged_iterator" tag="tzunghaor_settings.setting_converter"/>
             <argument key="$entityClass">Tzunghaor\SettingsBundle\Entity\PersistedSetting</argument>
         </service>
 

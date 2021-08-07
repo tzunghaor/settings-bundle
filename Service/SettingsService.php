@@ -10,6 +10,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Tzunghaor\SettingsBundle\DependencyInjection\Configuration;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Helper\ObjectHydrator;
+use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingsCacheEntry;
 
 /**
@@ -32,14 +33,21 @@ class SettingsService
      */
     private $store;
 
+    /**
+     * @var SettingConverterInterface[]
+     */
+    private $dataConverters;
+
     public function __construct(
         SettingsMetaService $settingsMetaService,
         SettingsStoreInterface $store,
+        iterable $dataConverters,
         CacheInterface $cache
     ) {
         $this->settingsMetaService = $settingsMetaService;
         $this->store = $store;
         $this->cache = $cache;
+        $this->dataConverters = iterator_to_array($dataConverters);
     }
 
     /**
@@ -94,6 +102,7 @@ class SettingsService
      * @param array $values [$settingName => $value, ...] type of values should be what is defined in the section class
      *
      * @throws \Psr\Cache\InvalidArgumentException
+     * @throws SettingsException
      */
     public function save(string $sectionClass, string $scope, array $values): void
     {
@@ -101,7 +110,8 @@ class SettingsService
         $sectionName = $metaData->getName();
         $settingMetaDataArray = $metaData->getSettingMetaDataArray();
 
-        $this->store->saveValues($sectionName, $scope, $values, $settingMetaDataArray);
+        $valuesToPersist = $this->convertToPersistedValues($values, $settingMetaDataArray);
+        $this->store->saveValues($sectionName, $scope, $valuesToPersist);
 
         $this->invalidateCache($sectionClass, $scope);
     }
@@ -217,6 +227,7 @@ class SettingsService
      *
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \ReflectionException
+     * @throws SettingsException
      */
     private function loadCacheEntry(string $sectionClass, string $scope, ?SettingsCacheEntry $parentEntry): SettingsCacheEntry
     {
@@ -226,7 +237,9 @@ class SettingsService
         $inheritedValues = $parentEntry ? $parentEntry->getValues() : [];
         $valueScopes = $parentEntry ? $parentEntry->getValueScopes() : [];
 
-        $valuesInScope = $this->store->getValues($sectionName, $scope, $metaDataArray);
+        $valuesInScope = $this->store->getValues($sectionName, $scope);
+        $valuesInScope = $this->convertFromPersistedValue($valuesInScope, $metaDataArray);
+
         $values = array_merge($inheritedValues, $valuesInScope);
         foreach (array_keys($valuesInScope) as $settingName) {
             $valueScopes[$settingName] = $scope;
@@ -248,5 +261,70 @@ class SettingsService
     private function getCacheKey(string $sectionClass, string $scope): string
     {
         return 'tzunghaor_settings_section.' . str_replace('\\', '.', $sectionClass) . '..' . $scope;
+    }
+
+
+    /**
+     * Converts the DB persisted values to the type defined in the section class
+     *
+     * @param array $persistedValues [$settingName => $value, ...]
+     * @param SettingMetaData[] $settingMetaArray
+     *
+     * @return array
+     *
+     * @throws SettingsException
+     */
+    private function convertFromPersistedValue(array $persistedValues, array $settingMetaArray): array
+    {
+        $convertedValues = [];
+
+        foreach ($persistedValues as $settingName => $persistedValue) {
+            $type = $settingMetaArray[$settingName]->getDataType();
+            foreach ($this->dataConverters as $dataConverter) {
+                if ($dataConverter->supports($type)) {
+                    $convertedValues[$settingName] = $dataConverter->convertFromString($type, $persistedValue);
+
+                    break;
+                }
+            }
+
+            if (!isset($convertedValues[$settingName])) {
+                throw new SettingsException(sprintf('Could not find converter for setting %s', $settingName));
+            }
+        }
+
+        return $convertedValues;
+    }
+
+    /**
+     * Converts the values of types defined in the setting section class to values that can be persisted in DB
+     *
+     * @param array $values [$settingName => $value, ...]
+     * @param SettingMetaData[] $settingMetaArray
+     *
+     * @return array
+     *
+     * @throws SettingsException
+     */
+    private function convertToPersistedValues(array $values, array $settingMetaArray): array
+    {
+        $convertedValues = [];
+
+        foreach ($values as $settingName => $value) {
+            $type = $settingMetaArray[$settingName]->getDataType();
+            foreach ($this->dataConverters as $dataConverter) {
+                if ($dataConverter->supports($type)) {
+                    $convertedValues[$settingName] = $dataConverter->convertToString($type, $value);
+
+                    break;
+                }
+            }
+
+            if (!isset($convertedValues[$settingName])) {
+                throw new SettingsException(sprintf('Could not find converter for setting %s', $settingName));
+            }
+        }
+
+        return $convertedValues;
     }
 }
