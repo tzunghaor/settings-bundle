@@ -130,6 +130,7 @@ class TzunghaorSettingsExtension extends Extension
      * Retrieves the sectionName => $sectionClass mapping based on config
      *
      * @param array $mappings
+     * @param string $defaultMappingName
      *
      * @return array
      */

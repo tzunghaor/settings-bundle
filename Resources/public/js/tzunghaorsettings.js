@@ -6,27 +6,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const overrideInputs = document.querySelectorAll('.tzunghaor_setting_override input[type="radio"]');
 
     /**
-     * Applies current override/inherit choice for the setting controlled by the passed Element
-     * @param {HTMLInputElement} input
+     * Sets all input elements inside container enabled/disabled
+     *
+     * @param {Element} container
+     * @param {boolean} enabled
      */
-    const applyOverride = function (input) {
-        if (!input.checked) {
-            return;
-        }
-
-        const enableInput = parseInt(input.value) === 1;
-
-        const groupElement = input.closest('.tzunghaor_setting_group');
-        if (enableInput) {
-            groupElement.classList.remove('disabled');
-        } else {
-            groupElement.classList.add('disabled');
-        }
-
+    const setFormElementsEnabled = function(container, enabled)
+    {
         let inputElements = [];
-        const inputs = groupElement.getElementsByTagName('INPUT');
-        const selects = groupElement.getElementsByTagName('SELECT');
-        const textareas = groupElement.getElementsByTagName('TEXTAREA');
+        const inputs = container.getElementsByTagName('INPUT');
+        const selects = container.getElementsByTagName('SELECT');
+        const textareas = container.getElementsByTagName('TEXTAREA');
 
         inputElements = Array.prototype.concat.apply(inputElements, inputs);
         inputElements = Array.prototype.concat.apply(inputElements, selects);
@@ -38,8 +28,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 continue;
             }
 
-            inputElement.disabled = !enableInput;
+            inputElement.disabled = !enabled;
         }
+
+    };
+
+    /**
+     * Applies current override/inherit choice for the setting controlled by the passed Element
+     * @param {HTMLInputElement} input
+     */
+    const applyOverride = function (input) {
+        if (!input.checked) {
+            return;
+        }
+
+        const enableInput = parseInt(input.value) === 1;
+
+        const groupElement = input.closest('.tzunghaor_setting_group');
+        const scopeSettingElement = groupElement.querySelector('.tzunghaor_current_scope');
+        const parentSettingElement = groupElement.querySelector('.tzunghaor_parent_scope');
+
+        if (enableInput) {
+            groupElement.classList.remove('disabled');
+            scopeSettingElement.style.display = null;
+            parentSettingElement.style.display = 'none';
+        } else {
+            groupElement.classList.add('disabled');
+            scopeSettingElement.style.display = 'none';
+            parentSettingElement.style.display = null;
+        }
+
+        setFormElementsEnabled(scopeSettingElement, enableInput);
     };
 
     /**
@@ -67,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (const valueElement of document.querySelectorAll('.tzunghaor_setting_value')) {
         valueElement.addEventListener('change', onValueChanged);
+        // disable parent setting inputs to save bandwidth - their values would be ignored in any case
+        setFormElementsEnabled(valueElement.querySelector('.tzunghaor_parent_scope'), false);
     }
 
     /**

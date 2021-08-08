@@ -12,9 +12,13 @@
         <div class="tzunghaor_setting_group">
             {{ form_row(form['in_scope'][settingName]) }}
             <div class="tzunghaor_setting_value">
-                <div class="tzunghaor_setting_labeled_widget">
+                <div class="tzunghaor_setting_labeled_widget tzunghaor_current_scope">
                     {{ form_label(formField) }}
                     {{ form_widget(formField) }}
+                </div>
+                <div class="tzunghaor_setting_labeled_widget tzunghaor_parent_scope">
+                    {{ form_label(formField) }}
+                    {{ form_widget(form['parent_settings'][settingName]) }}
                 </div>
                 {{ form_help(formField) }}
                 {% if formField.vars.errors|length %}

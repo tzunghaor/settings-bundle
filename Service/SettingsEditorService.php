@@ -63,6 +63,11 @@ class SettingsEditorService
         $sectionClass = $sectionMeta->getDataClass();
         $sectionSettings = $settingsService->getSection($sectionClass, $scope);
         $valueScopes = $settingsService->getValueScopes($sectionClass, $scope);
+        $scopePath = $settingsMetaService->getScopePath($scope);
+        $parentScope = end($scopePath);
+        $parentSettings = $parentScope === false ?
+            new $sectionClass() : $settingsService->getSection($sectionClass, $parentScope);
+
         $inCurrentScope = [];
         foreach ($sectionMeta->getSettingMetaDataArray() as $settingMeta) {
             $settingName = $settingMeta->getName();
@@ -71,7 +76,8 @@ class SettingsEditorService
 
         $formData = [
             SettingsEditorType::DATA_SETTINGS => $sectionSettings,
-            SettingsEditorType::DATA_IN_SCOPE => $inCurrentScope
+            SettingsEditorType::DATA_PARENT_SETTINGS => $parentSettings,
+            SettingsEditorType::DATA_IN_SCOPE => $inCurrentScope,
         ];
 
         return $this->formFactory->create(SettingsEditorType::class, $formData, [
