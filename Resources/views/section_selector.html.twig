@@ -1,15 +1,17 @@
-<div class="tzunghaor_settings_section_selector tzunghaor_settings_selector">
-    <h3>Sections</h3>
-    <ul>
-        {% for section in sections %}
-            <li>
-                <a href="{{ url('tzunghaor_settings_edit', {
-                    'collection': currentCollection, 'scope': currentScope, 'section': section.name}) }}"
-                    {% if section.name == currentSection %} class="tzunghaor_settings_current"{% endif %}
-                >
-                    {{ section.title }}
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
+{% if sections | length > 1 %}
+    <div class="tzunghaor_settings_section_selector tzunghaor_settings_selector">
+        <h3>Sections</h3>
+        <ul>
+            {% for section in sections %}
+                <li>
+                    <a href="{{ tzungsettings_url({
+                        'collection': currentCollection, 'scope': currentScope, 'section': section.name}) }}"
+                            {% if section.name == currentSection %} class="tzunghaor_settings_current"{% endif %}
+                    >
+                        {{ section.title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const searchInput of document.querySelectorAll('.tzunghaor_settings_scope_search')) {
         const containerElement = searchInput.closest('.tzunghaor_settings_scope_selector');
         const dataElement = containerElement.querySelector('.tzunghaor_settings_scope_selector_data');
-        const scopeConfig = JSON.parse(dataElement.textContent);
+        const scopeSearchConfig = JSON.parse(dataElement.textContent);
         const listTemplate = containerElement.querySelector('.tzunghaor_settings_scope_list_template').innerHTML;
         const scopeTemplate = containerElement.querySelector('.tzunghaor_settings_scope_template').innerHTML;
         const scopeListContainer = containerElement.querySelector('.tzunghaor_settings_scopes_list');
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .replace('%name%', scope.name)
                     .replace('%url%', scope.url)
                     .replace('%children%', children)
-                    .replace(/%if\(iscurrent\){(.*?)}%/, scopeConfig.currentScope === scope.name ? '$1' : '')
+                    .replace(/%if\(iscurrent\){(.*?)}%/, scopeSearchConfig.currentScope === scope.name ? '$1' : '')
                 ;
 
                 list += scopeItem;
@@ -143,15 +143,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         searchInput.addEventListener('keyup', function(event) {
             const searchData = {
-                collection: scopeConfig.collection,
-                section: scopeConfig.section,
+                collection: scopeSearchConfig.collection,
+                section: scopeSearchConfig.section,
                 searchString: event.target.value,
+                linkRoute: scopeSearchConfig.linkRoute,
             };
             // don't wait for previous request
             if (scopeSearchRequest) {
                 scopeSearchRequest.abort();
             }
-            scopeSearchRequest = postRequest(scopeConfig.searchUrl, searchData, replaceScopeList);
+            scopeSearchRequest = postRequest(scopeSearchConfig.searchUrl, searchData, replaceScopeList);
         });
     }
 });

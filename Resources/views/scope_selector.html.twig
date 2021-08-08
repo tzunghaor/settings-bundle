@@ -2,7 +2,7 @@
     <ul>
         {% for scope in scopes %}
             <li>
-                <a href="{{ url('tzunghaor_settings_edit', {
+                <a href="{{ tzungsettings_url({
                     'collection': currentCollection, 'scope': scope.name, 'section': currentSection }) }}"
                    {% if scope.name == currentScope %} class="tzunghaor_settings_current"{% endif %}
                     >
@@ -17,32 +17,35 @@
     </ul>
 {% endmacro %}
 
-<div class="tzunghaor_settings_scope_selector tzunghaor_settings_selector">
-    <script type="application/json" class="tzunghaor_settings_scope_selector_data">{{
-        {
-            'searchUrl': url('tzunghaor_settings_scope_search'),
-            'collection': currentCollection,
-            'section': currentSection,
-            'currentScope': currentScope,
-        } | json_encode | raw }}</script>
+{% if scopes is not empty  %}
+    <div class="tzunghaor_settings_scope_selector tzunghaor_settings_selector">
+        <script type="application/json" class="tzunghaor_settings_scope_selector_data">{{
+            {
+                'searchUrl': url('tzunghaor_settings_scope_search'),
+                'linkRoute': linkRoute,
+                'collection': currentCollection,
+                'section': currentSection,
+                'currentScope': currentScope,
+            } | json_encode | raw }}</script>
 
-    <h3>Scopes</h3>
+        <h3>Scopes</h3>
 
-    <input class="tzunghaor_settings_scope_search" type="text" />
-    <div class="tzunghaor_settings_scopes_list">
-    {{ _self.list(scopes, currentCollection, currentScope, currentSection) }}
+        <input class="tzunghaor_settings_scope_search" type="text" />
+        <div class="tzunghaor_settings_scopes_list">
+        {{ _self.list(scopes, currentCollection, currentScope, currentSection) }}
+        </div>
+
+        <template style="display: none" class="tzunghaor_settings_scope_list_template">
+            <ul>
+                %list%
+            </ul>
+        </template>
+
+        <template style="display: none" class="tzunghaor_settings_scope_template">
+            <li>
+                <a href="%url%" class="%if(iscurrent){tzunghaor_settings_current}%">%name%</a>
+                %children%
+            </li>
+        </template>
     </div>
-
-    <template style="display: none" class="tzunghaor_settings_scope_list_template">
-        <ul>
-            %list%
-        </ul>
-    </template>
-
-    <template style="display: none" class="tzunghaor_settings_scope_template">
-        <li>
-            <a href="%url%" class="%if(iscurrent){tzunghaor_settings_current}%">%name%</a>
-            %children%
-        </li>
-    </template>
-</div>
+{% endif %}

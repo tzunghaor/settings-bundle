@@ -88,32 +88,45 @@ class SettingsEditorService
      * @param string $scope passe empty string to use default scope
      * @param FormInterface $form
      * @param string|null $collectionName if null then default collection is used
+     * @param string|null $route name of editor route
+     * @param array $fixedParameters these route parameters cannot be changed for this route
      *
      * @return array
      *
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
      */
-    public function getTwigContext(string $sectionName, string $scope, ?FormInterface $form, ?string $collectionName = null): array
-    {
+    public function getTwigContext(
+        string $sectionName,
+        string $scope,
+        ?FormInterface $form,
+        ?string $collectionName = null,
+        ?string $route = '',
+        array $fixedParameters = []
+    ): array {
         $currentCollection = $collectionName ?? $this->defaultCollectionName;
         /** @var SettingsService $settingsService */
         $settingsService = $this->settingsServiceLocator->get($currentCollection);
         $settingsMetaService = $settingsService->getSettingsMetaService();
 
-        $sections = $settingsMetaService->getSectionMetaDataArray();
-        $scopes = $settingsMetaService->getScopeHierarchy();
+        $sections = in_array('section', $fixedParameters, true) ?
+            [] : $settingsMetaService->getSectionMetaDataArray();
+        $scopes = in_array('scope', $fixedParameters, true) ?
+            [] : $settingsMetaService->getScopeHierarchy();
         $sectionMeta = $sectionName === '' ? null : $settingsMetaService->getSectionMetaDataByName($sectionName);
         $currentScope = $scope === '' ? $settingsMetaService->getScope() : $scope;
+        $collections = in_array('collection', $fixedParameters, true) ?
+            [] : array_keys($this->settingsServiceLocator->getProvidedServices());
 
         return [
-            'collections' => array_keys($this->settingsServiceLocator->getProvidedServices()),
+            'collections' => $collections,
             'currentCollection' => $currentCollection,
             'scopes' => $scopes,
             'currentScope' => $currentScope,
             'sections' => $sections,
             'currentSection' => $sectionMeta ? $sectionMeta->getName() : '',
             'form' => $form === null ? null : $form->createView(),
+            'linkRoute' => $route,
         ];
     }
 
