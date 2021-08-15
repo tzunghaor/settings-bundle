@@ -1,23 +1,18 @@
 <?php
 
-
 namespace Tzunghaor\SettingsBundle\Service;
 
-
-use Tzunghaor\SettingsBundle\DependencyInjection\Configuration;
+use Tzunghaor\SettingsBundle\Model\Scope;
 
 interface ScopeProviderInterface
 {
-    public const SCOPE_NAME = Configuration::SCOPE_NAME;
-    public const SCOPE_CHILDREN = Configuration::SCOPE_CHILDREN;
-
     /**
      * @param mixed|null $subject Can be scope name or an object or anything you support.
      *                            If null, default scope name is returned.
      *
      * @return string scope name of subject
      */
-    public function getScope($subject = null): string;
+    public function getScopeName($subject = null): string;
 
     /**
      * @param mixed|null $subject Can be scope name or an object or anything you support.
@@ -28,11 +23,16 @@ interface ScopeProviderInterface
     public function getScopePath($subject = null): array;
 
     /**
-     * @param string|null $searchString optional search string entered by user
+     * Scope hierarchy to be displayed to user, filtered by the optional $searchString entered by the user.
+     * The scope provider is free to decide what scopes it returns, the path of the returned Scope objects
+     * don't need to be filled.
+     * If you are using a Voter, then the editor will filter out the not editable items from the returned hierarchy,
+     * and if no editable scope remain, then the scope selector will not be displayed at all. So if you are returning
+     * only a subset of matching scopes, then pay attention to return a subset that is editable according to your Voter.
      *
-     * @return array|null nested array of all scopes or null if returning full scope hierarchy is not supported
-     *                    the hierarchy has the same structure as in the configuration
-     *                    SCOPE_* constants are keys in this array
+     * @param string|null $searchString
+     *
+     * @return Scope[]|null
      */
-    public function getScopeHierarchy(?string $searchString = null): ?array;
+    public function getScopeDisplayHierarchy(?string $searchString = null): ?array;
 }

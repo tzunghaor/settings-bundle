@@ -91,18 +91,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Sends POST request. Request and response body are expected to be an JSON encoded object
+     * Sends POST request. Request is expected to be an JSON encoded object
      *
      * @param {string} url
      * @param {object} data - will be sent in POST body JSON encoded
-     * @param {function(object)} onload - receives the object returned in the response body
+     * @param {function(object)} onload - receives the response body
      *
      * @returns {XMLHttpRequest}
      */
     const postRequest = function (url, data, onload) {
         const xhttp = new XMLHttpRequest();
         xhttp.onload = function() {
-            onload(JSON.parse(xhttp.response));
+            if (xhttp.status === 200) {
+                onload(xhttp.response);
+            }
         }
         xhttp.open("POST", url, true);
         xhttp.setRequestHeader("Content-type", "application/json");
@@ -116,43 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const containerElement = searchInput.closest('.tzunghaor_settings_scope_selector');
         const dataElement = containerElement.querySelector('.tzunghaor_settings_scope_selector_data');
         const scopeSearchConfig = JSON.parse(dataElement.textContent);
-        const listTemplate = containerElement.querySelector('.tzunghaor_settings_scope_list_template').innerHTML;
-        const scopeTemplate = containerElement.querySelector('.tzunghaor_settings_scope_template').innerHTML;
         const scopeListContainer = containerElement.querySelector('.tzunghaor_settings_scopes_list');
-
-        /**
-         * Builds html string from scopeHierarchy using the html templates in the document
-         *
-         * @param scopeHierarchy [{name: 'name', children: [...]}, ...]
-         * @returns {string} html string
-         */
-        const buildScopeList = function(scopeHierarchy) {
-            let list = '';
-            for (const scope of scopeHierarchy) {
-                let children = '';
-                if (scope.hasOwnProperty('children')) {
-                    children = buildScopeList(scope.children);
-                }
-
-                let scopeItem = scopeTemplate
-                    .replace('%name%', scope.name)
-                    .replace('%url%', scope.url)
-                    .replace('%children%', children)
-                    .replace(/%if\(iscurrent\){(.*?)}%/, scopeSearchConfig.currentScope === scope.name ? '$1' : '')
-                ;
-
-                list += scopeItem;
-            }
-
-            return listTemplate.replace('%list%', list);
-        };
 
         /**
          * Scope search POST response handler
          * @param scopeHierarchy
          */
         const replaceScopeList = function(scopeHierarchy) {
-            scopeListContainer.innerHTML = buildScopeList(scopeHierarchy);
+            scopeListContainer.innerHTML = scopeHierarchy;
         };
 
 
@@ -166,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const searchData = {
                 collection: scopeSearchConfig.collection,
                 section: scopeSearchConfig.section,
+                currentScope: scopeSearchConfig.currentScope,
                 searchString: event.target.value,
                 linkRoute: scopeSearchConfig.linkRoute,
             };

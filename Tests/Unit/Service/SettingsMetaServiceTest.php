@@ -90,11 +90,11 @@ class SettingsMetaServiceTest extends TestCase
     }
 
 
-    public function testGetScopeHierarchy()
+    public function testGetScopeDisplayHierarchy()
     {
-        $this->mockScopeProvider->expects(self::once())->method('getScopeHierarchy')->willReturn(['foo']);
+        $this->mockScopeProvider->expects(self::once())->method('getScopeDisplayHierarchy')->willReturn(['foo']);
 
-        self::assertSame(['foo'], $this->settingsMetaService->getScopeHierarchy());
+        self::assertSame(['foo'], $this->settingsMetaService->getScopeDisplayHierarchy());
     }
 
     public function testHasSectionClass()
@@ -105,13 +105,13 @@ class SettingsMetaServiceTest extends TestCase
     }
 
 
-    public function testGetScope()
+    public function testGetScopeName()
     {
         $obj = new class() {};
-        $this->mockScopeProvider->expects(self::once())->method('getScope')
+        $this->mockScopeProvider->expects(self::once())->method('getScopeName')
             ->with($obj)->willReturn('foo');
 
-        self::assertEquals('foo', $this->settingsMetaService->getScope($obj));
+        self::assertEquals('foo', $this->settingsMetaService->getScopeName($obj));
 
     }
 

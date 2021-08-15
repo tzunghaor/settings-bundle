@@ -5,13 +5,11 @@ namespace Tzunghaor\SettingsBundle\Controller;
 
 
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Environment;
-use Twig\TwigFunction;
 use Tzunghaor\SettingsBundle\Service\SettingsEditorService;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 
@@ -65,12 +63,14 @@ class SettingsEditorController
      * @throws \Exception
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function edit(Request $request, string $collection, string $section, string $scope): Response
+    public function edit(Request $request, ?string $collection, ?string $section, ?string $scope): Response
     {
         $route = $request->attributes->get('_route');
         $fixedParameters = $request->attributes->get('fixedParameters', []);
         $urlGenerator = $this->createUrlGenerator($route, $fixedParameters);
-        $form = $this->settingsEditorService->createForm($section, $scope, $collection);
+        $sectionAddress = $this->settingsEditorService->createSectionAddress($section, $scope, $collection);
+
+        $form = $this->settingsEditorService->createForm($sectionAddress);
 
         // $form might be null if $section is not defined
         if ($form !== null) {
@@ -85,10 +85,7 @@ class SettingsEditorController
             }
         }
 
-        $twigContext = $this->settingsEditorService
-            ->getTwigContext($section, $scope, $form, $collection, $route, $fixedParameters);
-
-        $this->twig->addFunction(new TwigFunction('tzungsettings_url', $urlGenerator));
+        $twigContext = $this->settingsEditorService->getTwigContext($sectionAddress, $urlGenerator, $form, $route, $fixedParameters);
 
         return new Response($this->twig->render('@TzunghaorSettings/editor_page.html.twig', $twigContext));
     }
@@ -97,40 +94,30 @@ class SettingsEditorController
      * Scope search controller action
      *
      * @param Request $request
-     * @return JsonResponse
+     *
+     * @return Response
+     *
+     * @throws \Exception
      */
-    public function searchScope(Request $request): JsonResponse
+    public function searchScope(Request $request): Response
     {
         $requestObject = json_decode($request->getContent(), true);
+
+        $searchString = $requestObject['searchString'];
         $collection = $requestObject['collection'];
         $section = $requestObject['section'];
-        $linkRoute = $requestObject['linkRoute'];
+        $currentScope = $requestObject['currentScope'];
+        $linkRouteName = $requestObject['linkRoute'];
+
+        $linkRoute = $this->router->getRouteCollection()->get($linkRouteName);
+        $fixedParameters = $linkRoute->getDefault('fixedParameters') ?? [];
+        $urlGenerator = $this->createUrlGenerator($linkRouteName, $fixedParameters);
+        $sectionAddress = $this->settingsEditorService->createSectionAddress($section, $currentScope, $collection);
 
         /** @var SettingsService $settingsService */
-        $settingsService = $this->settingsServiceLocator->get($collection);
-        $hierarchy = $settingsService->getSettingsMetaService()->getScopeHierarchy($requestObject['searchString']);
-        $this->addUrlToHierarchy($hierarchy, $collection, $section, $linkRoute);
+        $twigContext = $this->settingsEditorService->getSearchScopeTwigContext($searchString, $sectionAddress, $urlGenerator);
 
-        return new JsonResponse($hierarchy);
-    }
-
-    /**
-     * Recursive function to build scopeHierarchy response for searchScope controller action
-     *
-     * @param array $hierarchy
-     * @param string $collection
-     * @param string $section
-     * @param string $linkRoute name of route for which urls are generated for scopes
-     */
-    protected function addUrlToHierarchy(array &$hierarchy, string $collection, string $section, string $linkRoute): void
-    {
-        foreach ($hierarchy as &$item) {
-            $urlParameters = ['collection' => $collection, 'scope' => $item['name'], 'section' => $section];
-            $item['url'] = $this->router->generate($linkRoute, $urlParameters);
-            if (array_key_exists('children', $item)) {
-                $this->addUrlToHierarchy($item['children'], $collection, $section, $linkRoute);
-            }
-        }
+        return new Response($this->twig->render('@TzunghaorSettings/scope_list.html.twig', $twigContext));
     }
 
     /**

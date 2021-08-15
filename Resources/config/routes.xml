@@ -4,11 +4,8 @@
         xsi:schemaLocation="http://symfony.com/schema/routing
         https://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="tzunghaor_settings_edit" path="/edit/{collection}/{scope}/{section}"
+    <route id="tzunghaor_settings_edit" path="/edit/{collection?}/{scope?}/{section?}"
            controller="tzunghaor_settings.editor_controller::edit">
-        <default key="collection" />
-        <default key="scope" />
-        <default key="section" />
     </route>
     <route id="tzunghaor_settings_scope_search" path="/scope-search"
            controller="tzunghaor_settings.editor_controller::searchScope">

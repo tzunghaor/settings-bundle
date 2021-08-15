@@ -1,11 +1,10 @@
 {% if sections | length > 1 %}
-    <div class="tzunghaor_settings_section_selector tzunghaor_settings_selector">
+    <div class="tzunghaor_settings_section_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
         <h3>Sections</h3>
         <ul>
             {% for section in sections %}
                 <li>
-                    <a href="{{ tzungsettings_url({
-                        'collection': currentCollection, 'scope': currentScope, 'section': section.name}) }}"
+                    <a href="{{ section.url }}"
                             {% if section.name == currentSection %} class="tzunghaor_settings_current"{% endif %}
                     >
                         {{ section.title }}

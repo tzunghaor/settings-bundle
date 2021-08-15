@@ -4,6 +4,7 @@ namespace Tzunghaor\SettingsBundle\Tests\Unit\Service;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Tzunghaor\SettingsBundle\Model\Scope;
 use Tzunghaor\SettingsBundle\Service\StaticScopeProvider;
 
 class StaticScopeProviderTest extends TestCase
@@ -47,21 +48,36 @@ class StaticScopeProviderTest extends TestCase
 
     public function scopeHierarchyProvider(): array
     {
-        $barExpected = [
-            ['name' => 'all', 'children' => [
-                ['name' => 'bar', 'children' => [
-                    ['name' => 'bar1'],
-                    ['name' => 'bar2']
-                ]],
-            ]],
-            ['name' => 'johnny', 'children' => [
-                ['name' => 'babar'],
-            ]],
+        // Without search string the original scopes are returned with path, though path is not necessary
+        // maybe factor out path from Scope? Or always return path?
+        $defaultExpected = [
+            new Scope('all', [
+                new Scope('foo', [], false, ['all']),
+                new Scope('bar', [
+                    new Scope('bar1', [], false, ['all', 'bar']),
+                    new Scope('bar2', [], false, ['all', 'bar']),
+                ], false, ['all'])
+            ], false, []),
+            new Scope('johnny', [
+                new Scope('babar', [], false, ['johnny']),
+                new Scope('doofoo', [], false, ['johnny']),
+            ], false, []),
         ];
 
+        $barExpected = [
+            new Scope('all', [
+                new Scope('bar', [
+                    new Scope('bar1'),
+                    new Scope('bar2'),
+                ])
+            ]),
+            new Scope('johnny', [
+                new Scope('babar'),
+            ]),
+        ];
 
         return [
-            [null, $this->scopeHierarchy],
+            [null, $defaultExpected],
             ['xy', []],
             ['bar', $barExpected]
         ];
@@ -74,7 +90,7 @@ class StaticScopeProviderTest extends TestCase
     {
         $provider = new StaticScopeProvider($this->scopeHierarchy, 'all');
 
-        $hierarchy = $provider->getScopeHierarchy($searchString);
+        $hierarchy = $provider->getScopeDisplayHierarchy($searchString);
 
         self::assertEquals($expected, $hierarchy);
     }

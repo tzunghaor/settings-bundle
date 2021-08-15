@@ -72,7 +72,7 @@ class SettingsService
      */
     public function getSection(string $sectionClass, $subject = null)
     {
-        $scope = $this->settingsMetaService->getScope($subject);
+        $scope = $this->settingsMetaService->getScopeName($subject);
 
         return $this->getCacheEntry($sectionClass, $scope)->getObject();
     }

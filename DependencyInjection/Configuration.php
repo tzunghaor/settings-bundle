@@ -16,6 +16,7 @@ class Configuration implements ConfigurationInterface
     public const SCOPE_PROVIDER = 'scope_provider';
     public const SCOPE_NAME = 'name';
     public const SCOPE_CHILDREN = 'children';
+    public const SCOPE_PASSIVE = 'passive';
     public const DEFAULT_SCOPE = 'default_scope';
     public const ENTITY = 'entity';
 
@@ -61,6 +62,9 @@ class Configuration implements ConfigurationInterface
                             ->children()
                                 ->scalarNode(self::SCOPE_NAME)
                                     ->isRequired()
+                                ->end()
+                                ->scalarNode(self::SCOPE_PASSIVE)
+                                    ->info('just for grouping, doesn\'t have own settings')
                                 ->end()
                                 ->variableNode(self::SCOPE_CHILDREN)
                                     ->info('same structure recursively')

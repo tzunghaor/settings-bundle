@@ -58,8 +58,9 @@
     padding-left: 1rem;
 }
 
-.tzunghaor_settings_selector > ul {
-    margin: 0;
+/* the top-level list in the container (scopes can have nested lists) */
+.tzunghaor_settings_list_container > ul {
+    margin: 1rem 0;
     padding-left: 0;
 }
 

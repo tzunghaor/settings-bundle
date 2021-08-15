@@ -1,22 +1,3 @@
-{% macro list(scopes, currentCollection, currentScope, currentSection) %}
-    <ul>
-        {% for scope in scopes %}
-            <li>
-                <a href="{{ tzungsettings_url({
-                    'collection': currentCollection, 'scope': scope.name, 'section': currentSection }) }}"
-                   {% if scope.name == currentScope %} class="tzunghaor_settings_current"{% endif %}
-                    >
-                    {{ scope.name }}
-                </a>
-
-                {% if scope.children is defined %}
-                    {{ _self.list(scope.children, currentCollection, currentScope, currentSection) }}
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
-{% endmacro %}
-
 {% if scopes is not empty  %}
     <div class="tzunghaor_settings_scope_selector tzunghaor_settings_selector">
         <script type="application/json" class="tzunghaor_settings_scope_selector_data">{{
@@ -31,21 +12,8 @@
         <h3>Scopes</h3>
 
         <input class="tzunghaor_settings_scope_search" type="text" />
-        <div class="tzunghaor_settings_scopes_list">
-        {{ _self.list(scopes, currentCollection, currentScope, currentSection) }}
+        <div class="tzunghaor_settings_scopes_list tzunghaor_settings_list_container">
+            {{ include('@TzunghaorSettings/scope_list.html.twig') }}
         </div>
-
-        <template style="display: none" class="tzunghaor_settings_scope_list_template">
-            <ul>
-                %list%
-            </ul>
-        </template>
-
-        <template style="display: none" class="tzunghaor_settings_scope_template">
-            <li>
-                <a href="%url%" class="%if(iscurrent){tzunghaor_settings_current}%">%name%</a>
-                %children%
-            </li>
-        </template>
     </div>
 {% endif %}
