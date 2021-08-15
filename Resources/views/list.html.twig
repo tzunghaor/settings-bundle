@@ -1,0 +1,23 @@
+{% macro list(items, currentName) %}
+    <ul>
+        {% for item in items %}
+            <li>
+                {% if item.url %}
+                    <a href="{{ item.url }}"
+                            {% if item.name == currentName %} class="tzunghaor_settings_current"{% endif %}
+                    >
+                        {{ item.title }}
+                    </a>
+                {% else %}
+                    {{ item.title }}
+                {% endif %}
+
+                {% if item.children is defined and item.children %}
+                    {{ _self.list(item.children, currentName) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{{ _self.list(items, currentName) }}

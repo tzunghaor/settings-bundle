@@ -191,8 +191,7 @@ class SettingsEditorService
     }
 
     /**
-     * Searches scopes matching $searchString and returns an array that contains the expected variables of
-     * scope_list.html.twig
+     * Searches scopes matching $searchString and returns an array that contains the expected variables of list.html.twig
      *
      * @param string $searchString
      * @param SettingSectionAddress $sectionAddress
@@ -213,8 +212,8 @@ class SettingsEditorService
 
         $scopes = $settingsMetaService->getScopeDisplayHierarchy($searchString);
         return [
-            'currentScope' => $sectionAddress->getScope(),
-            'scopes' => $this->prepareTwigScopes($scopes, $sectionAddress, $urlGenerator),
+            'currentName' => $sectionAddress->getScope(),
+            'items' => $this->prepareTwigScopes($scopes, $sectionAddress, $urlGenerator),
         ];
     }
 

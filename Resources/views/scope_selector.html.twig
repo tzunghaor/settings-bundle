@@ -13,7 +13,7 @@
 
         <input class="tzunghaor_settings_scope_search" type="text" />
         <div class="tzunghaor_settings_scopes_list tzunghaor_settings_list_container">
-            {{ include('@TzunghaorSettings/scope_list.html.twig') }}
+            {{ include('@TzunghaorSettings/list.html.twig', { items: scopes, currentName: currentScope }) }}
         </div>
     </div>
 {% endif %}

@@ -3,9 +3,21 @@
 {% block body %}
     <div class="tzunghaor_settings_page">
         <div class="tzunghaor_settings_sidebar">
-            {{ include('@TzunghaorSettings/collection_selector.html.twig') }}
+            {% if collections | length > 1 %}
+                <div class="tzunghaor_settings_collection_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
+                    <h3>Collections</h3>
+                    {{ include('@TzunghaorSettings/list.html.twig', { items: collections, currentName: currentCollection }) }}
+                </div>
+            {% endif %}
+
             {{ include('@TzunghaorSettings/scope_selector.html.twig') }}
-            {{ include('@TzunghaorSettings/section_selector.html.twig') }}
+
+            {% if sections | length > 1 %}
+                <div class="tzunghaor_settings_section_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
+                    <h3>Sections</h3>
+                    {{ include('@TzunghaorSettings/list.html.twig', { items: sections, currentName: currentSection }) }}
+                </div>
+            {% endif %}
         </div>
         {% if form is not null %}
             {{ include('@TzunghaorSettings/setting_editor.html.twig') }}

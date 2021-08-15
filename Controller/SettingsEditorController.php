@@ -117,7 +117,7 @@ class SettingsEditorController
         /** @var SettingsService $settingsService */
         $twigContext = $this->settingsEditorService->getSearchScopeTwigContext($searchString, $sectionAddress, $urlGenerator);
 
-        return new Response($this->twig->render('@TzunghaorSettings/scope_list.html.twig', $twigContext));
+        return new Response($this->twig->render('@TzunghaorSettings/list.html.twig', $twigContext));
     }
 
     /**
