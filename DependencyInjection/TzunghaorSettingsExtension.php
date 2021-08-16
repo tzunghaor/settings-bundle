@@ -142,6 +142,7 @@ class TzunghaorSettingsExtension extends Extension
             $dir = $mappingDef[Configuration::DIR];
             $prefix = $mappingDef[Configuration::PREFIX];
 
+            // find all php file in the configured directory
             $finder = new Finder();
             $finder->in($dir)->name('*.php');
 
@@ -152,8 +153,22 @@ class TzunghaorSettingsExtension extends Extension
 
                 $sectionClass = $prefix . implode('\\', $nameArray);
                 $sectionName = implode('.', $nameArray);
+                // default mapping's name is not prepended to section name
                 if ($mappingName !== $defaultMappingName) {
                     $sectionName = $mappingName . '.' . $sectionName;
+                }
+
+                // abstract classes are not usable as setting sections (but they might be used as parents)
+                try {
+                    $reflectionClass = new \ReflectionClass($sectionClass);
+                } catch (\ReflectionException $e) {
+                    $message = sprintf('Error analysing section class "%s" in mapping "%s"',
+                                       $sectionClass, $mappingName);
+                    throw new \RuntimeException($message, 0, $e);
+                }
+
+                if ($reflectionClass->isAbstract()) {
+                    continue;
                 }
 
                 $sectionClasses[$sectionName] = $sectionClass;

@@ -18,7 +18,6 @@ class AutowiringTest extends KernelTestCase
 
         $testService = self::$container->get(TestService::class);
 
-//        self::assertInstanceOf(BoxSettings::class, $testService->getBoxSettings());
         self::assertInstanceOf(BoxSettings::class, $testService->getBoxSettings('day'));
         self::assertInstanceOf(FunSettings::class, $testService->getFunSettings());
     }

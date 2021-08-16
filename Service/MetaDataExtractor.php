@@ -62,9 +62,20 @@ class MetaDataExtractor
         $sectionTitle = empty($sectionTitle) ? $sectionName : $sectionTitle;
 
         $defaultType = new Type('string');
-        foreach ($reflectionClass->getProperties() as $reflectionProperty) {
+
+        // collect properties, including ancestor classes private properties
+        $currentReflectionClass = $reflectionClass;
+        $reflectionProperties = $currentReflectionClass->getProperties();
+        while ($currentReflectionClass = $currentReflectionClass->getParentClass()) {
+            $reflectionProperties = array_merge($reflectionProperties, $currentReflectionClass->getProperties());
+        }
+        foreach ($reflectionProperties as $reflectionProperty) {
             // extract data type
             $propertyName = $reflectionProperty->getName();
+            // this happens when we meet an inherited public/protected property in the ancestor class again - can skip
+            if (array_key_exists($propertyName, $settingsMetaArray)) {
+                continue;
+            }
 
             $propertyAnnotations = $this->annotationReader->getPropertyAnnotations($reflectionProperty);
 

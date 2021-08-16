@@ -2,8 +2,13 @@
 
 namespace Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings;
 
-
-class FunSettings
+/**
+ * FunYeah
+ *
+ * Description
+ * in two lines
+ */
+class FunSettings extends AbstractBaseSettings
 {
     /**
      * @var string

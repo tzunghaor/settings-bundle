@@ -141,10 +141,17 @@ class SettingsMetaService implements CacheWarmerInterface
      * @return SectionMetaData
      *
      * @throws \Psr\Cache\InvalidArgumentException
+     * @throws SettingsException
      */
     public function getSectionMetaData(string $sectionClass): SectionMetaData
     {
         $sectionsMetaData = $this->getSectionMetaDataArray();
+        if (!isset($sectionsMetaData[$sectionClass])) {
+            $message = sprintf('Unknown setting section class "%s" in collection "%s"',
+                               $sectionClass, $this->collectionName);
+
+            throw new SettingsException($message);
+        }
 
         return $sectionsMetaData[$sectionClass];
     }
@@ -162,7 +169,10 @@ class SettingsMetaService implements CacheWarmerInterface
     public function getSectionMetaDataByName(string $sectionName): SectionMetaData
     {
         if (!isset($this->sectionClasses[$sectionName])) {
-            throw new SettingsException(sprintf('Unknown setting section name "%s"', $sectionName));
+            $message = sprintf('Unknown setting section name "%s" in collection "%s"',
+                               $sectionName, $this->collectionName);
+
+            throw new SettingsException($message);
         }
 
         $sectionClass = $this->sectionClasses[$sectionName];
