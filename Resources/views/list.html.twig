@@ -1,17 +1,16 @@
 {% macro list(items, currentName) %}
     <ul>
         {% for item in items %}
-            <li>
+            <li {% if item.name == currentName %} class="tzunghaor_settings_current"{% endif %}>
                 {% if item.url %}
-                    <a href="{{ item.url }}"
-                            {% if item.name == currentName %} class="tzunghaor_settings_current"{% endif %}
-                    >
+                    <a href="{{ item.url }}" class="tzunghaor_settings_item">
                         {{ item.title }}
                     </a>
                 {% else %}
-                    {{ item.title }}
+                    <span class="tzunghaor_settings_item">
+                        {{ item.title }}
+                    </span>
                 {% endif %}
-
                 {% if item.children is defined and item.children %}
                     {{ _self.list(item.children, currentName) }}
                 {% endif %}

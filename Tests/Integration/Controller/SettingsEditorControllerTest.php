@@ -3,13 +3,13 @@
 namespace Tzunghaor\SettingsBundle\Tests\Integration\Controller;
 
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DomCrawler\Crawler;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 use Tzunghaor\SettingsBundle\Tests\TestProject\Settings\Ui\BoxSettings;
 use Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel;
 
-class SettingsEditorControllerTest extends KernelTestCase
+class SettingsEditorControllerTest extends WebTestCase
 {
     protected static $class = TestKernel::class;
 
@@ -126,8 +126,8 @@ class SettingsEditorControllerTest extends KernelTestCase
      */
     public function testEdit(array $edits, array $expectedSections)
     {
+        $browser = static::createClient();
         self::bootKernel(['environment' => 'test', 'debug' => false]);
-        $browser = new KernelBrowser(self::$kernel);
 
         // test uses temporary in-memory DB, so create tables when booting
         $entityManager = self::$container->get('doctrine')->getManager();
@@ -159,6 +159,144 @@ class SettingsEditorControllerTest extends KernelTestCase
                     sprintf('Unexpected values for "%s" in scope "%s"', $sectionClass, $scope)
                 );
             }
+        }
+    }
+
+    public function searchScopeDataProvider(): array
+    {
+        return [
+            'search empty string' => [
+                [
+                    'collection' => 'default',
+                    'currentScope' => 'root',
+                    'section' => 'foo',
+                    'searchString' => '',
+                    'linkRoute' => 'tzunghaor_settings_edit',
+                ],
+                [
+                    'root' => [
+                        'href' => '/edit/default/root/foo',
+                        'current' => true,
+                        'children' => [
+                            'day' => [
+                                'href' => '/edit/default/day/foo',
+                                'children' => [
+                                    'morning' => [
+                                        'href' => '/edit/default/morning/foo',
+                                    ],
+                                    'afternoon' => [
+                                        'href' => '/edit/default/afternoon/foo',
+                                    ]
+                                ]
+                            ],
+                            'night' => [
+                                'href' => '/edit/default/night/foo',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'search "ni"' => [
+                [
+                    'collection' => 'default',
+                    'currentScope' => 'day',
+                    'section' => 'foo',
+                    'searchString' => 'ni',
+                    'linkRoute' => 'tzunghaor_settings_edit',
+                ],
+                [
+                    'root' => [
+                        // not matching elements that are shown only because of matching child have no href
+                        'children' => [
+                            'day' => [
+                                'current' => true,
+                                'children' => [
+                                    'morning' => [
+                                        'href' => '/edit/default/morning/foo',
+                                    ],
+                                ]
+                            ],
+                            'night' => [
+                                'href' => '/edit/default/night/foo',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'notfound' => [
+                [
+                    'collection' => 'default',
+                    'currentScope' => 'day',
+                    'section' => 'foo',
+                    'searchString' => 'xxxxxx',
+                    'linkRoute' => 'tzunghaor_settings_edit',
+                ],
+                [],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider searchScopeDataProvider
+     *
+     * @param array $content this will be passed in search POST request json-encoded
+     * @param array $expected assertions of returned html
+     */
+    public function testSearchScope(array $content, array $expected): void
+    {
+        $browser = self::createClient();
+        self::bootKernel(['environment' => 'test', 'debug' => false]);
+
+        // though the actual response is only a partial starting with UL element, the crawler embeds it into HTML
+        $crawler = $browser->xmlHttpRequest('post', '/scope-search', [], [], [], json_encode($content));
+
+        $ul = $crawler->filterXPath('//body/ul');
+        self::assertCorrectScopeList($ul, $expected);
+    }
+
+    /**
+     * Asserts that the scope list looks like expected
+     *
+     * @param Crawler $list root node should be an UL
+     * @param array $expected
+     */
+    private static function assertCorrectScopeList(Crawler $list, array $expected)
+    {
+        $i = 0;
+        $liNodes = $list->filterXPath('./ul/li');
+        self::assertEquals(count($expected), $liNodes->count());
+
+        foreach ($expected as $expectedName => $expectations) {
+            $li = $liNodes->eq($i);
+            $class = $li->attr('class') ?? '';
+            echo $class;
+            if ($expectations['current'] ?? false) {
+                self::assertStringContainsString('tzunghaor_settings_current', $class);
+            } else {
+                self::assertStringNotContainsString('tzunghaor_settings_current', $class);
+            }
+
+            $expectedHref = $expectations['href'] ?? null;
+            $links = $li->filterXPath('./li/a');
+            if ($expectedHref) {
+                self::assertEquals(1, $links->count());
+                self::assertEquals($expectedHref, $links->attr('href'));
+                $scopeName = $links->first()->text();
+            } else {
+                self::assertEquals(0, $links->count());
+                $scopeName = $li->filterXPath('./li/span')->text();
+            }
+            self::assertEquals($expectedName, $scopeName);
+
+            $expectedChildren = $expectations['children'] ?? null;
+            $ul = $li->filterXPath('./li/ul');
+            if ($expectedChildren) {
+                self::assertCorrectScopeList($ul, $expectedChildren);
+            } else {
+                self::assertEquals(0, $ul->count());
+            }
+
+            $i++;
         }
     }
 }

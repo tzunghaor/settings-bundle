@@ -64,20 +64,23 @@
     padding-left: 0;
 }
 
-.tzunghaor_settings_selector ul a {
+.tzunghaor_settings_selector .tzunghaor_settings_item {
     display: inline-block;
     box-sizing: border-box;
     width: 100%;
     padding: 0.3rem;
-    color: #114455;
     text-decoration: none;
+}
+
+.tzunghaor_settings_selector a {
+    color: #114455;
 }
 
 .tzunghaor_settings_selector ul a:hover {
     text-decoration: underline;
 }
 
-.tzunghaor_settings_current {
+.tzunghaor_settings_current > .tzunghaor_settings_item {
     background-color: #EEEEEE;
 }
 

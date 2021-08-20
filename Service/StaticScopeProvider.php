@@ -93,13 +93,15 @@ class StaticScopeProvider implements ScopeProviderInterface
 
         foreach ($scopes as $scope) {
             $matchingChildren = $this->buildDisplayHierarchy($searchString, $scope->getChildren());
+            $isMatching = strpos($scope->getName(), $searchString) !== false;
 
             // if neither this scope name, nor any of the children names match, then skip this scope
-            if (empty($matchingChildren) && strpos($scope->getName(), $searchString) === false) {
+            if (empty($matchingChildren) && !$isMatching) {
                 continue;
             }
+            $passive = $scope->isPassive() || !$isMatching;
 
-            $matchingScopes[] = new Scope($scope->getName(), $matchingChildren, $scope->isPassive());
+            $matchingScopes[] = new Scope($scope->getName(), $matchingChildren, $passive);
         }
 
         return $matchingScopes;

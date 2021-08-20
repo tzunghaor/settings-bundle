@@ -70,16 +70,19 @@ class StaticScopeProviderTest extends TestCase
                     new Scope('bar1'),
                     new Scope('bar2'),
                 ])
-            ]),
+            ], true),
             new Scope('johnny', [
                 new Scope('babar'),
-            ]),
+            ], true),
         ];
 
         return [
-            [null, $defaultExpected],
-            ['xy', []],
-            ['bar', $barExpected]
+            // no search => return all
+            'all scopes' => [null, $defaultExpected],
+            // no matching scope => empty list
+            'search not found' => ['xy', []],
+            // matching "bar"
+            'search "bar"' => ['bar', $barExpected]
         ];
     }
 

@@ -321,9 +321,12 @@ class SettingsEditorService
                 $children = $this->prepareTwigScopes($children, $sectionAddress, $urlGenerator);
             }
 
-            $isGranted = $this->authorizationChecker === null ||
-                $this->authorizationChecker->isGranted('edit', $voterSubject);
-            if ($isGranted) {
+            $needsLink = !$scope->isPassive() && (
+                    $this->authorizationChecker === null ||
+                    $this->authorizationChecker->isGranted('edit', $voterSubject)
+                )
+            ;
+            if ($needsLink) {
                 $url = $urlGenerator([
                     'collection' => $sectionAddress->getCollectionName(),
                     'section' => $sectionAddress->getSectionName(),
