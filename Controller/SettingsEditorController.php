@@ -67,6 +67,7 @@ class SettingsEditorController
     {
         $route = $request->attributes->get('_route');
         $fixedParameters = $request->attributes->get('fixedParameters', []);
+        $template = $request->attributes->get('template', '@TzunghaorSettings/editor_page.html.twig');
         $urlGenerator = $this->createUrlGenerator($route, $fixedParameters);
         $sectionAddress = $this->settingsEditorService->createSectionAddress($section, $scope, $collection);
 
@@ -87,7 +88,7 @@ class SettingsEditorController
 
         $twigContext = $this->settingsEditorService->getTwigContext($sectionAddress, $urlGenerator, $form, $route, $fixedParameters);
 
-        return new Response($this->twig->render('@TzunghaorSettings/editor_page.html.twig', $twigContext));
+        return new Response($this->twig->render($template, $twigContext));
     }
 
     /**

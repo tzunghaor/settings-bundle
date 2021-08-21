@@ -1,0 +1,63 @@
+{# Contains all the built-in blocks of the editor page #}
+{% block ts_body %}
+    <div class="tzunghaor_settings_page">
+        {% block ts_sidebar %}
+        <div class="tzunghaor_settings_sidebar">
+            {% block ts_collection_selector %}
+                {% if collections | length > 1 %}
+                    <div class="tzunghaor_settings_collection_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
+                        <h3>Collections</h3>
+                        {{ include('@TzunghaorSettings/list.html.twig', { items: collections, currentName: currentCollection }) }}
+                    </div>
+                {% endif %}
+            {% endblock ts_collection_selector %}
+
+            {% block ts_scope_selector %}
+                {% if scopes is not empty  %}
+                    <div class="tzunghaor_settings_scope_selector tzunghaor_settings_selector">
+                        <script type="application/json" class="tzunghaor_settings_scope_selector_data">{{
+                            {
+                                'searchUrl': url('tzunghaor_settings_scope_search'),
+                                'linkRoute': linkRoute,
+                                'collection': currentCollection,
+                                'section': currentSection,
+                                'currentScope': currentScope,
+                            } | json_encode | raw }}</script>
+
+                        <h3>Scopes</h3>
+
+                        <input class="tzunghaor_settings_scope_search" type="text" />
+                        <div class="tzunghaor_settings_scopes_list tzunghaor_settings_list_container">
+                            {{ include('@TzunghaorSettings/list.html.twig', { items: scopes, currentName: currentScope }) }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endblock ts_scope_selector %}
+
+            {% block ts_section_selector %}
+                {% if sections | length > 1 %}
+                    <div class="tzunghaor_settings_section_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
+                        <h3>Sections</h3>
+                        {{ include('@TzunghaorSettings/list.html.twig', { items: sections, currentName: currentSection }) }}
+                    </div>
+                {% endif %}
+            {% endblock ts_section_selector %}
+        </div>
+        {% endblock ts_sidebar %}
+
+
+        {% block ts_setting_form %}
+            {% if form is not null %}
+                {{ include('@TzunghaorSettings/setting_form.html.twig') }}
+            {% endif %}
+        {% endblock ts_setting_form %}
+    </div>
+{% endblock %}
+
+{% block ts_stylesheets %}
+    <link rel="stylesheet" href="{{ asset('bundles/tzunghaorsettings/css/tzunghaorsettings.css') }}" />
+{% endblock %}
+
+{% block ts_javascripts %}
+    <script type="application/javascript" src="{{ asset('bundles/tzunghaorsettings/js/tzunghaorsettings.js') }}"></script>
+{% endblock %}
