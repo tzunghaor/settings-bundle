@@ -22,6 +22,8 @@
                 <directory>Tests</directory>
                 <directory>var</directory>
                 <directory>vendor</directory>
+                <directory>Entity</directory>
+                <directory>Exception</directory>
             </exclude>
         </whitelist>
     </filter>
