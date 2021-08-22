@@ -279,6 +279,11 @@ class SettingsService
         $convertedValues = [];
 
         foreach ($persistedValues as $settingName => $persistedValue) {
+            if (!array_key_exists($settingName, $settingMetaArray)) {
+                // maybe an old setting still in DB
+                continue;
+            }
+
             $type = $settingMetaArray[$settingName]->getDataType();
             foreach ($this->dataConverters as $dataConverter) {
                 if ($dataConverter->supports($type)) {

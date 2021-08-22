@@ -13,7 +13,7 @@
         <div class="tzunghaor_setting_group">
             {{ form_row(form['in_scope'][settingName]) }}
             <div class="tzunghaor_setting_value">
-                <div class="tzunghaor_setting_labeled_widget tzunghaor_current_scope">
+                <div class="tzunghaor_setting_labeled_widget tzunghaor_current_scope" >
                     {{ form_label(formField) }}
                     {{ form_widget(formField) }}
                 </div>
@@ -31,5 +31,8 @@
         </div>
     {% endfor %}
     <button type="submit">Save</button>
+
+    <template class="tzunghaor_setting_add_button"><button type="button">Add</button></template>
+    <template class="tzunghaor_setting_remove_button"><button type="button">X</button></template>
     {{ form_end(form) }}
 </div>

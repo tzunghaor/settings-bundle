@@ -32,11 +32,25 @@
 .tzunghaor_setting_labeled_widget {
     display: flex;
     align-items: start;
+    flex-direction: column;
 }
 
 .tzunghaor_setting_labeled_widget > label {
     padding-right: 1rem;
     font-weight: bold;
+}
+
+.tzunghaor_settings_collection_row {
+    display: flex;
+    align-items: baseline;
+}
+
+.tzunghaor_settings_collection_row > * {
+    margin: 0.5rem 0.3rem;
+}
+
+.tzunghaor_settings_collection_row > *:first-child {
+    margin-left: 0;
 }
 
 .tzunghaor_settings_page {

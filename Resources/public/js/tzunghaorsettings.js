@@ -90,6 +90,54 @@ document.addEventListener('DOMContentLoaded', () => {
         setFormElementsEnabled(valueElement.querySelector('.tzunghaor_parent_scope'), false);
     }
 
+    // javascript for CollectionType
+    /**
+     * Adds a remove button based on template to the element
+     * @param element
+     */
+    const addRemoveButton = function(element) {
+        const removeButton = element.closest('form')
+            .querySelector('template.tzunghaor_setting_remove_button')
+            .content.firstElementChild.cloneNode(true);
+        removeButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            onValueChanged(event);
+            element.remove();
+        });
+        element.appendChild(removeButton);
+    };
+
+    // Iterate through all collection type settings
+    for (const collectionElement of document.querySelectorAll('.tzunghaor_current_scope [data-prototype]')) {
+        // index will be used to generate unique names when user clicks "add" button
+        let index = 0;
+        for (const collectionRow of collectionElement.querySelectorAll('.tzunghaor_settings_collection_row')) {
+            addRemoveButton(collectionRow);
+            index ++;
+        }
+
+        // create "add" button based on template
+        const addButton = collectionElement.closest('form')
+            .querySelector('template.tzunghaor_setting_add_button')
+            .content.firstElementChild.cloneNode(true);
+
+        addButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            onValueChanged(event);
+            const div = document.createElement('div');
+            const template = collectionElement.dataset.prototype;
+            div.innerHTML = template.replace(/__name__/g, collectionElement.dataset.index);
+            collectionElement.dataset.index ++;
+
+            const newRow = div.firstChild;
+            collectionElement.insertBefore(newRow, addButton);
+            addRemoveButton(newRow);
+
+        });
+        collectionElement.appendChild(addButton);
+        collectionElement.dataset.index = index;
+    }
+
     /**
      * Sends POST request. Request is expected to be an JSON encoded object
      *

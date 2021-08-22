@@ -6,6 +6,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 
 use Doctrine\Common\Annotations\Reader;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -83,12 +84,14 @@ class MetaDataExtractor
             $settingHelp = null;
             $dataType = null;
             $formType = null;
+            $formEntryType = null;
             $formOptions = [];
             $isEnum = false;
 
             foreach ($propertyAnnotations as $annotation) {
                 if ($annotation instanceof Setting) {
                     $formType = $annotation->formType;
+                    $formEntryType = $annotation->formEntryType;
                     $formOptions = $annotation->formOptions ?? $formOptions;
                     if (is_array($annotation->enum)) {
                         $formType = $formType ?? ChoiceType::class;
@@ -124,11 +127,16 @@ class MetaDataExtractor
                 (string) $this->propertyInfo->getLongDescription($sectionClass, $propertyName);
             $settingLabel = empty($settingLabel) ? $propertyName : $settingLabel;
 
+            $formType = $formType ?? $this->getFormTypeByDataType($dataType);
+
+            if ($formType === CollectionType::class) {
+                $formOptions = $this->getCollectionFormOptions($dataType, $formEntryType, $formOptions);
+            }
 
             $settingsMetaArray[$propertyName] = new SettingMetaData(
                 $propertyName,
                 $dataType,
-                $formType ?? $this->getFormTypByDataType($dataType),
+                $formType,
                 $formOptions,
                 $settingLabel,
                 $settingHelp
@@ -139,13 +147,25 @@ class MetaDataExtractor
     }
 
     /**
-     * Returns the default form type to be used for the given data type
+     * Returns the default form type to be used for the given data type.
      *
      * @param Type $dataType
      *
      * @return string FQCN of form type
      */
-    private function getFormTypByDataType(Type $dataType): string
+    private function getFormTypeByDataType(Type $dataType): string
+    {
+        return $dataType->isCollection() ? CollectionType::class : $this->getBaseFormTypeByDataType($dataType);
+    }
+
+    /**
+     * Returns the default base form type (entry type in case of collection) to be used for the given data type
+     *
+     * @param Type $dataType
+     *
+     * @return string FQCN of form type
+     */
+    private function getBaseFormTypeByDataType(Type $dataType): string
     {
         switch ($dataType->getClassName()) {
             case \DateTime::class:
@@ -165,6 +185,29 @@ class MetaDataExtractor
             default:
                 return TextType::class;
         }
+    }
+
+    /**
+     * Adds form options needed by collection type
+     *
+     * @param Type $dataType datatype of setting
+     * @param string|null $formEntryType explicitly configured form entry type
+     * @param array $formOptions form options so far - these values won't be overwritten
+     *
+     * @return array form options enriched with options for collection type
+     */
+    private function getCollectionFormOptions(Type $dataType, ?string $formEntryType, array& $formOptions): array
+    {
+        $formEntryType = $formEntryType ?? $this->getBaseFormTypeByDataType($dataType);
+
+        $collectionFormOptions = [
+            'allow_add' => true,
+            'allow_delete' => true,
+            'entry_type' => $formEntryType,
+            'entry_options' => ['label' => false, 'row_attr' => ['class' => 'tzunghaor_settings_collection_row']],
+        ];
+
+        return array_merge($collectionFormOptions, $formOptions);
     }
 
     /**

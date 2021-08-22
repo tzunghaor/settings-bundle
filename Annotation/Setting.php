@@ -40,6 +40,12 @@ class Setting
     public $formType;
 
     /**
+     * @var string FQCN of a form type (which implements FormTypeInterface)
+     *             If the setting is a collection, then this will be used in the editor for each setting entry
+     */
+    public $formEntryType;
+
+    /**
      * @var array options to be passed to the form element of this setting in the setting editor
      */
     public $formOptions;
