@@ -17,7 +17,7 @@
                     <div class="tzunghaor_settings_scope_selector tzunghaor_settings_selector">
                         <script type="application/json" class="tzunghaor_settings_scope_selector_data">{{
                             {
-                                'searchUrl': url('tzunghaor_settings_scope_search'),
+                                'searchUrl': searchUrl,
                                 'linkRoute': linkRoute,
                                 'collection': currentCollection,
                                 'section': currentSection,
@@ -26,7 +26,9 @@
 
                         <h3>Scopes</h3>
 
-                        <input class="tzunghaor_settings_scope_search" type="text" />
+                        {% if searchUrl is defined and searchUrl is not null %}
+                            <input class="tzunghaor_settings_scope_search" type="text" />
+                        {% endif %}
                         <div class="tzunghaor_settings_scopes_list tzunghaor_settings_list_container">
                             {{ include('@TzunghaorSettings/list.html.twig', { items: scopes, currentName: currentScope }) }}
                         </div>

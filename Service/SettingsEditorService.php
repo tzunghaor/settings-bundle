@@ -145,6 +145,7 @@ class SettingsEditorService
      * @param SettingSectionAddress $sectionAddress
      * @param callable $urlGenerator function([$routeParam1, ...]) => $url
      * @param FormInterface $form
+     * @param string|null $searchUrl url of scope search ajax call, null if that functionality should be disabled
      * @param string|null $route name of editor route
      * @param array $fixedParameters these route parameters cannot be changed for this route
      *
@@ -156,6 +157,7 @@ class SettingsEditorService
         SettingSectionAddress $sectionAddress,
         callable $urlGenerator,
         ?FormInterface $form,
+        ?string $searchUrl,
         ?string $route = '',
         array $fixedParameters = []
     ): array {
@@ -193,6 +195,7 @@ class SettingsEditorService
             'currentSection' => $currentSection,
             'form' => $form === null ? null : $form->createView(),
             'linkRoute' => $route,
+            'searchUrl' => $searchUrl,
         ];
     }
 

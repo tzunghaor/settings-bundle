@@ -67,6 +67,8 @@ class SettingsEditorController
     {
         $route = $request->attributes->get('_route');
         $fixedParameters = $request->attributes->get('fixedParameters', []);
+        $searchRoute = $request->attributes->get('searchRoute', 'tzunghaor_settings_scope_search');
+        $searchUrl = empty($searchRoute) ? null : $this->router->generate($searchRoute);
         $template = $request->attributes->get('template', '@TzunghaorSettings/editor_page.html.twig');
         $urlGenerator = $this->createUrlGenerator($route, $fixedParameters);
         $sectionAddress = $this->settingsEditorService->createSectionAddress($section, $scope, $collection);
@@ -86,7 +88,8 @@ class SettingsEditorController
             }
         }
 
-        $twigContext = $this->settingsEditorService->getTwigContext($sectionAddress, $urlGenerator, $form, $route, $fixedParameters);
+        $twigContext = $this->settingsEditorService->getTwigContext($sectionAddress, $urlGenerator, $form,
+                                                                    $searchUrl, $route, $fixedParameters);
 
         return new Response($this->twig->render($template, $twigContext));
     }
