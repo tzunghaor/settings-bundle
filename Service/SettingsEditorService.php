@@ -18,13 +18,17 @@ use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 class SettingsEditorService
 {
     /**
-     * @var FormFactoryInterface
-     */
-    private $formFactory;
-    /**
      * @var ServiceLocator
      */
     private $settingsServiceLocator;
+    /**
+     * @var ServiceLocator
+     */
+    private $settingsMetaServiceLocator;
+    /**
+     * @var FormFactoryInterface
+     */
+    private $formFactory;
     /**
      * @var string
      */
@@ -36,11 +40,13 @@ class SettingsEditorService
 
     public function __construct(
         ServiceLocator $settingsServiceLocator,
+        ServiceLocator $settingsMetaServiceLocator,
         FormFactoryInterface $formFactory,
         string $defaultCollectionName
     ) {
-        $this->formFactory = $formFactory;
         $this->settingsServiceLocator = $settingsServiceLocator;
+        $this->settingsMetaServiceLocator = $settingsMetaServiceLocator;
+        $this->formFactory = $formFactory;
         $this->defaultCollectionName = $defaultCollectionName;
     }
 
@@ -76,9 +82,9 @@ class SettingsEditorService
         $collectionName = $collectionName ?? $this->defaultCollectionName;
         if ($scope === null) {
             // get default scope
-            /** @var SettingsService $settingsService */
-            $settingsService = $this->settingsServiceLocator->get($collectionName);
-            $scope = $settingsService->getSettingsMetaService()->getScopeName(null);
+            /** @var SettingsMetaService $settingsMetaService */
+            $settingsMetaService = $this->settingsMetaServiceLocator->get($collectionName);
+            $scope = $settingsMetaService->getScopeName(null);
         }
 
         return new SettingSectionAddress($collectionName, $scope, $sectionName);
@@ -101,7 +107,8 @@ class SettingsEditorService
 
         /** @var SettingsService $settingsService */
         $settingsService = $this->settingsServiceLocator->get($sectionAddress->getCollectionName());
-        $settingsMetaService = $settingsService->getSettingsMetaService();
+        /** @var SettingsMetaService $settingsMetaService */
+        $settingsMetaService = $this->settingsMetaServiceLocator->get($sectionAddress->getCollectionName());
         $scope = $sectionAddress->getScope();
 
         $sectionMeta = $settingsMetaService->getSectionMetaDataByName($sectionAddress->getSectionName());
@@ -156,9 +163,8 @@ class SettingsEditorService
         $currentScope = $sectionAddress->getScope();
         $currentSection = $sectionAddress->getSectionName();
 
-        /** @var SettingsService $settingsService */
-        $settingsService = $this->settingsServiceLocator->get($currentCollection);
-        $settingsMetaService = $settingsService->getSettingsMetaService();
+        /** @var SettingsMetaService $settingsMetaService */
+        $settingsMetaService = $this->settingsMetaServiceLocator->get($currentCollection);
 
         $collections = [];
         if (!in_array('collection', $fixedParameters, true)) {
@@ -206,9 +212,8 @@ class SettingsEditorService
     ): array {
         $currentCollection = $sectionAddress->getCollectionName();
 
-        /** @var SettingsService $settingsService */
-        $settingsService = $this->settingsServiceLocator->get($currentCollection);
-        $settingsMetaService = $settingsService->getSettingsMetaService();
+        /** @var SettingsMetaService $settingsMetaService */
+        $settingsMetaService = $this->settingsMetaServiceLocator->get($currentCollection);
 
         $scopes = $settingsMetaService->getScopeDisplayHierarchy($searchString);
         return [
@@ -375,7 +380,8 @@ class SettingsEditorService
 
         /** @var SettingsService $settingsService */
         $settingsService = $this->settingsServiceLocator->get($collectionName);
-        $settingsMetaService = $settingsService->getSettingsMetaService();
+        /** @var SettingsMetaService $settingsMetaService */
+        $settingsMetaService = $this->settingsMetaServiceLocator->get($collectionName);
 
         $sectionMeta = $settingsMetaService->getSectionMetaDataByName($sectionName);
         $settingMetaArray = $sectionMeta->getSettingMetaDataArray();

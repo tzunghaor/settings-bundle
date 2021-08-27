@@ -51,14 +51,6 @@ class SettingsService
     }
 
     /**
-     * @return SettingsMetaService
-     */
-    public function getSettingsMetaService(): SettingsMetaService
-    {
-        return $this->settingsMetaService;
-    }
-
-    /**
      * Retrieves the setting section object filled with values for the given scope
      *
      * @param string $sectionClass

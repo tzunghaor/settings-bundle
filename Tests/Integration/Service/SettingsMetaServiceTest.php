@@ -8,9 +8,9 @@ use Symfony\Component\PropertyInfo\Type;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
-use Tzunghaor\SettingsBundle\Service\SettingsService;
 use Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\AbstractBaseSettings;
 use Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\FunSettings;
+use Tzunghaor\SettingsBundle\Tests\TestProject\Service\TestService;
 use Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel;
 
 class SettingsMetaServiceTest extends KernelTestCase
@@ -21,10 +21,8 @@ class SettingsMetaServiceTest extends KernelTestCase
     {
         self::bootKernel(['environment' => 'test', 'debug' => false]);
 
-        // getting the meta-service via the settings service, since that is designed to be accessible
-        /** @var SettingsService $settingsService */
-        $settingsService = self::$container->get('tzunghaor_settings.settings_service.other');
-        $metaService = $settingsService->getSettingsMetaService();
+        $testService = self::$container->get(TestService::class);
+        $metaService = $testService->getSettingsMetaService('other');
 
         $metaData = $metaService->getSectionMetaData(FunSettings::class);
 
@@ -75,9 +73,8 @@ class SettingsMetaServiceTest extends KernelTestCase
     {
         self::bootKernel(['environment' => 'test', 'debug' => false]);
 
-        /** @var SettingsService $settingsService */
-        $settingsService = self::$container->get('tzunghaor_settings.settings_service.' . $collection);
-        $metaService = $settingsService->getSettingsMetaService();
+        $testService = self::$container->get(TestService::class);
+        $metaService = $testService->getSettingsMetaService($collection);
 
         $this->expectException(SettingsException::class);
         if ($which === 'name') {

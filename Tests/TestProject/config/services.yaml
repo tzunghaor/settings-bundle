@@ -7,3 +7,5 @@ services:
   Tzunghaor\SettingsBundle\Tests\TestProject\Service\TestService:
     autowire: true
     public: true
+    arguments:
+      $settingsMetaServiceLocator: !tagged_locator { tag: 'tzunghaor_settings.settings_meta_service', index_by: 'key' }

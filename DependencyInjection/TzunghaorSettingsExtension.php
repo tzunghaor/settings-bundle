@@ -78,6 +78,7 @@ class TzunghaorSettingsExtension extends Extension
         }
 
         $settingsServiceDefinition->addTag('tzunghaor_settings.settings_service', ['key' => $name]);
+        $settingsMetaServiceDefinition->addTag('tzunghaor_settings.settings_meta_service', ['key' => $name]);
 
         $settingsMetaServiceDefinition->replaceArgument('$collectionName', $name);
         $settingsMetaServiceDefinition->replaceArgument(

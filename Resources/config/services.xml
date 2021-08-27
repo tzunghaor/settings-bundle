@@ -35,6 +35,7 @@
         <service id="tzunghaor_settings.settings_editor_service"
                  class="Tzunghaor\SettingsBundle\Service\SettingsEditorService">
             <argument key="$settingsServiceLocator" type="tagged_locator" tag="tzunghaor_settings.settings_service" index-by="key"/>
+            <argument key="$settingsMetaServiceLocator" type="tagged_locator" tag="tzunghaor_settings.settings_meta_service" index-by="key"/>
             <argument key="$formFactory" type="service" id="form.factory"/>
             <argument key="$defaultCollectionName">%tzunghaor_settings.default_collection%</argument>
             <call method="setAuthorizationChecker">
