@@ -1,0 +1,16 @@
+tzunghaor_settings:
+  resource: '../../../Resources/config/routes.xml'
+  prefix: '/settings'
+
+other_edit_single_subject:
+  path: /edit-other-subject/{section}
+  controller: 'tzunghaor_settings.editor_controller::edit'
+  defaults:
+    collection: other
+    scope: ~ # used by editor - if null, then the default determined by OtherScopeProvider will be used
+    section: FunSettings
+    fixedParameters: [collection, scope]
+
+other_test:
+  path: /other-test
+  controller: 'app.test_controller::other'

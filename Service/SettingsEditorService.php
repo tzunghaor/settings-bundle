@@ -364,29 +364,28 @@ class SettingsEditorService
      * Saves the form data to database
      *
      * @param array $formData of SettingsEditorType
-     * @param string $sectionName
-     * @param string $scope
-     * @param string|null $collectionName if null then default collection is used
-     *
-     * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
+     * @param SettingSectionAddress $sectionAddress must be complete address
      * @throws \Psr\Cache\InvalidArgumentException
+     * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
      */
-    public function save(array $formData, string $sectionName, string $scope, ?string $collectionName = null): void
+    public function save(array $formData, SettingSectionAddress $sectionAddress): void
     {
-        $collectionName = $collectionName ?? $this->defaultCollectionName;
+        if (!$sectionAddress->isComplete()) {
+            throw new \InvalidArgumentException('$sectionAddress must be complete');
+        }
+
         if ($this->authorizationChecker !== null) {
-            $subject = new SettingSectionAddress($collectionName, $scope, $sectionName);
-            if (!$this->authorizationChecker->isGranted('edit', $subject)) {
+            if (!$this->authorizationChecker->isGranted('edit', $sectionAddress)) {
                 throw new \RuntimeException('Not allowed to edit these settings.');
             }
         }
 
         /** @var SettingsService $settingsService */
-        $settingsService = $this->settingsServiceLocator->get($collectionName);
+        $settingsService = $this->settingsServiceLocator->get($sectionAddress->getCollectionName());
         /** @var SettingsMetaService $settingsMetaService */
-        $settingsMetaService = $this->settingsMetaServiceLocator->get($collectionName);
+        $settingsMetaService = $this->settingsMetaServiceLocator->get($sectionAddress->getCollectionName());
 
-        $sectionMeta = $settingsMetaService->getSectionMetaDataByName($sectionName);
+        $sectionMeta = $settingsMetaService->getSectionMetaDataByName($sectionAddress->getSectionName());
         $settingMetaArray = $sectionMeta->getSettingMetaDataArray();
 
         $sectionObject = $formData[SettingsEditorType::DATA_SETTINGS];
@@ -404,6 +403,6 @@ class SettingsEditorService
             $values[$settingName] = $propertyAccessor->getValue($sectionObject, $settingName);
         }
 
-        $settingsService->save($sectionMeta->getDataClass(), $scope, $values);
+        $settingsService->save($sectionMeta->getDataClass(), $sectionAddress->getScope(), $values);
     }
 }

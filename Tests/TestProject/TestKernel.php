@@ -18,7 +18,7 @@ class TestKernel extends Kernel
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->import(__DIR__ . '/../../Resources/config/routes.xml');
+        $routes->import(__DIR__ . '/config/routes.yaml');
     }
 
     protected function configureContainer(ContainerConfigurator $c): void
@@ -27,7 +27,7 @@ class TestKernel extends Kernel
         $c->import(__DIR__.'/../../vendor/symfony/framework-bundle/Resources/config/test.php');
 
         // test app config
-        $c->import(__DIR__.'/config/*.yaml');
+        $c->import(__DIR__.'/config/services*.yaml');
         $c->import(__DIR__.'/config/packages/*.yaml');
     }
 }

@@ -52,4 +52,12 @@ class SettingSectionAddress
     {
         return $this->sectionName;
     }
+
+    /**
+     * @return bool true if all parts of the address are filled
+     */
+    public function isComplete(): bool
+    {
+        return $this->collectionName !== null && $this->scope !== null && $this->sectionName !== null;
+    }
 }

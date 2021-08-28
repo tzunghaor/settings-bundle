@@ -10,6 +10,11 @@ doctrine:
     auto_mapping: true
     mappings:
       Tzunghaor\SettingsBundle:
-          type: annotation
-          dir: '%kernel.project_dir%/../../Entity'
-          prefix: 'Tzunghaor\SettingsBundle\Entity'
+        type: annotation
+        dir: '%kernel.project_dir%/../../Entity'
+        prefix: 'Tzunghaor\SettingsBundle\Entity'
+
+      TestProject:
+        type: annotation
+        dir: '%kernel.project_dir%/Entity'
+        prefix: 'Tzunghaor\SettingsBundle\Tests\TestProject\Entity'

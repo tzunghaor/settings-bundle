@@ -80,7 +80,7 @@ class SettingsEditorController
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
-                $this->settingsEditorService->save($form->getData(), $section, $scope, $collection);
+                $this->settingsEditorService->save($form->getData(), $sectionAddress);
                 $routeParameters = ['collection' => $collection, 'section' => $section, 'scope' => $scope];
                 $uri = $urlGenerator($routeParameters);
 

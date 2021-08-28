@@ -1,11 +1,28 @@
 services:
+  _defaults:
+    autowire: true
+
   Tzunghaor\SettingsBundle\Tests\TestProject\TestHelperTwigExtension:
     class: Tzunghaor\SettingsBundle\Tests\TestProject\TestHelperTwigExtension
     tags:
       - twig.extension
 
   Tzunghaor\SettingsBundle\Tests\TestProject\Service\TestService:
-    autowire: true
     public: true
     arguments:
       $settingsMetaServiceLocator: !tagged_locator { tag: 'tzunghaor_settings.settings_meta_service', index_by: 'key' }
+
+  Tzunghaor\SettingsBundle\Tests\TestProject\Service\OtherScopeProvider: ~
+
+  app.test_controller:
+    class: Tzunghaor\SettingsBundle\Tests\TestProject\Controller\TestController
+    tags: ['controller.service_arguments']
+
+  Tzunghaor\SettingsBundle\Tests\TestProject\EventListener\DoctrineListener:
+    tags:
+      - name: 'doctrine.event_listener'
+        event: 'prePersist'
+
+  test_other_cache:
+    public: true
+    class: Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter

@@ -2,10 +2,16 @@
 
 namespace Tzunghaor\SettingsBundle\Tests\Integration\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Contracts\Cache\CacheInterface;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
+use Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherPersistedSetting;
+use Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherSubject;
 use Tzunghaor\SettingsBundle\Tests\TestProject\Settings\Ui\BoxSettings;
 use Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel;
 
@@ -22,7 +28,7 @@ class SettingsEditorControllerTest extends WebTestCase
         $cases['day'] = [
             'edits' => [
                 [
-                    'uri' => '/edit/default/day/Ui.BoxSettings',
+                    'uri' => '/settings/edit/default/day/Ui.BoxSettings',
                     'formEdits' => [
                         // set value for "margin" but not the "in_scope" radio button => it should not be saved
                         'settings_editor' => [
@@ -57,7 +63,7 @@ class SettingsEditorControllerTest extends WebTestCase
             'edits' => [
                 // first set margin and borders in root
                 [
-                    'uri' => '/edit/default/root/Ui.BoxSettings',
+                    'uri' => '/settings/edit/default/root/Ui.BoxSettings',
                     'formEdits' => [
                         'settings_editor' => [
                             'settings' => ['padding' => 12, 'margin' => 14],
@@ -70,7 +76,7 @@ class SettingsEditorControllerTest extends WebTestCase
 
                 // then set custom margin and borders in the lower level 'day'
                 [
-                    'uri' => '/edit/default/day/Ui.BoxSettings',
+                    'uri' => '/settings/edit/default/day/Ui.BoxSettings',
                     'formEdits' => [
                         'settings_editor' => [
                             'settings' => ['padding' => 0, 'margin' => 22],
@@ -83,7 +89,7 @@ class SettingsEditorControllerTest extends WebTestCase
 
                 // and last unset margin but set padding and different borders in root
                 [
-                    'uri' => '/edit/default/root/Ui.BoxSettings',
+                    'uri' => '/settings/edit/default/root/Ui.BoxSettings',
                     'formEdits' => [
                         'settings_editor' => [
                             'settings' => ['padding' => 8, 'margin' => 62],
@@ -128,25 +134,8 @@ class SettingsEditorControllerTest extends WebTestCase
     {
         $browser = static::createClient();
         self::bootKernel(['environment' => 'test', 'debug' => false]);
-
-        // test uses temporary in-memory DB, so create tables when booting
-        $entityManager = self::$container->get('doctrine')->getManager();
-
-        $allMetadata = $entityManager->getMetadataFactory()->getAllMetadata();
-        $schemaTool = new SchemaTool($entityManager);
-        $schemaTool->dropSchema($allMetadata);
-        $schemaTool->updateSchema($allMetadata);
-
-        foreach ($edits as $edit) {
-            $crawler = $browser->request('get', $edit['uri']);
-            $form = $crawler->selectButton('Save')->form();
-
-            foreach ($edit['formEdits'] as $field => $value) {
-                $form[$field] = $value;
-            }
-
-            $browser->submit($form);
-        }
+        $this->setUpDatabase();
+        $this->doEdits($browser, $edits);
 
         /** @var SettingsService $settingsService */
         $settingsService = self::$container->get('tzunghaor_settings.settings_service');
@@ -162,6 +151,117 @@ class SettingsEditorControllerTest extends WebTestCase
         }
     }
 
+    /**
+     * Testing custom scope provider, custom entity and custom cache
+     */
+    public function testCustomRoutes(): void
+    {
+        $browser = static::createClient();
+        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $this->setUpDatabase();
+
+        /** @var AdapterInterface $cache */
+        $cache = self::$container->get('test_other_cache');
+        $cache->clear();
+
+        self::assertNull($this->getJoeFunCachedItem(), 'test should have emptied TestProject cache');
+
+
+        // OtherScopeProvider uses request's "scopeSubject" as default scope
+        // Set FunSettings.name for joe user and foo group, and SadSettings.name for user axolotl
+        $edits = [
+            [
+                'uri' => '/edit-other-subject/FunSettings?scopeSubject=name-joe&extra=extra-joe',
+                'formEdits' => [
+                    'settings_editor' => [
+                        'settings' => ['name' => 'fun-joe'],
+                        'in_scope' => ['name' => 1],
+                    ],
+                ],
+            ],
+            [
+                'uri' => '/edit-other-subject/FunSettings?scopeSubject=group-foo&extra=lightning',
+                'formEdits' => [
+                    'settings_editor' => [
+                        'settings' => ['name' => 'fun-foo'],
+                        'in_scope' => ['name' => 1],
+                    ],
+                ],
+            ],
+            [
+                'uri' => '/edit-other-subject/SadSettings?scopeSubject=name-axolotl',
+                'formEdits' => [
+                    'settings_editor' => [
+                        'settings' => ['name' => 'sad-axolotl'],
+                        'in_scope' => ['name' => 1],
+                    ],
+                ],
+            ],
+        ];
+        $this->doEdits($browser, $edits);
+
+        // test correct settings are returned in custom controller
+        $expectedOutputs = [
+            'joe' => 'fun-joe --- baba', // name level fun setting, class default sad setting
+            'bill' => 'fun-foo --- baba', // group level fun setting, class default sad setting
+            'axolotl' => 'baba --- sad-axolotl', // class default fun setting, name level sad setting
+        ];
+
+        foreach ($expectedOutputs as $subjectName => $expectedOutput) {
+            $crawler = $browser->request('get', '/other-test?scopeSubject=name-' . $subjectName);
+
+            self::assertEquals($expectedOutput, $crawler->text());
+        }
+        
+        // check that custom entity is used and "extra" is filled
+        $entityManager = self::$container->get('doctrine')->getManager();
+        
+        $joeEntity = $entityManager->find(OtherPersistedSetting::class, 
+                                          ['scope' => 'name-joe', 'path' => 'FunSettings.name']);
+        self::assertEquals('extra-joe', $joeEntity->getExtra());
+        $fooEntity = $entityManager->find(OtherPersistedSetting::class,
+                                          ['scope' => 'group-foo', 'path' => 'FunSettings.name']);
+        self::assertEquals('lightning', $fooEntity->getExtra());
+
+        // check that custom cache is used
+        self::assertNotNull($this->getJoeFunCachedItem());
+    }
+
+    private function doEdits(KernelBrowser $browser, array $edits): void
+    {
+        foreach ($edits as $edit) {
+            $crawler = $browser->request('get', $edit['uri']);
+            $form = $crawler->selectButton('Save')->form();
+
+            foreach ($edit['formEdits'] as $field => $value) {
+                $form[$field] = $value;
+            }
+
+            $browser->submit($form);
+        }
+    }
+
+    /**
+     * @return mixed null if
+     *
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    private function getJoeFunCachedItem()
+    {
+        /** @var CacheInterface $cache */
+        $cache = self::$container->get('test_other_cache');
+
+        $cacheKey = 'tzunghaor_settings_section.Tzunghaor.SettingsBundle.Tests.TestProject.OtherSettings.FunSettings..name-joe';
+        $cachedItem = $cache->get($cacheKey, function() { return null; });
+
+        if ($cachedItem === null) {
+            // delete the null representing "missing"
+            $cache->delete($cacheKey);
+        }
+
+        return $cachedItem;
+    }
+
     public function searchScopeDataProvider(): array
     {
         return [
@@ -175,22 +275,22 @@ class SettingsEditorControllerTest extends WebTestCase
                 ],
                 [
                     'root' => [
-                        'href' => '/edit/default/root/foo',
+                        'href' => '/settings/edit/default/root/foo',
                         'current' => true,
                         'children' => [
                             'day' => [
-                                'href' => '/edit/default/day/foo',
+                                'href' => '/settings/edit/default/day/foo',
                                 'children' => [
                                     'morning' => [
-                                        'href' => '/edit/default/morning/foo',
+                                        'href' => '/settings/edit/default/morning/foo',
                                     ],
                                     'afternoon' => [
-                                        'href' => '/edit/default/afternoon/foo',
+                                        'href' => '/settings/edit/default/afternoon/foo',
                                     ]
                                 ]
                             ],
                             'night' => [
-                                'href' => '/edit/default/night/foo',
+                                'href' => '/settings/edit/default/night/foo',
                             ],
                         ],
                     ],
@@ -212,12 +312,12 @@ class SettingsEditorControllerTest extends WebTestCase
                                 'current' => true,
                                 'children' => [
                                     'morning' => [
-                                        'href' => '/edit/default/morning/foo',
+                                        'href' => '/settings/edit/default/morning/foo',
                                     ],
                                 ]
                             ],
                             'night' => [
-                                'href' => '/edit/default/night/foo',
+                                'href' => '/settings/edit/default/night/foo',
                             ],
                         ],
                     ],
@@ -248,7 +348,7 @@ class SettingsEditorControllerTest extends WebTestCase
         self::bootKernel(['environment' => 'test', 'debug' => false]);
 
         // though the actual response is only a partial starting with UL element, the crawler embeds it into HTML
-        $crawler = $browser->xmlHttpRequest('post', '/scope-search', [], [], [], json_encode($content));
+        $crawler = $browser->xmlHttpRequest('post', '/settings/scope-search', [], [], [], json_encode($content));
 
         $ul = $crawler->filterXPath('//body/ul');
         self::assertCorrectScopeList($ul, $expected);
@@ -298,5 +398,35 @@ class SettingsEditorControllerTest extends WebTestCase
 
             $i++;
         }
+    }
+
+    private function setUpDatabase(): void
+    {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::$container->get('doctrine')->getManager();
+
+        // drop existing database and build structure
+        $allMetadata = $entityManager->getMetadataFactory()->getAllMetadata();
+        $schemaTool = new SchemaTool($entityManager);
+        $schemaTool->dropSchema($allMetadata);
+        $schemaTool->updateSchema($allMetadata);
+
+        // insert test data
+        $otherSubjectJoe = new OtherSubject();
+        $otherSubjectJoe->setName('joe');
+        $otherSubjectJoe->setGroup('foo');
+        $entityManager->persist($otherSubjectJoe);
+
+        $otherSubjectBill = new OtherSubject();
+        $otherSubjectBill->setName('bill');
+        $otherSubjectBill->setGroup('foo');
+        $entityManager->persist($otherSubjectBill);
+
+        $otherSubjectAxolotl = new OtherSubject();
+        $otherSubjectAxolotl->setName('axolotl');
+        $otherSubjectAxolotl->setGroup('bar');
+        $entityManager->persist($otherSubjectAxolotl);
+
+        $entityManager->flush();
     }
 }
