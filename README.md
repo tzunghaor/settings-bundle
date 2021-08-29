@@ -4,10 +4,12 @@ Tzunghaor Settings Bundle
 ![editor](Resources/doc/editor.png)
 
 * Define your settings as php classes.
-* Settings are stored in database.
-* One record per setting: only one initial migration is needed.
-* GUI to edit settings, customisable in setting definition classes.
-* You can define scopes as a hierarchy tree - child scopes inherit settings.
+* Settings are stored in database in a single table.
+* Bundle provides GUI to edit settings, customisable in setting definition classes.
+* Define your scopes: each scope has its own settings, setting inheritance is supported.
+* You can define multiple collections with different settings/scopes/config. 
+
+You can take a look in the Tests/TestProject for working examples.
 
 
 Installation
@@ -58,10 +60,13 @@ Additional recommended packages
 * **phpdocumentor/reflection-docblock** - with this installed, you have more
     possibilities to define your settings  
 * **symfony/asset** - the setting editor twig template uses asset() - if you
-    don't have it installed, then you have to override __editor_page.html.twig__
+    don't have it installed, then you have to override __editor_page.html.twig__: 
+    see [twig customization](Resources/doc/twig.md)
 * **symfony/validator** - with this you can define validation rules on your
     setting classes that will be used in the setting editor. 
     See [symfony validation](https://symfony.com/doc/current/validation.html).
+* **symfony/security-core** - using this you can create security voters to manage
+    who can edit which settings. See [security voters](Resources/doc/voter.md)
     
 
 Setup
@@ -108,7 +113,7 @@ Defining Setting Classes
 ------------------------
 
 You can define your settings in php classes (I will call such classes as 
-setting sections, or simply as sections), for example create a directory
+setting sections, or simply sections), for example create a directory
 for your settings (e.g. src/Settings), and create a BoxSettings.php in it:
 
 ```php
@@ -136,18 +141,23 @@ sensible default values in your class.
 
 [More about setting classes](Resources/doc/define_section.md)
 
-Then configure where your settings classes are:
+Then tell the bundle where your settings classes are in the config:
 
 ```yaml
 # config/packages/tzunghaor_settings.yaml
 tzunghaor_settings:
-  mappings:
-    default:
-      dir: '%kernel.project_dir%/src/Settings'
-      prefix: App\Settings\
+  # Each entry under "tzunghaor_settings" configures a setting collection.
+  # Use "default" if you define only one collection
+  default:
+    mappings:
+      # I used "default" as mapping name, but it is up to you.
+      # You can have multiple mappings
+      default:
+        dir: '%kernel.project_dir%/src/Settings'
+        prefix: App\Settings\
 ```
 
-That's it, now you can get your settings from the service provided by the bundle. 
+Now you can get your settings from the service provided by the bundle. 
 
 ```php
 use App\Settings\BoxSettings;
@@ -174,8 +184,8 @@ Setting up the editor
 Otherwise you first have to 
 overwrite a twig template: create a new directory in your application 
 **templates/bundles/TzunghaorSettingsBundle**,
-copy **Resources/views/editor_page.html.twig** to there, and modify the copy to
-load the required .js and .css without the `asset()` twig function.
+copy **Resources/views/editor_page.html.twig** to there, remove the "ts_stylesheets"
+and "ts_javascripts" blocks, and use your method to load the .js and .css of the bundle.
 
 Add the route defined by the bundle to your routes:
 
@@ -184,13 +194,16 @@ Add the route defined by the bundle to your routes:
 
 tzunghaor_settings_editor:
   resource: '@TzunghaorSettingsBundle/Resources/config/routes.xml'
-  prefix: '/settings_edit'
+  prefix: '/settings'
 ```
 
-Then go to `https://your.domain/settings_edit/` in your browser.
+Then go to `https://your.domain/settings/edit/` in your browser.
 
 You probably want to set up some firewall rules in your security config for
-this controller.
+this controller, and/or use [security voters](Resources/doc/voter.md).
+
+You can have more control on the editor with route definition, 
+see [routing](Resources/doc/routing.md).
 
 Setting up cache
 ----------------
@@ -220,34 +233,39 @@ then you can use scopes:
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
-  # tag aware cache needed when using nested scopes
-  cache: 'cache.app.taggable'
-  default_scope: day
-  scopes:
-    - name: day
-      children:
-        - name: morning
-        - name: afternoon
-    - name: night
+  default:
+    # tag aware cache needed when using nested scopes
+    cache: 'cache.app.taggable'
+    default_scope: day
+    scopes:
+      - name: day
+        children:
+          - name: morning
+          - name: afternoon
+      - name: night
 ```
 
-The scope names are used in different contexts, therefore it's best to use only
-alphanumeric characters and underscores.
+Use only alphanumeric characters and underscores as scope names.
 
 You can build arbitrary deep hierarchies (child nodes can have children, etc.), 
 but if you use nested scopes (meaning you have at least one "children" node)
 you will need a tag aware cache, 
 see **Symfony\Contracts\Cache\TagAwareCacheInterface**.
 
-The bundle will use **default_scope** for creating dependency injected 
-setting sections. It can be useful to have your webserver to set an 
-environment variable based on the request, and use that in your config.
+The SettingsService::getSection() will use **default_scope** when called 
+without subject. Otherwise you need to pass it the scope name as subject. 
 
-For non-default scope settings you will need the SettingsService:
+It can be useful to have your webserver set an 
+environment variable based on the request, and use that in your config:
 
-```php
-    public function __construct(SettingsService $settingsService)
-    {
-        $boxSettings = $settingsService->getSection(BoxSettings::class, 'night');
-        $doublePadding = $boxSettings->padding * 2; 
-```  
+```yaml
+# config/packages/tzunghaor_settings.yaml
+
+tzunghaor_settings:
+  default:
+    default_scope: %env(DEFAULT_SCOPE)%
+    ...
+```
+
+For more advanced use (e.g. having one scope per user), you can define your
+own [scope provider](Resources/doc/scopes.md)

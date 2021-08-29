@@ -101,9 +101,11 @@ class SettingsEditorService
      */
     public function createForm(SettingSectionAddress $sectionAddress): ?FormInterface
     {
-        if ($sectionAddress->getSectionName() === null) {
+        if (!$sectionAddress->isComplete()) {
             return null;
         }
+
+        $this->throwExceptionIfNotAuthorized($sectionAddress);
 
         /** @var SettingsService $settingsService */
         $settingsService = $this->settingsServiceLocator->get($sectionAddress->getCollectionName());
@@ -374,11 +376,7 @@ class SettingsEditorService
             throw new \InvalidArgumentException('$sectionAddress must be complete');
         }
 
-        if ($this->authorizationChecker !== null) {
-            if (!$this->authorizationChecker->isGranted('edit', $sectionAddress)) {
-                throw new \RuntimeException('Not allowed to edit these settings.');
-            }
-        }
+        $this->throwExceptionIfNotAuthorized($sectionAddress);
 
         /** @var SettingsService $settingsService */
         $settingsService = $this->settingsServiceLocator->get($sectionAddress->getCollectionName());
@@ -404,5 +402,28 @@ class SettingsEditorService
         }
 
         $settingsService->save($sectionMeta->getDataClass(), $sectionAddress->getScope(), $values);
+    }
+
+    /**
+     * Throws an exception if authorizationChecker is set, and 'edit' is not granted for $sectionAddress
+     *
+     * @param SettingSectionAddress $sectionAddress
+     */
+    private function throwExceptionIfNotAuthorized(SettingSectionAddress $sectionAddress): void
+    {
+        if ($this->authorizationChecker === null) {
+            return;
+        }
+
+        if ($this->authorizationChecker->isGranted('edit', $sectionAddress)) {
+            return;
+        }
+
+        $exceptionClass = Symfony\Component\Security\Core\Exception\AccessDeniedException::class;
+        if (!class_exists($exceptionClass)) {
+            $exceptionClass = \RuntimeException::class;
+        }
+
+        throw new $exceptionClass('Not allowed to edit these settings.');
     }
 }
