@@ -73,6 +73,8 @@ class SettingsEditorService
      * @param string|null $collectionName
      *
      * @return SettingSectionAddress
+     *
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function createSectionAddress(
         ?string $sectionName,
@@ -80,11 +82,17 @@ class SettingsEditorService
         ?string $collectionName = null
     ): SettingSectionAddress {
         $collectionName = $collectionName ?? $this->defaultCollectionName;
-        if ($scope === null) {
-            // get default scope
-            /** @var SettingsMetaService $settingsMetaService */
-            $settingsMetaService = $this->settingsMetaServiceLocator->get($collectionName);
-            $scope = $settingsMetaService->getScopeName(null);
+
+        /** @var SettingsMetaService $settingsMetaService */
+        $settingsMetaService = $this->settingsMetaServiceLocator->get($collectionName);
+        $scope = $scope ?? $settingsMetaService->getScopeName(null);
+
+        // if section name is not given, but there is only one section, then use it as default.
+        if ($sectionName === null) {
+            $sectionMetaDataArray = $settingsMetaService->getSectionMetaDataArray();
+            if (count($sectionMetaDataArray) === 1) {
+                $sectionName = reset($sectionMetaDataArray)->getName();
+            }
         }
 
         return new SettingSectionAddress($collectionName, $scope, $sectionName);
