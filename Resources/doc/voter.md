@@ -10,6 +10,17 @@ Make sure that security-core component is installed:
 $ composer require symfony/security-core
 ```
 
+Turn on security for the bundle:
+
+```yaml
+# config/packages/tzunghaor_settings.yaml
+
+tzunghaor_settings:
+  security: true
+  collections:
+    # ...
+```
+
 Create a [security voter](https://symfony.com/doc/current/security/voters.html) 
 that supports **Tzunghaor\SettingsBundle\Model\SettingSectionAddress** as subject
 and "edit" as attribute.

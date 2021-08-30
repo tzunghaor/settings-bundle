@@ -146,15 +146,16 @@ Then tell the bundle where your settings classes are in the config:
 ```yaml
 # config/packages/tzunghaor_settings.yaml
 tzunghaor_settings:
-  # Each entry under "tzunghaor_settings" configures a setting collection.
-  # Use "default" if you define only one collection
-  default:
-    mappings:
-      # I used "default" as mapping name, but it is up to you.
-      # You can have multiple mappings
-      default:
-        dir: '%kernel.project_dir%/src/Settings'
-        prefix: App\Settings\
+  collections:
+    # Each entry under "tzunghaor_settings" configures a setting collection.
+    # Use "default" if you define only one collection
+    default:
+      mappings:
+        # I used "default" as mapping name, but it is up to you.
+        # You can have multiple mappings
+        default:
+          dir: '%kernel.project_dir%/src/Settings'
+          prefix: App\Settings\
 ```
 
 Now you can get your settings from the service provided by the bundle. 
@@ -216,7 +217,9 @@ It is strongly advised to use a cache with this bundle, e.g.:
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
-  cache: 'cache.app'
+  collections:
+    default:
+      cache: 'cache.app'
 ```
 
 Currently you need to clear the cache every time you do changes in your 
@@ -235,16 +238,17 @@ then you can use scopes:
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
-  default:
-    # tag aware cache needed when using nested scopes
-    cache: 'cache.app.taggable'
-    default_scope: day
-    scopes:
-      - name: day
-        children:
-          - name: morning
-          - name: afternoon
-      - name: night
+  collections:
+    default:
+      # tag aware cache needed when using nested scopes
+      cache: 'cache.app.taggable'
+      default_scope: day
+      scopes:
+        - name: day
+          children:
+            - name: morning
+            - name: afternoon
+        - name: night
 ```
 
 Use only alphanumeric characters and underscores as scope names.
@@ -264,9 +268,10 @@ environment variable based on the request, and use that in your config:
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
-  default:
-    default_scope: %env(DEFAULT_SCOPE)%
-    ...
+  collections:
+    default:
+      default_scope: %env(DEFAULT_SCOPE)%
+      ...
 ```
 
 For more advanced use (e.g. having one scope per user), you can define your

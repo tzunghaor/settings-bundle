@@ -20,8 +20,9 @@ services:
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
-  user:
-    scope_provider: app.user_scope_provider
+  collections:
+    user:
+      scope_provider: app.user_scope_provider
 ```
 
 For a detailed example, see OtherScopeProvider in the test project.

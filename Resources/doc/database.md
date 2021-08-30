@@ -53,7 +53,9 @@ Then set this entity in the config:
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
-  entity: App\Entity\MyPersistedSetting
+  collections:
+    default:
+      entity: App\Entity\MyPersistedSetting
 ```
 
 To make sure that doctrine maps only your entity, either make sure that

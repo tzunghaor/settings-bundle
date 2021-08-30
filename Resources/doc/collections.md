@@ -7,12 +7,13 @@ You can configure multiple collections, for example:
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
-  system:
-    default_scope: foo
-    # ...
-  user:
-    scope_provider: my_scope_provider
-    # ...
+  collections:
+    system:
+      default_scope: foo
+      # ...
+    user:
+      scope_provider: my_scope_provider
+      # ...
 ```
 
 Then you can use dependency injection autowiring by using the collection name,

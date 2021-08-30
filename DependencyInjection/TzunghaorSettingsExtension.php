@@ -42,7 +42,7 @@ class TzunghaorSettingsExtension extends Extension
         $defaultCollectionName = $container->getParameter('tzunghaor_settings.default_collection');
         $isDefaultCollectionProcessed = false;
 
-        foreach ($config as $name => $collectionConfig) {
+        foreach ($config[Configuration::COLLECTIONS] as $name => $collectionConfig) {
             $isDefault = $name === $defaultCollectionName;
             $this->configureCollection($name, $collectionConfig, $container, $isDefault);
             $isDefaultCollectionProcessed = $isDefaultCollectionProcessed || $isDefault;
@@ -53,6 +53,12 @@ class TzunghaorSettingsExtension extends Extension
             $container->removeDefinition('tzunghaor_settings.settings_service');
             $container->removeAlias(SettingsService::class);
             $container->removeDefinition('tzunghaor_settings.settings_meta_service');
+        }
+
+        // set up security
+        if ($config[Configuration::SECURITY] ?? false) {
+            $container->getDefinition('tzunghaor_settings.settings_editor_service')
+                ->addMethodCall('setAuthorizationChecker', [new Reference('security.authorization_checker')]);
         }
     }
 

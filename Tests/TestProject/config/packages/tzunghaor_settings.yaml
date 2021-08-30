@@ -1,26 +1,27 @@
 tzunghaor_settings:
-  default:
-    scopes:
-      - name: root
-        children:
-          - name: day
-            children:
-              - name: morning
-              - name: afternoon
-          - name: night
+  collections:
+    default:
+      scopes:
+        - name: root
+          children:
+            - name: day
+              children:
+                - name: morning
+                - name: afternoon
+            - name: night
 
-    default_scope: root
+      default_scope: root
 
-    mappings:
-      default:
-        dir: '%kernel.project_dir%/Settings'
-        prefix: Tzunghaor\SettingsBundle\Tests\TestProject\Settings\
+      mappings:
+        default:
+          dir: '%kernel.project_dir%/Settings'
+          prefix: Tzunghaor\SettingsBundle\Tests\TestProject\Settings\
 
-  other:
-    mappings:
-      default:
-        dir: '%kernel.project_dir%/OtherSettings'
-        prefix: Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\
-    cache: test_other_cache
-    entity: Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherPersistedSetting
-    scope_provider: Tzunghaor\SettingsBundle\Tests\TestProject\Service\OtherScopeProvider
+    other:
+      mappings:
+        default:
+          dir: '%kernel.project_dir%/OtherSettings'
+          prefix: Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\
+      cache: test_other_cache
+      entity: Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherPersistedSetting
+      scope_provider: Tzunghaor\SettingsBundle\Tests\TestProject\Service\OtherScopeProvider

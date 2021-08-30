@@ -111,13 +111,15 @@ the mapping configuration:
 ```yaml
 # config/packages/tzunghaor_settings.yaml
 tzunghaor_settings:
-  mappings:
+  collections:
     default:
-      dir: '%kernel.project_dir%/src/Settings'
-      prefix: App\Settings\
-    custom:
-      dir: '%kernel.project_dir%/src/Custom/Settings'
-      prefix: App\Custom\Settings\
+      mappings:
+        default:
+          dir: '%kernel.project_dir%/src/Settings'
+          prefix: App\Settings\
+        custom:
+          dir: '%kernel.project_dir%/src/Custom/Settings'
+          prefix: App\Custom\Settings\
 ```
 
 examples:
