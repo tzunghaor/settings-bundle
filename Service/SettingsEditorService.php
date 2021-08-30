@@ -360,7 +360,7 @@ class SettingsEditorService
 
             $twigList[] = [
                 'name' => $scopeName,
-                'title' => $scopeName,
+                'title' => $scope->getExtra()['title'] ?? $scopeName,
                 'children' => $children,
                 'url' => $url,
             ];

@@ -67,6 +67,7 @@ class Configuration implements ConfigurationInterface
                             ->arrayNode(self::SCOPES)
                                 ->info('Scopes hierarchy')
                                 ->arrayPrototype()
+                                    ->ignoreExtraKeys(false)
                                     ->children()
                                         ->scalarNode(self::SCOPE_NAME)
                                             ->isRequired()

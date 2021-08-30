@@ -64,7 +64,7 @@ class StaticScopeProvider implements ScopeProviderInterface
      */
     public function getScopePath($subject = null): array
     {
-        return $this->scopeLookup[$subject ?? $this->defaultScope]->getPath();
+        return $this->scopeLookup[$subject ?? $this->defaultScope]->getExtra()['path'];
     }
 
     /**
@@ -125,9 +125,11 @@ class StaticScopeProvider implements ScopeProviderInterface
 
         foreach ($scopeDefinitions as $scopeDefinition) {
             $scopeName = $scopeDefinition[Configuration::SCOPE_NAME];
-
             $childrenDef = $scopeDefinition[Configuration::SCOPE_CHILDREN] ?? null;
             $isPassive = $scopeDefinition[Configuration::SCOPE_PASSIVE] ?? false;
+            $handledDefinitionKeys = [
+                Configuration::SCOPE_NAME, Configuration::SCOPE_CHILDREN, Configuration::SCOPE_PASSIVE
+            ];
 
             if ($childrenDef !== null) {
                 $childrenPath = $scopePath;
@@ -140,11 +142,13 @@ class StaticScopeProvider implements ScopeProviderInterface
                 $children = [];
             }
 
+            $extra = array_diff_key($scopeDefinition, array_flip($handledDefinitionKeys));
+            $extra['path'] = $scopePath;
             $scope = new Scope(
                 $scopeName,
                 $children,
                 $isPassive,
-                $scopePath
+                $extra
             );
 
             if(array_key_exists($scopeName, $lookup)) {

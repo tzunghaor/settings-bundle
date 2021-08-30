@@ -22,14 +22,14 @@ class Scope
     /**
      * @var string[] scope names
      */
-    private $path;
+    private $extra;
 
-    public function __construct(string $name, array $children = [], bool $isPassive = false, array $path = [])
+    public function __construct(string $name, array $children = [], bool $isPassive = false, array $extra = [])
     {
         $this->name = $name;
         $this->children = $children;
         $this->isPassive = $isPassive;
-        $this->path = $path;
+        $this->extra = $extra;
     }
 
     /**
@@ -57,10 +57,10 @@ class Scope
     }
 
     /**
-     * @return string[]
+     * @return array
      */
-    public function getPath(): array
+    public function getExtra(): array
     {
-        return $this->path;
+        return $this->extra;
     }
 }

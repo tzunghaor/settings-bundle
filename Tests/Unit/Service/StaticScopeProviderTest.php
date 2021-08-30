@@ -52,16 +52,16 @@ class StaticScopeProviderTest extends TestCase
         // maybe factor out path from Scope? Or always return path?
         $defaultExpected = [
             new Scope('all', [
-                new Scope('foo', [], false, ['all']),
+                new Scope('foo', [], false, ['path' => ['all']]),
                 new Scope('bar', [
-                    new Scope('bar1', [], false, ['all', 'bar']),
-                    new Scope('bar2', [], false, ['all', 'bar']),
-                ], false, ['all'])
-            ], false, []),
+                    new Scope('bar1', [], false, ['path' => ['all', 'bar']]),
+                    new Scope('bar2', [], false, ['path' => ['all', 'bar']]),
+                ], false, ['path' => ['all']])
+            ], false, ['path' => []]),
             new Scope('johnny', [
-                new Scope('babar', [], false, ['johnny']),
-                new Scope('doofoo', [], false, ['johnny']),
-            ], false, []),
+                new Scope('babar', [], false, ['path' => ['johnny']]),
+                new Scope('doofoo', [], false, ['path' => ['johnny']]),
+            ], false, ['path' => []]),
         ];
 
         $barExpected = [
@@ -95,6 +95,7 @@ class StaticScopeProviderTest extends TestCase
 
         $hierarchy = $provider->getScopeDisplayHierarchy($searchString);
 
+        // todo: avoid testing extra path
         self::assertEquals($expected, $hierarchy);
     }
 
