@@ -58,9 +58,9 @@ tzunghaor_settings:
       entity: App\Entity\MyPersistedSetting
 ```
 
-To make sure that doctrine maps only your entity, either make sure that
+To make sure that doctrine does not map this bundle's entity, either make sure that
 doctrine's **auto_mapping** is not enabled, or overwrite this bundle's
-doctrine mapping:
+doctrine mapping, which has the name **TzunghaorSettingsBundle**:
 
 ```yaml
 doctrine:

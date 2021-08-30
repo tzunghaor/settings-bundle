@@ -13,14 +13,17 @@ abstract class AbstractPersistedSetting implements PersistedSettingInterface
     /**
      * @var string
      * @ORM\Id()
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=50)
+     *
+     * Limiting column size to avoid MySQL 767 byte key limit with utf8mb4 default encoding.
+     * If you have other needs see Resources/doc/database.md
      */
     protected $scope;
 
     /**
      * @var string
      * @ORM\Id()
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=140)
      */
     protected $path;
 
