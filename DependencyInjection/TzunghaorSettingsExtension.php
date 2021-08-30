@@ -39,20 +39,31 @@ class TzunghaorSettingsExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $defaultCollectionName = $container->getParameter('tzunghaor_settings.default_collection');
+        $isDefaultCollectionProcessed = false;
+
         foreach ($config as $name => $collectionConfig) {
-            $this->configureCollection($name, $collectionConfig, $container);
+            $isDefault = $name === $defaultCollectionName;
+            $this->configureCollection($name, $collectionConfig, $container, $isDefault);
+            $isDefaultCollectionProcessed = $isDefaultCollectionProcessed || $isDefault;
+        }
+
+        // if there is no collection with default name, then remove the default services
+        if (!$isDefaultCollectionProcessed) {
+            $container->removeDefinition('tzunghaor_settings.settings_service');
+            $container->removeAlias(SettingsService::class);
+            $container->removeDefinition('tzunghaor_settings.settings_meta_service');
         }
     }
 
-    private function configureCollection(string $name, array $config, ContainerBuilder $container): void
+    private function configureCollection(string $name, array $config, ContainerBuilder $container, bool $isDefault): void
     {
         $defaultSettingsMetaServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_meta_service');
         $defaultSettingsServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_service');
-        $defaultCollectionName = $container->getParameter('tzunghaor_settings.default_collection');
         $defaultMappingName = $container->getParameter('tzunghaor_settings.default_mapping');
 
-        if ($name === $defaultCollectionName) {
-            $settingsServiceId = 'tzunghaor_settings.settings_service.' . $defaultCollectionName;
+        if ($isDefault) {
+            $settingsServiceId = 'tzunghaor_settings.settings_service.' . $name;
             $container->setAlias($settingsServiceId, 'tzunghaor_settings.settings_service');
             $settingsMetaServiceDefinition = $defaultSettingsMetaServiceDefinition;
             $settingsServiceDefinition = $defaultSettingsServiceDefinition;

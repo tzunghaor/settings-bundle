@@ -177,6 +177,8 @@ class MyService
         $doublePadding = $boxSettings->padding * 2; 
 ```
 
+More on [collections and services](Resources/doc/collections.md)
+
 Setting up the editor
 ---------------------
 
