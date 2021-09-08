@@ -8,7 +8,7 @@ use Tzunghaor\SettingsBundle\Model\Scope;
  * In getScopeName() and getScopePath() you have to handle the following possibilities as $subject:
  *
  * * null: handle as if the default scope would have been passed. Your provider decides what the default
- *         scope is, bug it must remain the same during a request.
+ *         scope is, but it must remain the same during a request.
  * * scope name as a string
  * * anything else you want to use as $subject for SettingsService::getSection()
  */
@@ -17,9 +17,9 @@ interface ScopeProviderInterface
     /**
      * @param mixed|null $subject - see info in class docblock
      *
-     * @return string scope name of subject
+     * @return Scope of the subject
      */
-    public function getScopeName($subject = null): string;
+    public function getScope($subject = null): Scope;
 
     /**
      * Pay attention that the returned path shouldn't contain the scope of the $subject itself.

@@ -12,6 +12,10 @@ class Scope
      */
     private $name;
     /**
+     * @var string
+     */
+    private $title;
+    /**
      * @var Scope[]
      */
     private $children;
@@ -24,9 +28,15 @@ class Scope
      */
     private $extra;
 
-    public function __construct(string $name, array $children = [], bool $isPassive = false, array $extra = [])
-    {
+    public function __construct(
+        string $name,
+        ?string $customTitle = null,
+        array $children = [],
+        bool $isPassive = false,
+        array $extra = []
+    ) {
         $this->name = $name;
+        $this->title = $customTitle ?? $name;
         $this->children = $children;
         $this->isPassive = $isPassive;
         $this->extra = $extra;
@@ -38,6 +48,14 @@ class Scope
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return $this->title;
     }
 
     /**

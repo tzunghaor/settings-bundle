@@ -21,7 +21,7 @@
                                 'linkRoute': linkRoute,
                                 'collection': currentCollection,
                                 'section': currentSection,
-                                'currentScope': currentScope,
+                                'currentScope': currentScope.name,
                             } | json_encode | raw }}</script>
 
                         <h3>Scopes</h3>
@@ -30,7 +30,7 @@
                             <input class="tzunghaor_settings_scope_search" type="text" />
                         {% endif %}
                         <div class="tzunghaor_settings_scopes_list tzunghaor_settings_list_container">
-                            {{ include('@TzunghaorSettings/list.html.twig', { items: scopes, currentName: currentScope }) }}
+                            {{ include('@TzunghaorSettings/list.html.twig', { items: scopes, currentName: currentScope.name }) }}
                         </div>
                     </div>
                 {% endif %}

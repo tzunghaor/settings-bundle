@@ -28,7 +28,7 @@ class OtherScopeProvider implements ScopeProviderInterface
     /**
      * @inheritdoc
      */
-    public function getScopeName($subject = null): string
+    public function getScope($subject = null): Scope
     {
         // return default scope name if $subject is null
         if ($subject === null) {
@@ -37,12 +37,12 @@ class OtherScopeProvider implements ScopeProviderInterface
 
         // if $subject is string, then it is already a scope name
         if (is_string($subject)) {
-            return $subject;
+            return new Scope($subject);
         }
 
         // we can provide the scope of OtherObject instances too
         if ($subject instanceof OtherSubject) {
-            return 'name-' . $subject->getName();
+            return new Scope('name-' . $subject->getName());
         }
 
         throw new \InvalidArgumentException('Cannot determine scope');
@@ -100,17 +100,19 @@ class OtherScopeProvider implements ScopeProviderInterface
      * In this example default scope is the 'scopeSubject' param of the request, or 'group-foo' if request doesn't specify it.
      * You could also use e.g. the current user from TokenStorage.
      *
-     * @return string
+     * @return Scope
      */
-    private function getDefaultScope(): string
+    private function getDefaultScope(): Scope
     {
-        $defaultScope = 'group-foo';
+        $defaultScopeName = 'group-foo';
 
         $currentRequest = $this->requestStack->getCurrentRequest();
         if ($currentRequest === null) {
-            return $defaultScope;
+            $scopeName = $defaultScopeName;
+        } else {
+            $scopeName = $currentRequest->get('scopeSubject', $defaultScopeName);
         }
 
-        return $currentRequest->get('scopeSubject', $defaultScope);
+        return new Scope($scopeName);
     }
 }

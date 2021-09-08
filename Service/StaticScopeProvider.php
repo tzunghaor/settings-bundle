@@ -22,31 +22,38 @@ class StaticScopeProvider implements ScopeProviderInterface
     private $scopeLookup;
 
     /**
-     * @var string
+     * @var string[][] [$scopeName => [$topAncestor, ...], ...]
+     */
+    private $scopePathLookup;
+
+    /**
+     * @var Scope
      */
     private $defaultScope;
 
     /**
      * @param Scope[] $scopeHierarchy
-     * @param string $defaultScope
+     * @param string $defaultScopeName
      */
-    public function __construct(array $scopeHierarchy, string $defaultScope)
+    public function __construct(array $scopeHierarchy, string $defaultScopeName)
     {
         // create scope lookup from config and pass it to the settings service
         $scopeLookup = [];
-        $this->scopeHierarchy = $this->addToScopeLookup($scopeLookup, $scopeHierarchy, []);
-        if (!array_key_exists($defaultScope, $scopeLookup)) {
-            throw new \LogicException(sprintf('Default scope "%s" is not found in available scopes', $defaultScope));
+        $scopePathLookup = [];
+        $this->scopeHierarchy = $this->addToScopeLookup($scopeLookup, $scopePathLookup, $scopeHierarchy, []);
+        if (!array_key_exists($defaultScopeName, $scopeLookup)) {
+            throw new \LogicException(sprintf('Default scope "%s" is not found in available scopes', $defaultScopeName));
         }
 
         $this->scopeLookup = $scopeLookup;
-        $this->defaultScope = $defaultScope;
+        $this->defaultScope = $scopeLookup[$defaultScopeName];
+        $this->scopePathLookup = $scopePathLookup;
     }
 
     /**
      * @inheritdoc
      */
-    public function getScopeName($subject = null): string
+    public function getScope($subject = null): Scope
     {
         if ($subject === null) {
             return $this->defaultScope;
@@ -56,7 +63,7 @@ class StaticScopeProvider implements ScopeProviderInterface
             throw new \DomainException(sprintf('Unknown scope "%s"', $subject));
         }
 
-        return $subject;
+        return $this->scopeLookup[$subject];
     }
 
     /**
@@ -64,7 +71,7 @@ class StaticScopeProvider implements ScopeProviderInterface
      */
     public function getScopePath($subject = null): array
     {
-        return $this->scopeLookup[$subject ?? $this->defaultScope]->getExtra()['path'];
+        return $this->scopePathLookup[$subject ?? $this->defaultScope->getName()];
     }
 
     /**
@@ -101,7 +108,8 @@ class StaticScopeProvider implements ScopeProviderInterface
             }
             $passive = $scope->isPassive() || !$isMatching;
 
-            $matchingScopes[] = new Scope($scope->getName(), $matchingChildren, $passive);
+            $matchingScopes[] =
+                new Scope($scope->getName(), $scope->getTitle(), $matchingChildren, $passive, $scope->getExtra());
         }
 
         return $matchingScopes;
@@ -112,23 +120,26 @@ class StaticScopeProvider implements ScopeProviderInterface
      * Turns the hierarchical scope definition into flat lookup
      *
      * @param array $lookup
+     * @param array $pathLookup
      * @param array $scopeDefinitions
      * @param array $scopePath name of ancestor scopes
      *
-     * @return Scope[]
+     * @return Scope[] $scopeDefinitions tree turned into Scope object tree
      */
-    private function addToScopeLookup(array& $lookup, array $scopeDefinitions, $scopePath): array
+    private function addToScopeLookup(array& $lookup, array& $pathLookup, array $scopeDefinitions, $scopePath): array
     {
-        // Symfony configuration doesn't fully support recursive structures, so we have to handle
-        // default handling here
+        // Symfony configuration doesn't fully support recursive structures,
+        // so we have to take care of defaults ourselves
         $scopes = [];
 
         foreach ($scopeDefinitions as $scopeDefinition) {
             $scopeName = $scopeDefinition[Configuration::SCOPE_NAME];
             $childrenDef = $scopeDefinition[Configuration::SCOPE_CHILDREN] ?? null;
             $isPassive = $scopeDefinition[Configuration::SCOPE_PASSIVE] ?? false;
+            $title = $scopeDefinition[Configuration::SCOPE_TITLE] ?? null;
             $handledDefinitionKeys = [
-                Configuration::SCOPE_NAME, Configuration::SCOPE_CHILDREN, Configuration::SCOPE_PASSIVE
+                Configuration::SCOPE_NAME, Configuration::SCOPE_TITLE, Configuration::SCOPE_CHILDREN,
+                Configuration::SCOPE_PASSIVE
             ];
 
             if ($childrenDef !== null) {
@@ -137,15 +148,15 @@ class StaticScopeProvider implements ScopeProviderInterface
                     array_push($childrenPath, $scopeName);
                 }
 
-                $children = $this->addToScopeLookup($lookup, $childrenDef, $childrenPath);
+                $children = $this->addToScopeLookup($lookup, $pathLookup, $childrenDef, $childrenPath);
             } else {
                 $children = [];
             }
 
             $extra = array_diff_key($scopeDefinition, array_flip($handledDefinitionKeys));
-            $extra['path'] = $scopePath;
             $scope = new Scope(
                 $scopeName,
+                $title,
                 $children,
                 $isPassive,
                 $extra
@@ -157,6 +168,7 @@ class StaticScopeProvider implements ScopeProviderInterface
 
             $scopes[] = $scope;
             $lookup[$scopeName] = $scope;
+            $pathLookup[$scopeName] = $scopePath;
         }
 
         return $scopes;

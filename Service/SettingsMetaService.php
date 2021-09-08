@@ -8,6 +8,7 @@ use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
+use Tzunghaor\SettingsBundle\Model\Scope;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 
 /**
@@ -126,11 +127,11 @@ class SettingsMetaService implements CacheWarmerInterface
      * @param mixed|null $subject Can be scope name or an object or anything you support.
      *                            If null, default scope name is returned.
      *
-     * @return string scope name of subject
+     * @return Scope of subject
      */
-    public function getScopeName($subject = null): string
+    public function getScope($subject = null): Scope
     {
-        return $this->scopeProvider->getScopeName($subject);
+        return $this->scopeProvider->getScope($subject);
     }
 
     /**

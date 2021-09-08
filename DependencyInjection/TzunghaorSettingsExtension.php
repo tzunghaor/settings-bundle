@@ -112,14 +112,14 @@ class TzunghaorSettingsExtension extends Extension
             $settingsMetaServiceDefinition->replaceArgument(
                 '$scopeProvider', new Reference($config[Configuration::SCOPE_PROVIDER]));
         } elseif (isset($config[Configuration::SCOPES]) && !empty($config[Configuration::SCOPES])) {
-            $defaultScope = $config[Configuration::DEFAULT_SCOPE] ??
+            $defaultScopeName = $config[Configuration::DEFAULT_SCOPE] ??
                 $container->getParameter('tzunghaor_settings.default_scope');
 
             $scopeProviderDefinition = new Definition(
                 StaticScopeProvider::class,
                 [
                     '$scopeHierarchy' => $config[Configuration::SCOPES],
-                    '$defaultScope' => $defaultScope,
+                    '$defaultScopeName' => $defaultScopeName,
                 ]
             );
 

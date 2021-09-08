@@ -12,7 +12,7 @@ class StaticScopeProviderTest extends TestCase
     private $scopeHierarchy = [
         ['name' => 'all', 'children' => [
             ['name' => 'foo'],
-            ['name' => 'bar', 'children' => [
+            ['name' => 'bar',  'title' => 'Great Bar', 'class' => 'lofty', 'children' => [
                 ['name' => 'bar1'],
                 ['name' => 'bar2']
             ]],
@@ -37,9 +37,9 @@ class StaticScopeProviderTest extends TestCase
     /**
      * @dataProvider scopePathProvider
      */
-    public function testGetScopePath($defaultScope, $subject, $expected): void
+    public function testGetScopePath($defaultScopeName, $subject, $expected): void
     {
-        $provider = new StaticScopeProvider($this->scopeHierarchy, $defaultScope);
+        $provider = new StaticScopeProvider($this->scopeHierarchy, $defaultScopeName);
 
         $path = $provider->getScopePath($subject);
 
@@ -48,30 +48,28 @@ class StaticScopeProviderTest extends TestCase
 
     public function scopeHierarchyProvider(): array
     {
-        // Without search string the original scopes are returned with path, though path is not necessary
-        // maybe factor out path from Scope? Or always return path?
         $defaultExpected = [
-            new Scope('all', [
-                new Scope('foo', [], false, ['path' => ['all']]),
-                new Scope('bar', [
-                    new Scope('bar1', [], false, ['path' => ['all', 'bar']]),
-                    new Scope('bar2', [], false, ['path' => ['all', 'bar']]),
-                ], false, ['path' => ['all']])
-            ], false, ['path' => []]),
-            new Scope('johnny', [
-                new Scope('babar', [], false, ['path' => ['johnny']]),
-                new Scope('doofoo', [], false, ['path' => ['johnny']]),
-            ], false, ['path' => []]),
+            new Scope('all', null, [
+                new Scope('foo', null, [], false, []),
+                new Scope('bar', 'Great Bar', [
+                    new Scope('bar1', null, [], false, []),
+                    new Scope('bar2', null, [], false, []),
+                ], false, ['class' => 'lofty'])
+            ], false, []),
+            new Scope('johnny', null, [
+                new Scope('babar', null, [], false, []),
+                new Scope('doofoo', null, [], false, []),
+            ], false, []),
         ];
 
         $barExpected = [
-            new Scope('all', [
-                new Scope('bar', [
+            new Scope('all', null, [
+                new Scope('bar', 'Great Bar', [
                     new Scope('bar1'),
                     new Scope('bar2'),
-                ])
+                ], false, ['class' => 'lofty'])
             ], true),
-            new Scope('johnny', [
+            new Scope('johnny', null, [
                 new Scope('babar'),
             ], true),
         ];

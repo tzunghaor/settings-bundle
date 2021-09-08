@@ -69,7 +69,7 @@ class SettingsEditorService
      * Factory method to create a SettingSectionAddress, fills in null values with default values if possible
      *
      * @param string|null $sectionName
-     * @param string|null $scope
+     * @param string|null $scopeName
      * @param string|null $collectionName
      *
      * @return SettingSectionAddress
@@ -78,14 +78,14 @@ class SettingsEditorService
      */
     public function createSectionAddress(
         ?string $sectionName,
-        ?string $scope = null,
+        ?string $scopeName = null,
         ?string $collectionName = null
     ): SettingSectionAddress {
         $collectionName = $collectionName ?? $this->defaultCollectionName;
 
         /** @var SettingsMetaService $settingsMetaService */
         $settingsMetaService = $this->settingsMetaServiceLocator->get($collectionName);
-        $scope = $scope ?? $settingsMetaService->getScopeName(null);
+        $scopeName = $scopeName ?? $settingsMetaService->getScope(null)->getName();
 
         // if section name is not given, but there is only one section, then use it as default.
         if ($sectionName === null) {
@@ -95,7 +95,7 @@ class SettingsEditorService
             }
         }
 
-        return new SettingSectionAddress($collectionName, $scope, $sectionName);
+        return new SettingSectionAddress($collectionName, $scopeName, $sectionName);
     }
 
     /**
@@ -172,11 +172,12 @@ class SettingsEditorService
         array $fixedParameters = []
     ): array {
         $currentCollection = $sectionAddress->getCollectionName();
-        $currentScope = $sectionAddress->getScope();
+        $currentScopeName = $sectionAddress->getScope();
         $currentSection = $sectionAddress->getSectionName();
 
         /** @var SettingsMetaService $settingsMetaService */
         $settingsMetaService = $this->settingsMetaServiceLocator->get($currentCollection);
+        $currentScope = $settingsMetaService->getScope($currentScopeName);
 
         $collections = [];
         if (!in_array('collection', $fixedParameters, true)) {
@@ -360,7 +361,7 @@ class SettingsEditorService
 
             $twigList[] = [
                 'name' => $scopeName,
-                'title' => $scope->getExtra()['title'] ?? $scopeName,
+                'title' => $scope->getTitle(),
                 'children' => $children,
                 'url' => $url,
             ];

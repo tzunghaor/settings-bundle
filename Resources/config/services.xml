@@ -77,7 +77,7 @@
 
         <service id="tzunghaor_settings.default_scope_provider" class="Tzunghaor\SettingsBundle\Service\StaticScopeProvider">
             <argument key="$scopeHierarchy">%tzunghaor_settings.default_scope_hierarchy%</argument>
-            <argument key="$defaultScope">%tzunghaor_settings.default_scope%</argument>
+            <argument key="$defaultScopeName">%tzunghaor_settings.default_scope%</argument>
         </service>
 
         <service id="tzunghaor_settings.settings_meta_service" class="Tzunghaor\SettingsBundle\Service\SettingsMetaService">

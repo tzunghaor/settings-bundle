@@ -16,6 +16,7 @@ class Configuration implements ConfigurationInterface
     public const SCOPES = 'scopes';
     public const SCOPE_PROVIDER = 'scope_provider';
     public const SCOPE_NAME = 'name';
+    public const SCOPE_TITLE = 'title';
     public const SCOPE_CHILDREN = 'children';
     public const SCOPE_PASSIVE = 'passive';
     public const DEFAULT_SCOPE = 'default_scope';
@@ -71,6 +72,9 @@ class Configuration implements ConfigurationInterface
                                     ->children()
                                         ->scalarNode(self::SCOPE_NAME)
                                             ->isRequired()
+                                        ->end()
+                                        ->scalarNode(self::SCOPE_TITLE)
+                                            ->info('title displayed in editor (default is scope name)')
                                         ->end()
                                         ->scalarNode(self::SCOPE_PASSIVE)
                                             ->info('just for grouping, doesn\'t have own settings')

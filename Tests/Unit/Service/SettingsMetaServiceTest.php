@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Contracts\Cache\CacheInterface;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
+use Tzunghaor\SettingsBundle\Model\Scope;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Service\MetaDataExtractor;
 use Tzunghaor\SettingsBundle\Service\ScopeProviderInterface;
@@ -105,13 +106,13 @@ class SettingsMetaServiceTest extends TestCase
     }
 
 
-    public function testGetScopeName()
+    public function testGetScope()
     {
         $obj = new class() {};
-        $this->mockScopeProvider->expects(self::once())->method('getScopeName')
-            ->with($obj)->willReturn('foo');
+        $this->mockScopeProvider->expects(self::once())->method('getScope')
+            ->with($obj)->willReturn(new Scope('foo'));
 
-        self::assertEquals('foo', $this->settingsMetaService->getScopeName($obj));
+        self::assertEquals(new Scope('foo'), $this->settingsMetaService->getScope($obj));
 
     }
 
