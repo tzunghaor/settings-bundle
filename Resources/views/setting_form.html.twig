@@ -1,6 +1,8 @@
 {# the form part of the settings editor #}
 <div class="tzunghaor_settings_editor">
-    <h3>Section "{{ form.vars.label }}" for scope "{{ currentScope.title }}"</h3>
+    <h3>
+        {% block ts_section_title %}Section "{{ form.vars.label }}" for scope "{{ currentScope.title }}"{% endblock %}
+    </h3>
 
     {% if form.vars.help %}
         <div class="tzunghaor_settings_section_description">
@@ -30,9 +32,13 @@
             </div>
         </div>
     {% endfor %}
+    {% block ts_save_button %}
     <button type="submit">Save</button>
+    {% endblock %}
 
+    {% block ts_button_templates %}
     <template class="tzunghaor_setting_add_button"><button type="button">Add</button></template>
     <template class="tzunghaor_setting_remove_button"><button type="button">X</button></template>
+    {% endblock %}
     {{ form_end(form) }}
 </div>

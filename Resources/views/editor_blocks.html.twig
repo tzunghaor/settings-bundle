@@ -6,8 +6,10 @@
             {% block ts_collection_selector %}
                 {% if collections | length > 1 %}
                     <div class="tzunghaor_settings_collection_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
-                        <h3>Collections</h3>
+                        <h3>{% block ts_collections_title %}Collections{% endblock %}</h3>
+                        {% block ts_collections_list %}
                         {{ include('@TzunghaorSettings/list.html.twig', { items: collections, currentName: currentCollection }) }}
+                        {% endblock %}
                     </div>
                 {% endif %}
             {% endblock ts_collection_selector %}
@@ -24,13 +26,15 @@
                                 'currentScope': currentScope.name,
                             } | json_encode | raw }}</script>
 
-                        <h3>Scopes</h3>
+                        <h3>{% block ts_scopes_title %}Scopes{% endblock %}</h3>
 
                         {% if searchUrl is defined and searchUrl is not null %}
                             <input class="tzunghaor_settings_scope_search" type="text" />
                         {% endif %}
                         <div class="tzunghaor_settings_scopes_list tzunghaor_settings_list_container">
+                            {% block ts_scopes_list %}
                             {{ include('@TzunghaorSettings/list.html.twig', { items: scopes, currentName: currentScope.name }) }}
+                            {% endblock %}
                         </div>
                     </div>
                 {% endif %}
@@ -39,8 +43,10 @@
             {% block ts_section_selector %}
                 {% if sections | length > 1 %}
                     <div class="tzunghaor_settings_section_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
-                        <h3>Sections</h3>
+                        <h3>{% block ts_sections_title %}Sections{% endblock %}</h3>
+                        {% block ts_sections_list %}
                         {{ include('@TzunghaorSettings/list.html.twig', { items: sections, currentName: currentSection }) }}
+                        {% endblock %}
                     </div>
                 {% endif %}
             {% endblock ts_section_selector %}

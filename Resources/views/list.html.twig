@@ -1,23 +1,23 @@
 {# snippet to render the collection/scope/section selector #}
-{% macro list(items, currentName) %}
+{% block ts_list %}
     <ul>
         {% for item in items %}
             <li {% if item.name == currentName %} class="tzunghaor_settings_current"{% endif %}>
                 {% if item.url %}
                     <a href="{{ item.url }}" class="tzunghaor_settings_item">
-                        {{ item.title }}
+                        {% block ts_item_label %}{{ item.title }}{% endblock %}
                     </a>
                 {% else %}
                     <span class="tzunghaor_settings_item">
-                        {{ item.title }}
+                        {{ block('ts_item_label') }}
                     </span>
                 {% endif %}
                 {% if item.children is defined and item.children %}
-                    {{ _self.list(item.children, currentName) }}
+                    {% block ts_children %}
+                    {{ include('@TzunghaorSettings/list.html.twig', { items: item.children, currentName }) }}
+                    {% endblock %}
                 {% endif %}
             </li>
         {% endfor %}
     </ul>
-{% endmacro %}
-
-{{ _self.list(items, currentName) }}
+{% endblock %}

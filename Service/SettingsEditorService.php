@@ -364,6 +364,7 @@ class SettingsEditorService
                 'title' => $scope->getTitle(),
                 'children' => $children,
                 'url' => $url,
+                'extra' => $scope->getExtra(),
             ];
         }
 
