@@ -14,6 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
 use Tzunghaor\SettingsBundle\Annotation\Setting;
+use Tzunghaor\SettingsBundle\Annotation\SettingSection;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
@@ -59,7 +60,7 @@ class MetaDataExtractor
 
         $reflectionClass = new \ReflectionClass($sectionClass);
 
-        [$sectionTitle, $sectionDescription] = $this->extractTitleDescription($reflectionClass->getDocComment());
+        [$sectionTitle, $sectionDescription, $sectionExtra] = $this->extractSectionInfo($reflectionClass);
         $sectionTitle = empty($sectionTitle) ? $sectionName : $sectionTitle;
 
         $defaultType = new Type('string');
@@ -143,7 +144,9 @@ class MetaDataExtractor
             );
         }
 
-        return new SectionMetaData($sectionName, $sectionTitle, $sectionClass, $sectionDescription, $settingsMetaArray);
+        return new SectionMetaData(
+            $sectionName, $sectionTitle, $sectionClass, $sectionDescription, $settingsMetaArray, $sectionExtra
+        );
     }
 
     /**
@@ -213,14 +216,26 @@ class MetaDataExtractor
     /**
      * Simple naive method to extract title and description from a docblock
      *
-     * @param string $docBlock
+     * @param \ReflectionClass $reflectionClass
      *
      * @return array
      */
-    private function extractTitleDescription(string $docBlock): array
+    private function extractSectionInfo(\ReflectionClass $reflectionClass): array
     {
+        // first try the annotation
+        $sectionAnnotation = $this->annotationReader
+            ->getClassAnnotation($reflectionClass, SettingSection::class);
+
+        $sectionExtra = $sectionTitle = $sectionDescription = null;
+
+        if ($sectionAnnotation instanceof SettingSection) {
+            $sectionTitle = $sectionAnnotation->label;
+            $sectionDescription = $sectionAnnotation->help;
+            $sectionExtra = $sectionAnnotation->extra;
+        }
+
+        $docBlock = $reflectionClass->getDocComment();
         $docComment = trim($docBlock, "\t /");
-        $sectionTitle = $sectionDescription = null;
 
         if ($docComment !== false) {
             $commentLines = explode("\n", $docComment);
@@ -234,17 +249,17 @@ class MetaDataExtractor
                 }
 
                 if ($isBeginning) {
-                    $sectionTitle = $commentLine;
+                    $sectionTitle = $sectionTitle ?? $commentLine;
                     $isBeginning = false;
                 } else {
                     $descriptionLines[] = $commentLine;
                 }
             }
 
-            $sectionDescription = implode("\n", $descriptionLines);
+            $sectionDescription = $sectionDescription ?? implode("\n", $descriptionLines);
         }
 
-        return [$sectionTitle, $sectionDescription];
+        return [$sectionTitle ?? '', $sectionDescription ?? '', $sectionExtra ?? []];
     }
 
     /**

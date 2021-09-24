@@ -3,9 +3,12 @@
 namespace Tzunghaor\SettingsBundle\Model;
 
 /**
- * Stores info about a setting scope
+ * Stores info about an item, which can be:
+ * - a scope
+ * - a setting section
+ * - a collection
  */
-class Scope
+class Item
 {
     /**
      * @var string
@@ -16,15 +19,11 @@ class Scope
      */
     private $title;
     /**
-     * @var Scope[]
+     * @var Item[]
      */
     private $children;
     /**
-     * @var bool
-     */
-    private $isPassive;
-    /**
-     * @var string[] scope names
+     * @var array extra data that you can use in your templates / extensions
      */
     private $extra;
 
@@ -32,13 +31,11 @@ class Scope
         string $name,
         ?string $customTitle = null,
         array $children = [],
-        bool $isPassive = false,
         array $extra = []
     ) {
         $this->name = $name;
         $this->title = $customTitle ?? $name;
         $this->children = $children;
-        $this->isPassive = $isPassive;
         $this->extra = $extra;
     }
 
@@ -59,19 +56,11 @@ class Scope
     }
 
     /**
-     * @return Scope[]
+     * @return Item[]
      */
     public function getChildren(): array
     {
         return $this->children;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isPassive(): bool
-    {
-        return $this->isPassive;
     }
 
     /**

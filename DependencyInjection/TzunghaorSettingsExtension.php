@@ -64,6 +64,7 @@ class TzunghaorSettingsExtension extends Extension
 
     private function configureCollection(string $name, array $config, ContainerBuilder $container, bool $isDefault): void
     {
+        $config[Configuration::NAME] = $config[Configuration::NAME] ?? $name;
         $defaultSettingsMetaServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_meta_service');
         $defaultSettingsServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_service');
         $defaultMappingName = $container->getParameter('tzunghaor_settings.default_mapping');
@@ -142,6 +143,9 @@ class TzunghaorSettingsExtension extends Extension
             ]);
             $settingsServiceDefinition->replaceArgument('$store', $settingsStoreDefinition);
         }
+
+        $settingsMetaServiceDefinition->replaceArgument('$collectionTitle', $config[Configuration::TITLE] ?? null);
+        $settingsMetaServiceDefinition->replaceArgument('$collectionExtra', $config[Configuration::EXTRA] ?? []);
     }
 
     /**

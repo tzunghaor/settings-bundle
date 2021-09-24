@@ -4,6 +4,7 @@ namespace Tzunghaor\SettingsBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Tzunghaor\SettingsBundle\Model\Item;
 
 class Configuration implements ConfigurationInterface
 {
@@ -15,11 +16,11 @@ class Configuration implements ConfigurationInterface
     public const CACHE = 'cache';
     public const SCOPES = 'scopes';
     public const SCOPE_PROVIDER = 'scope_provider';
-    public const SCOPE_NAME = 'name';
-    public const SCOPE_TITLE = 'title';
-    public const SCOPE_CHILDREN = 'children';
-    public const SCOPE_PASSIVE = 'passive';
+    public const NAME = 'name';
+    public const TITLE = 'title';
+    public const CHILDREN = 'children';
     public const DEFAULT_SCOPE = 'default_scope';
+    public const EXTRA = 'extra';
     public const ENTITY = 'entity';
     public const SECURITY = 'security';
 
@@ -40,7 +41,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
 
                 ->arrayNode(self::COLLECTIONS)
-                    ->useAttributeAsKey('name')
+                    ->useAttributeAsKey(self::NAME, false)
                     ->arrayPrototype()
                         ->children()
                             ->arrayNode(self::MAPPINGS)
@@ -57,6 +58,10 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
 
+                            ->scalarNode(self::TITLE)
+                                ->info('Title displayed in editor (default is collection name)')
+                            ->end()
+
                             ->scalarNode(self::CACHE)
                                 ->info('Id of a tag aware cache service to be used')
                             ->end()
@@ -70,17 +75,19 @@ class Configuration implements ConfigurationInterface
                                 ->arrayPrototype()
                                     ->ignoreExtraKeys(false)
                                     ->children()
-                                        ->scalarNode(self::SCOPE_NAME)
+                                        ->scalarNode(self::NAME)
                                             ->isRequired()
                                         ->end()
-                                        ->scalarNode(self::SCOPE_TITLE)
-                                            ->info('title displayed in editor (default is scope name)')
+                                        ->scalarNode(self::TITLE)
+                                            ->info('Title displayed in editor (default is scope name)')
                                         ->end()
-                                        ->scalarNode(self::SCOPE_PASSIVE)
-                                            ->info('just for grouping, doesn\'t have own settings')
+                                        ->variableNode(self::CHILDREN)
+                                            ->info('Same structure recursively')
                                         ->end()
-                                        ->variableNode(self::SCOPE_CHILDREN)
-                                            ->info('same structure recursively')
+
+                                        ->arrayNode(self::EXTRA)
+                                            ->ignoreExtraKeys(false)
+                                            ->info('Extra data that you can use in your templates / extensions')
                                         ->end()
                                     ->end()
                                 ->end()
@@ -91,6 +98,11 @@ class Configuration implements ConfigurationInterface
 
                             ->scalarNode(self::SCOPE_PROVIDER)
                                 ->info('Scope provider service - must implement ScopeProviderInterface')
+                            ->end()
+
+                            ->arrayNode(self::EXTRA)
+                                ->ignoreExtraKeys(false)
+                                ->info('Extra data that you can use in your templates / extensions')
                             ->end()
                        ->end()
                     ->end()

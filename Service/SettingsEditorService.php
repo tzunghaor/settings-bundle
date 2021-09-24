@@ -8,9 +8,10 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Tzunghaor\SettingsBundle\Form\SettingsEditorType;
-use Tzunghaor\SettingsBundle\Model\Scope;
+use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
+use Tzunghaor\SettingsBundle\Model\ViewItem;
 
 /**
  * This service helps to create a page where settings can be edited
@@ -243,7 +244,7 @@ class SettingsEditorService
      * @param array $collectionNames
      * @param callable $urlGenerator
      *
-     * @return array
+     * @return ViewItem[]
      */
     private function prepareTwigCollections(array $collectionNames, callable $urlGenerator): array
     {
@@ -257,15 +258,15 @@ class SettingsEditorService
                 continue;
             }
 
+            /** @var SettingsMetaService $metaService */
+            $metaService = $this->settingsMetaServiceLocator->get($collectionName);
+
             $url = $urlGenerator([
                 'collection' => $collectionName,
             ]);
 
-            $twigList[] = [
-                'name' => $collectionName,
-                'title' => $collectionName,
-                'url' => $url,
-            ];
+            $collectionItem = $metaService->getCollectionItem();
+            $twigList[] = new ViewItem($collectionName, $url, $collectionItem->getExtra(), $collectionItem->getTitle());
         }
 
         return $twigList;
@@ -279,7 +280,7 @@ class SettingsEditorService
      * @param SettingSectionAddress $sectionAddress
      * @param callable $urlGenerator
      *
-     * @return array
+     * @return ViewItem[]
      */
     private function prepareTwigSections(array $sectionMetaDataArray, SettingSectionAddress $sectionAddress, callable $urlGenerator): array
     {
@@ -304,11 +305,9 @@ class SettingsEditorService
                 'scope' => $sectionAddress->getScope(),
             ]);
 
-            $twigList[] = [
-                'name' => $sectionName,
-                'title' => $sectionMetaData->getTitle(),
-                'url' => $url,
-            ];
+            $twigList[] = new ViewItem(
+                $sectionName, $url, $sectionMetaData->getExtra(), $sectionMetaData->getTitle()
+            );
         }
 
         return $twigList;
@@ -318,11 +317,11 @@ class SettingsEditorService
      * Filters the setting scopes with isGranted if available.
      * Returns an array as expected in the twig templates.
      *
-     * @param Scope[] $scopes
+     * @param Item[] $scopes
      * @param SettingSectionAddress $sectionAddress
      * @param callable $urlGenerator
      *
-     * @return array
+     * @return ViewItem[]
      */
     private function prepareTwigScopes(array $scopes, SettingSectionAddress $sectionAddress, callable $urlGenerator): array
     {
@@ -340,10 +339,9 @@ class SettingsEditorService
                 $children = $this->prepareTwigScopes($children, $sectionAddress, $urlGenerator);
             }
 
-            $needsLink = !$scope->isPassive() && (
+            $needsLink =
                     $this->authorizationChecker === null ||
                     $this->authorizationChecker->isGranted('edit', $voterSubject)
-                )
             ;
             if ($needsLink) {
                 $url = $urlGenerator([
@@ -359,13 +357,7 @@ class SettingsEditorService
                 }
             }
 
-            $twigList[] = [
-                'name' => $scopeName,
-                'title' => $scope->getTitle(),
-                'children' => $children,
-                'url' => $url,
-                'extra' => $scope->getExtra(),
-            ];
+            $twigList[] = new ViewItem($scopeName, $url, $scope->getExtra(), $scope->getTitle(), $children);
         }
 
         return $twigList;

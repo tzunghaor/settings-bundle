@@ -6,7 +6,7 @@ namespace Tzunghaor\SettingsBundle\Annotation;
 /**
  * @Annotation
  *
- * Annotation to set custom values for a setting
+ * Annotation to set custom values for a setting (a property in a setting section class)
  */
 class Setting
 {

@@ -4,7 +4,7 @@ namespace Tzunghaor\SettingsBundle\Tests\TestProject\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Tzunghaor\SettingsBundle\Model\Scope;
+use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Service\ScopeProviderInterface;
 use Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherSubject;
 
@@ -28,7 +28,7 @@ class OtherScopeProvider implements ScopeProviderInterface
     /**
      * @inheritdoc
      */
-    public function getScope($subject = null): Scope
+    public function getScope($subject = null): Item
     {
         // return default scope name if $subject is null
         if ($subject === null) {
@@ -37,12 +37,12 @@ class OtherScopeProvider implements ScopeProviderInterface
 
         // if $subject is string, then it is already a scope name
         if (is_string($subject)) {
-            return new Scope($subject);
+            return new Item($subject);
         }
 
         // we can provide the scope of OtherObject instances too
         if ($subject instanceof OtherSubject) {
-            return new Scope('name-' . $subject->getName());
+            return new Item('name-' . $subject->getName());
         }
 
         throw new \InvalidArgumentException('Cannot determine scope');
@@ -89,7 +89,7 @@ class OtherScopeProvider implements ScopeProviderInterface
             $dql = sprintf('select distinct s.group from %s s', OtherSubject::class);
             $results = $this->em->createQuery($dql)->execute();
             foreach ($results as $result) {
-                $hierarchy[] = new Scope('group-' . $result['group']);
+                $hierarchy[] = new Item('group-' . $result['group']);
             }
         }
 
@@ -100,9 +100,9 @@ class OtherScopeProvider implements ScopeProviderInterface
      * In this example default scope is the 'scopeSubject' param of the request, or 'group-foo' if request doesn't specify it.
      * You could also use e.g. the current user from TokenStorage.
      *
-     * @return Scope
+     * @return Item
      */
-    private function getDefaultScope(): Scope
+    private function getDefaultScope(): Item
     {
         $defaultScopeName = 'group-foo';
 
@@ -113,6 +113,6 @@ class OtherScopeProvider implements ScopeProviderInterface
             $scopeName = $currentRequest->get('scopeSubject', $defaultScopeName);
         }
 
-        return new Scope($scopeName);
+        return new Item($scopeName);
     }
 }

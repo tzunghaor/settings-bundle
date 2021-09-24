@@ -2,10 +2,10 @@
 
 namespace Tzunghaor\SettingsBundle\Service;
 
-use Tzunghaor\SettingsBundle\Model\Scope;
+use Tzunghaor\SettingsBundle\Model\Item;
 
 /**
- * In getScopeName() and getScopePath() you have to handle the following possibilities as $subject:
+ * In getScope() and getScopePath() you have to handle the following possibilities as $subject:
  *
  * * null: handle as if the default scope would have been passed. Your provider decides what the default
  *         scope is, but it must remain the same during a request.
@@ -17,9 +17,10 @@ interface ScopeProviderInterface
     /**
      * @param mixed|null $subject - see info in class docblock
      *
-     * @return Scope of the subject
+     * @return Item of the subject.
+     *         The bundle itself won't use Item::getChildren(), so it is not necessary to fill that here
      */
-    public function getScope($subject = null): Scope;
+    public function getScope($subject = null): Item;
 
     /**
      * Pay attention that the returned path shouldn't contain the scope of the $subject itself.
@@ -40,15 +41,13 @@ interface ScopeProviderInterface
      *
      * You are free to decide what scopes you return, or whether you return anything at all.
      *
-     * The path of the returned Scope objects don't need to be filled.
-     *
      * If you are using a Voter, then the editor will filter out the not editable items from the returned hierarchy,
      * and if no editable scope remain, then the scope selector will not be displayed at all. So if you are returning
      * only a subset of matching scopes, then pay attention to return a subset that is editable according to your Voter.
      *
      * @param string|null $searchString The user entered in the scope search input, or null on initial page render.
      *
-     * @return Scope[]|null
+     * @return Item[]|null
      */
     public function getScopeDisplayHierarchy(?string $searchString = null): ?array;
 }

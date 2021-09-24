@@ -86,6 +86,8 @@
             <argument key="$sectionClasses" type="collection" />
             <argument key="$collectionName">%tzunghaor_settings.default_collection%</argument>
             <argument key="$scopeProvider">@tzunghaor_settings.default_scope_provider</argument>
+            <argument key="$collectionTitle" />
+            <argument key="$collectionExtra" type="collection" />
 
             <tag name="kernel.cache_warmer" />
         </service>

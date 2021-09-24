@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
-use Tzunghaor\SettingsBundle\Model\Scope;
+use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 
 /**
@@ -45,6 +45,10 @@ class SettingsMetaService implements CacheWarmerInterface
      * @var string
      */
     private $collectionName;
+    /**
+     * @var Item
+     */
+    private $collectionItem;
 
 
     public function __construct(
@@ -52,12 +56,16 @@ class SettingsMetaService implements CacheWarmerInterface
         MetaDataExtractor $metaDataExtractor,
         ScopeProviderInterface $scopeProvider,
         string $collectionName,
-        array $sectionClasses
+        array $sectionClasses,
+        // I would like to pass simply an Item instead three arguments, but DependencyInjection cannot do that
+        ?string $collectionTitle = null,
+        array $collectionExtra = []
     ) {
         $this->sectionClasses = $sectionClasses;
         $this->cache = $cache;
         $this->metaDataExtractor = $metaDataExtractor;
         $this->scopeProvider = $scopeProvider;
+        $this->collectionItem = new Item($collectionName, $collectionTitle, [], $collectionExtra);
         $this->collectionName = $collectionName;
     }
 
@@ -127,9 +135,9 @@ class SettingsMetaService implements CacheWarmerInterface
      * @param mixed|null $subject Can be scope name or an object or anything you support.
      *                            If null, default scope name is returned.
      *
-     * @return Scope of subject
+     * @return Item of subject
      */
-    public function getScope($subject = null): Scope
+    public function getScope($subject = null): Item
     {
         return $this->scopeProvider->getScope($subject);
     }
@@ -179,6 +187,14 @@ class SettingsMetaService implements CacheWarmerInterface
         $sectionClass = $this->sectionClasses[$sectionName];
 
         return $this->getSectionMetaData($sectionClass);
+    }
+
+    /**
+     * @return Item basic info about collection
+     */
+    public function getCollectionItem(): Item
+    {
+        return $this->collectionItem;
     }
 
     // cache warmup functions:

@@ -4,7 +4,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Tzunghaor\SettingsBundle\DependencyInjection\Configuration;
-use Tzunghaor\SettingsBundle\Model\Scope;
+use Tzunghaor\SettingsBundle\Model\Item;
 
 /**
  * Scope provider using a static scope hierarchy - used when scopes are defined in configuration
@@ -12,12 +12,12 @@ use Tzunghaor\SettingsBundle\Model\Scope;
 class StaticScopeProvider implements ScopeProviderInterface
 {
     /**
-     * @var Scope[]
+     * @var Item[]
      */
     private $scopeHierarchy;
 
     /**
-     * @var Scope[] [$scopeName => Scope, ...]
+     * @var Item[] [$scopeName => Scope, ...]
      */
     private $scopeLookup;
 
@@ -27,12 +27,12 @@ class StaticScopeProvider implements ScopeProviderInterface
     private $scopePathLookup;
 
     /**
-     * @var Scope
+     * @var Item
      */
     private $defaultScope;
 
     /**
-     * @param Scope[] $scopeHierarchy
+     * @param Item[] $scopeHierarchy
      * @param string $defaultScopeName
      */
     public function __construct(array $scopeHierarchy, string $defaultScopeName)
@@ -53,7 +53,7 @@ class StaticScopeProvider implements ScopeProviderInterface
     /**
      * @inheritdoc
      */
-    public function getScope($subject = null): Scope
+    public function getScope($subject = null): Item
     {
         if ($subject === null) {
             return $this->defaultScope;
@@ -90,7 +90,7 @@ class StaticScopeProvider implements ScopeProviderInterface
      * Builds scope hierarchy subset that matches $searchString
      *
      * @param string $searchString
-     * @param Scope[] $scopes
+     * @param Item[] $scopes
      *
      * @return array
      */
@@ -106,10 +106,9 @@ class StaticScopeProvider implements ScopeProviderInterface
             if (empty($matchingChildren) && !$isMatching) {
                 continue;
             }
-            $passive = $scope->isPassive() || !$isMatching;
 
             $matchingScopes[] =
-                new Scope($scope->getName(), $scope->getTitle(), $matchingChildren, $passive, $scope->getExtra());
+                new Item($scope->getName(), $scope->getTitle(), $matchingChildren, $scope->getExtra());
         }
 
         return $matchingScopes;
@@ -124,7 +123,7 @@ class StaticScopeProvider implements ScopeProviderInterface
      * @param array $scopeDefinitions
      * @param array $scopePath name of ancestor scopes
      *
-     * @return Scope[] $scopeDefinitions tree turned into Scope object tree
+     * @return Item[] $scopeDefinitions tree turned into Scope object tree
      */
     private function addToScopeLookup(array& $lookup, array& $pathLookup, array $scopeDefinitions, $scopePath): array
     {
@@ -133,32 +132,24 @@ class StaticScopeProvider implements ScopeProviderInterface
         $scopes = [];
 
         foreach ($scopeDefinitions as $scopeDefinition) {
-            $scopeName = $scopeDefinition[Configuration::SCOPE_NAME];
-            $childrenDef = $scopeDefinition[Configuration::SCOPE_CHILDREN] ?? null;
-            $isPassive = $scopeDefinition[Configuration::SCOPE_PASSIVE] ?? false;
-            $title = $scopeDefinition[Configuration::SCOPE_TITLE] ?? null;
-            $handledDefinitionKeys = [
-                Configuration::SCOPE_NAME, Configuration::SCOPE_TITLE, Configuration::SCOPE_CHILDREN,
-                Configuration::SCOPE_PASSIVE
-            ];
+            $scopeName = $scopeDefinition[Configuration::NAME];
+            $childrenDef = $scopeDefinition[Configuration::CHILDREN] ?? null;
+            $title = $scopeDefinition[Configuration::TITLE] ?? null;
 
             if ($childrenDef !== null) {
                 $childrenPath = $scopePath;
-                if (!$isPassive) {
-                    array_push($childrenPath, $scopeName);
-                }
+                array_push($childrenPath, $scopeName);
 
                 $children = $this->addToScopeLookup($lookup, $pathLookup, $childrenDef, $childrenPath);
             } else {
                 $children = [];
             }
 
-            $extra = array_diff_key($scopeDefinition, array_flip($handledDefinitionKeys));
-            $scope = new Scope(
+            $extra = $scopeDefinition[Configuration::EXTRA] ?? [];
+            $scope = new Item(
                 $scopeName,
                 $title,
                 $children,
-                $isPassive,
                 $extra
             );
 

@@ -27,10 +27,16 @@ class SectionMetaData
      * @var SettingMetaData[]
      */
     private $settingMetaDataArray;
+
     /**
      * @var string
      */
     private $title;
+
+    /**
+     * @var array
+     */
+    private $extra;
 
     /**
      * @param string $name used as identifier in DB and url
@@ -38,19 +44,22 @@ class SectionMetaData
      * @param string $dataClass php class that defines/stores this section
      * @param string $description description used in settings editor
      * @param SettingMetaData[] $settingMetaDataArray metadata array of the settings in this section
+     * @param array $extra Extra data that you can use in your templates / extensions
      */
     public function __construct(
         string $name,
         string $title,
         string $dataClass,
         string $description,
-        array $settingMetaDataArray
+        array $settingMetaDataArray,
+        array $extra = []
     ) {
         $this->name = $name;
         $this->dataClass = $dataClass;
         $this->description = $description;
         $this->settingMetaDataArray = $settingMetaDataArray;
         $this->title = $title;
+        $this->extra = $extra;
     }
 
     /**
@@ -91,5 +100,13 @@ class SectionMetaData
     public function getSettingMetaDataArray(): array
     {
         return $this->settingMetaDataArray;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExtra(): array
+    {
+        return $this->extra;
     }
 }

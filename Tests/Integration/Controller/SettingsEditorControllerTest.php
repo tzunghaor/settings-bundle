@@ -306,9 +306,11 @@ class SettingsEditorControllerTest extends WebTestCase
                 ],
                 [
                     'root' => [
+                        'href' => '/settings/edit/default/root/foo',
                         // not matching elements that are shown only because of matching child have no href
                         'children' => [
                             'day' => [
+                                'href' => '/settings/edit/default/day/foo',
                                 'current' => true,
                                 'children' => [
                                     'morning' => [

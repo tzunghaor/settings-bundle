@@ -4,7 +4,7 @@ namespace Tzunghaor\SettingsBundle\Tests\Unit\Service;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use Tzunghaor\SettingsBundle\Model\Scope;
+use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Service\StaticScopeProvider;
 
 class StaticScopeProviderTest extends TestCase
@@ -12,7 +12,7 @@ class StaticScopeProviderTest extends TestCase
     private $scopeHierarchy = [
         ['name' => 'all', 'children' => [
             ['name' => 'foo'],
-            ['name' => 'bar',  'title' => 'Great Bar', 'class' => 'lofty', 'children' => [
+            ['name' => 'bar',  'title' => 'Great Bar', 'extra' => ['class' => 'lofty'], 'children' => [
                 ['name' => 'bar1'],
                 ['name' => 'bar2']
             ]],
@@ -49,29 +49,29 @@ class StaticScopeProviderTest extends TestCase
     public function scopeHierarchyProvider(): array
     {
         $defaultExpected = [
-            new Scope('all', null, [
-                new Scope('foo', null, [], false, []),
-                new Scope('bar', 'Great Bar', [
-                    new Scope('bar1', null, [], false, []),
-                    new Scope('bar2', null, [], false, []),
-                ], false, ['class' => 'lofty'])
-            ], false, []),
-            new Scope('johnny', null, [
-                new Scope('babar', null, [], false, []),
-                new Scope('doofoo', null, [], false, []),
-            ], false, []),
+            new Item('all', null, [
+                new Item('foo', null, [], []),
+                new Item('bar', 'Great Bar', [
+                    new Item('bar1', null, [], []),
+                    new Item('bar2', null, [], []),
+                ], ['class' => 'lofty'])
+            ], []),
+            new Item('johnny', null, [
+                new Item('babar', null, [], []),
+                new Item('doofoo', null, [], []),
+            ], []),
         ];
 
         $barExpected = [
-            new Scope('all', null, [
-                new Scope('bar', 'Great Bar', [
-                    new Scope('bar1'),
-                    new Scope('bar2'),
-                ], false, ['class' => 'lofty'])
-            ], true),
-            new Scope('johnny', null, [
-                new Scope('babar'),
-            ], true),
+            new Item('all', null, [
+                new Item('bar', 'Great Bar', [
+                    new Item('bar1'),
+                    new Item('bar2'),
+                ], ['class' => 'lofty'])
+            ]),
+            new Item('johnny', null, [
+                new Item('babar'),
+            ]),
         ];
 
         return [
