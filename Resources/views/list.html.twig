@@ -14,7 +14,7 @@
                 {% endif %}
                 {% if item.children is defined and item.children %}
                     {% block ts_children %}
-                    {{ include('@TzunghaorSettings/list.html.twig', { items: item.children, currentName }) }}
+                    {{ include('@TzunghaorSettings/list.html.twig', { items: item.children, currentName: currentName }) }}
                     {% endblock %}
                 {% endif %}
             </li>
