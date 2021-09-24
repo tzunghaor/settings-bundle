@@ -1,44 +1,72 @@
 {# the form part of the settings editor #}
 <div class="tzunghaor_settings_editor">
-    <h3>
-        {% block ts_section_title %}Section "{{ form.vars.label }}" for scope "{{ currentScope.title }}"{% endblock %}
-    </h3>
+    {% block ts_section_heading %}
+        <h3>
+            {% block ts_section_title %}Section "{{ form.vars.label }}" for scope "{{ currentScope.title }}"{% endblock %}
+        </h3>
+    {% endblock %}
 
-    {% if form.vars.help %}
-        <div class="tzunghaor_settings_section_description">
-            {{ form.vars.help }}
-        </div>
-    {% endif %}
-
-    {{ form_start(form) }}
-    {% for settingName, formField in form['settings'] %}
-        <div class="tzunghaor_setting_group">
-            {{ form_row(form['in_scope'][settingName]) }}
-            <div class="tzunghaor_setting_value">
-                <div class="tzunghaor_setting_labeled_widget tzunghaor_current_scope" >
-                    {{ form_label(formField) }}
-                    {{ form_widget(formField) }}
-                </div>
-                <div class="tzunghaor_setting_labeled_widget tzunghaor_parent_scope">
-                    {{ form_label(formField) }}
-                    {{ form_widget(form['parent_settings'][settingName]) }}
-                </div>
-                {{ form_help(formField) }}
-                {% if formField.vars.errors|length %}
-                <div class="tzunghaor_settings_error">
-                    {{ form_errors(formField) }}
-                </div>
-                {% endif %}
+    {% block ts_section_description %}
+        {% if form.vars.help %}
+            <div class="tzunghaor_settings_section_description">
+                {{ form.vars.help }}
             </div>
-        </div>
-    {% endfor %}
-    {% block ts_save_button %}
-    <button type="submit">Save</button>
+        {% endif %}
     {% endblock %}
 
-    {% block ts_button_templates %}
-    <template class="tzunghaor_setting_add_button"><button type="button">Add</button></template>
-    <template class="tzunghaor_setting_remove_button"><button type="button">X</button></template>
+    {% block ts_form %}
+        {{ form_start(form) }}
+
+        {% block ts_form_main %}
+            {% for settingName, formField in form['settings'] %}
+                {% block ts_setting_form %}
+                    <div class="tzunghaor_setting_group">
+                        {% block ts_setting_in_scope %}
+                            {{ form_row(form['in_scope'][settingName]) }}
+                        {% endblock %}
+
+                        <div class="tzunghaor_setting_value">
+                            {% block ts_setting_current %}
+                                <div class="tzunghaor_setting_labeled_widget tzunghaor_current_scope" >
+                                    {{ form_label(formField) }}
+                                    {{ form_widget(formField) }}
+                                </div>
+                            {% endblock %}
+
+                            {% block ts_setting_parent %}
+                                <div class="tzunghaor_setting_labeled_widget tzunghaor_parent_scope">
+                                    {{ form_label(formField) }}
+                                    {{ form_widget(form['parent_settings'][settingName]) }}
+                                </div>
+                            {% endblock %}
+
+                            {% block ts_setting_description %}
+                                {{ form_help(formField) }}
+                            {% endblock %}
+
+                            {% block ts_setting_errors %}
+                                {% if formField.vars.errors|length %}
+                                    <div class="tzunghaor_settings_error">
+                                        {{ form_errors(formField) }}
+                                    </div>
+                                {% endif %}
+                            {% endblock %}
+                        </div>
+                    </div>
+                {% endblock %}
+            {% endfor %}
+        {% endblock %}
+
+        {% block ts_save_button %}
+            <button type="submit">Save</button>
+        {% endblock %}
+
+        {# button templates must be inside the form in order the javascript to find them #}
+        {% block ts_button_templates %}
+            <template class="tzunghaor_setting_add_button"><button type="button">Add</button></template>
+            <template class="tzunghaor_setting_remove_button"><button type="button">X</button></template>
+        {% endblock %}
+
+        {{ form_end(form) }}
     {% endblock %}
-    {{ form_end(form) }}
 </div>

@@ -6,7 +6,10 @@
             {% block ts_collection_selector %}
                 {% if collections | length > 1 %}
                     <div class="tzunghaor_settings_collection_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
-                        <h3>{% block ts_collections_title %}Collections{% endblock %}</h3>
+                        {% block ts_collections_heading %}
+                            <h3>{% block ts_collections_title %}Collections{% endblock %}</h3>
+                        {% endblock %}
+
                         {% block ts_collections_list %}
                         {{ include('@TzunghaorSettings/list.html.twig', { items: collections, currentName: currentCollection }) }}
                         {% endblock %}
@@ -26,7 +29,9 @@
                                 'currentScope': currentScope.name,
                             } | json_encode | raw }}</script>
 
-                        <h3>{% block ts_scopes_title %}Scopes{% endblock %}</h3>
+                        {% block ts_scopes_heading %}
+                            <h3>{% block ts_scopes_title %}Scopes{% endblock %}</h3>
+                        {% endblock %}
 
                         {% if searchUrl is defined and searchUrl is not null %}
                             <input class="tzunghaor_settings_scope_search" type="text" />
@@ -43,7 +48,10 @@
             {% block ts_section_selector %}
                 {% if sections | length > 1 %}
                     <div class="tzunghaor_settings_section_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
-                        <h3>{% block ts_sections_title %}Sections{% endblock %}</h3>
+                        {% block ts_sections_heading %}
+                            <h3>{% block ts_sections_title %}Sections{% endblock %}</h3>
+                        {% endblock %}
+
                         {% block ts_sections_list %}
                         {{ include('@TzunghaorSettings/list.html.twig', { items: sections, currentName: currentSection }) }}
                         {% endblock %}
