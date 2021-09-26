@@ -1,0 +1,25 @@
+{# Custom page #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% use "@TzunghaorSettings/editor_blocks.html.twig" %}
+    <meta charset="UTF-8">
+    <title>{% block ts_page_title %}Custom Template{% endblock %}</title>
+    {{ block('ts_stylesheets') }}
+</head>
+<body>
+
+<div id="custom_form">
+    {{ block('ts_setting_form') }}
+</div>
+
+<div id="custom_scope_list">
+    {{ include('custom_list.html.twig', { items: scopes, currentName: currentScope }) }}
+</div>
+
+{{ block('ts_collection_selector') }}
+{{ block('ts_section_selector') }}
+
+{{ block('ts_javascripts') }}
+</body>
+</html>

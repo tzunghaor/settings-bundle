@@ -1,10 +1,17 @@
 tzunghaor_settings:
   collections:
     default:
+      title: Nice Default Collection
       scopes:
         - name: root
+          title: Root of All
+          extra:
+            class: root-class
           children:
             - name: day
+              title: Beautiful Day
+              extra:
+                class: beautiful class
               children:
                 - name: morning
                 - name: afternoon
@@ -18,6 +25,7 @@ tzunghaor_settings:
           prefix: Tzunghaor\SettingsBundle\Tests\TestProject\Settings\
 
     other:
+      title: Super Other Collection
       mappings:
         default:
           dir: '%kernel.project_dir%/OtherSettings'

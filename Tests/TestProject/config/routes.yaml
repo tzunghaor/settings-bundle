@@ -14,3 +14,9 @@ other_edit_single_subject:
 other_test:
   path: /other-test
   controller: 'app.test_controller::other'
+
+custom_template:
+  path: /custom-template/{collection?}/{scope?}/{section?}
+  controller: 'tzunghaor_settings.editor_controller::edit'
+  defaults:
+    template: 'custom_page.html.twig'

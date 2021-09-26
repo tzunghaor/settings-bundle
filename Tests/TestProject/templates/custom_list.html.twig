@@ -1,0 +1,7 @@
+{% extends '@!TzunghaorSettings/list.html.twig' %}
+
+{% block ts_item_label %}
+    <span{% if item.extra.class is defined %} class="{{ item.extra.class }}"{% endif %}>
+        ---{{ item.title }}
+    </span>
+{% endblock %}

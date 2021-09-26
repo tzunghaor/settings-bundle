@@ -4,6 +4,7 @@ namespace Tzunghaor\SettingsBundle\Tests\Integration\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use PHPUnit\Framework\Constraint\Constraint;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
@@ -151,6 +152,68 @@ class SettingsEditorControllerTest extends WebTestCase
         }
     }
 
+    public function templateDataProvider(): array
+    {
+        $collectionSelectorXpath = '//div[contains(@class,"tzunghaor_settings_collection_selector")]';
+        $collectionItemXpath = $collectionSelectorXpath . '//*[@class="tzunghaor_settings_item"]';
+        return [
+            'default template' => [
+                '/settings/edit/default/day/Ui.BoxSettings',
+                [
+                    '//title' => [
+                        'text' => self::equalTo('Tzunghaor Settings'),
+                    ],
+                    $collectionItemXpath => [
+                        'count' => self::equalTo(2),
+                    ],
+                    "($collectionItemXpath)[1]" => [
+                        'text' => self::equalTo('Nice Default Collection'),
+                    ],
+                    "($collectionItemXpath)[2]" => [
+                        'text' => self::equalTo('Super Other Collection'),
+                    ],
+                    '//div[contains(@class,"tzunghaor_settings_scopes_list")]//*[1][@class="tzunghaor_settings_item"]' => [
+                        'text' => self::equalTo('Root of All'),
+                    ],
+                ],
+            ],
+
+            'custom template' => [
+                '/custom-template/default/day/Ui.BoxSettings',
+                [
+                    '//title' => [
+                        'text' => self::equalTo('Custom Template'),
+                    ],
+                    '//div[@id="custom_scope_list"]//*[1][@class="tzunghaor_settings_item"]/span' => [
+                        'text' => self::equalTo('---Root of All'),
+                        'class' => self::equalTo('root-class'),
+                    ]
+
+                ],
+            ],
+        ];
+    }
+
+
+    /**
+     * Tests the twig templates
+     *
+     * @dataProvider templateDataProvider
+     */
+    public function testTemplate(string $uri, array $assertions): void
+    {
+        $browser = static::createClient();
+        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $crawler = $browser->request('get', $uri);
+
+        foreach ($assertions as $xpath => $elementAssertions) {
+            $element = $crawler->filterXPath($xpath);
+            foreach ($elementAssertions as $what => $value) {
+                self::assertElement($value, $element, $what, $xpath . ' --- ' . $what);
+            }
+        }
+    }
+
     /**
      * Testing custom scope provider, custom entity and custom cache
      */
@@ -274,11 +337,11 @@ class SettingsEditorControllerTest extends WebTestCase
                     'linkRoute' => 'tzunghaor_settings_edit',
                 ],
                 [
-                    'root' => [
+                    'Root of All' => [
                         'href' => '/settings/edit/default/root/foo',
                         'current' => true,
                         'children' => [
-                            'day' => [
+                            'Beautiful Day' => [
                                 'href' => '/settings/edit/default/day/foo',
                                 'children' => [
                                     'morning' => [
@@ -305,11 +368,11 @@ class SettingsEditorControllerTest extends WebTestCase
                     'linkRoute' => 'tzunghaor_settings_edit',
                 ],
                 [
-                    'root' => [
+                    'Root of All' => [
                         'href' => '/settings/edit/default/root/foo',
                         // not matching elements that are shown only because of matching child have no href
                         'children' => [
-                            'day' => [
+                            'Beautiful Day' => [
                                 'href' => '/settings/edit/default/day/foo',
                                 'current' => true,
                                 'children' => [
@@ -383,12 +446,12 @@ class SettingsEditorControllerTest extends WebTestCase
             if ($expectedHref) {
                 self::assertEquals(1, $links->count());
                 self::assertEquals($expectedHref, $links->attr('href'));
-                $scopeName = $links->first()->text();
+                $scopeTitle = $links->first()->text();
             } else {
                 self::assertEquals(0, $links->count());
-                $scopeName = $li->filterXPath('./li/span')->text();
+                $scopeTitle = $li->filterXPath('./li/span')->text();
             }
-            self::assertEquals($expectedName, $scopeName);
+            self::assertEquals($expectedName, $scopeTitle);
 
             $expectedChildren = $expectations['children'] ?? null;
             $ul = $li->filterXPath('./li/ul');
@@ -430,5 +493,29 @@ class SettingsEditorControllerTest extends WebTestCase
         $entityManager->persist($otherSubjectAxolotl);
 
         $entityManager->flush();
+    }
+
+    private static function assertElement(Constraint $constraint, Crawler $element, string $what, string $message): void
+    {
+        try {
+            switch ($what) {
+                case 'count':
+                    self::assertThat($element->count(), $constraint, $message);
+                    break;
+
+                case 'text':
+                    self::assertThat($element->text(), $constraint, $message);
+                    break;
+
+                case 'class':
+                    self::assertThat($element->attr('class'), $constraint, $message);
+                    break;
+
+                default:
+                    throw new \DomainException('Unknown $what in ' . __METHOD__);
+            }
+        } catch (\Throwable $t) {
+            throw new \RuntimeException('Error checking at "' . $message . '": ' . $t->getMessage());
+        }
     }
 }
