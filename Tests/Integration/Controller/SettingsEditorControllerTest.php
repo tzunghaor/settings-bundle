@@ -9,10 +9,12 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Cache\CacheInterface;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 use Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherPersistedSetting;
 use Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherSubject;
+use Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\FunSettings;
 use Tzunghaor\SettingsBundle\Tests\TestProject\Settings\Ui\BoxSettings;
 use Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel;
 
@@ -150,6 +152,63 @@ class SettingsEditorControllerTest extends WebTestCase
                 );
             }
         }
+    }
+
+    /**
+     * Tests security feature
+     */
+    public function testSecurity(): void
+    {
+        $browser = static::createClient();
+        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $this->setUpDatabase();
+
+        /** @var SettingsService $settingsService */
+        $settingsService = self::$container->get('tzunghaor_settings.settings_service.other');
+
+        // the ForbiddenAuthorizationChecker denies editing scopes containing "forbidden"
+        // unless "allow" query parameter is present in the HTTP request.
+
+        $uri = '/settings/edit/other/name-forbidden/FunSettings';
+        $browser->request('get', $uri);
+        self::assertEquals(Response::HTTP_FORBIDDEN, $browser->getResponse()->getStatusCode());
+        self::assertEquals(
+            'fff',
+            $settingsService->getSection(FunSettings::class, 'name-forbidden')->foo,
+            'setting should NOT be changed after GET request'
+        );
+
+        $browser->request('get', $uri . '?allow');
+        self::assertEquals(Response::HTTP_OK, $browser->getResponse()->getStatusCode());
+        self::assertEquals(
+            'fff',
+            $settingsService->getSection(FunSettings::class, 'name-forbidden')->foo,
+            'setting should NOT be changed after GET request'
+        );
+
+        $formData = [
+            '_method' => 'PATCH',
+            'settings_editor' => [
+                'in_scope' => ['foo' => '1'],
+                'settings' => ['foo' => 'edited'],
+            ],
+        ];
+
+        $browser->request('post', $uri, $formData);
+        self::assertEquals(Response::HTTP_FORBIDDEN, $browser->getResponse()->getStatusCode());
+        self::assertEquals(
+            'fff',
+            $settingsService->getSection(FunSettings::class, 'name-forbidden')->foo,
+            'setting should NOT be changed after forbidden POST request'
+        );
+
+        $browser->request('post', $uri . '?allow', $formData);
+        self::assertEquals(Response::HTTP_FOUND, $browser->getResponse()->getStatusCode());
+        self::assertEquals(
+            'edited',
+            $settingsService->getSection(FunSettings::class, 'name-forbidden')->foo,
+            'setting should be changed after allowed POST request'
+        );
     }
 
     public function templateDataProvider(): array
@@ -491,6 +550,11 @@ class SettingsEditorControllerTest extends WebTestCase
         $otherSubjectAxolotl->setName('axolotl');
         $otherSubjectAxolotl->setGroup('bar');
         $entityManager->persist($otherSubjectAxolotl);
+
+        $otherSubjectForbidden = new OtherSubject();
+        $otherSubjectForbidden->setName('forbidden');
+        $otherSubjectForbidden->setGroup('forbidden');
+        $entityManager->persist($otherSubjectForbidden);
 
         $entityManager->flush();
     }

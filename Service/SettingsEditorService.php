@@ -6,7 +6,9 @@ namespace Tzunghaor\SettingsBundle\Service;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Tzunghaor\SettingsBundle\Exception\AccessDeniedException;
 use Tzunghaor\SettingsBundle\Form\SettingsEditorType;
 use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
@@ -421,9 +423,10 @@ class SettingsEditorService
             return;
         }
 
+        // if symfony-security is not installed, then throw an HttpException which semantically might not be correct
         $exceptionClass = Symfony\Component\Security\Core\Exception\AccessDeniedException::class;
         if (!class_exists($exceptionClass)) {
-            $exceptionClass = \RuntimeException::class;
+            $exceptionClass = AccessDeniedHttpException::class;
         }
 
         throw new $exceptionClass('Not allowed to edit these settings.');

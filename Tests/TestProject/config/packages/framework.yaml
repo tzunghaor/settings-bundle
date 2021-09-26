@@ -1,1 +1,3 @@
 framework:
+  # should test that security feature works even without CSRF
+  csrf_protection: false
