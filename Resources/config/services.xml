@@ -85,7 +85,7 @@
             <argument key="$metaDataExtractor" type="service" id="tzunghaor_settings.meta_data_extractor"/>
             <argument key="$sectionClasses" type="collection" />
             <argument key="$collectionName">%tzunghaor_settings.default_collection%</argument>
-            <argument key="$scopeProvider">@tzunghaor_settings.default_scope_provider</argument>
+            <argument key="$scopeProvider" type="service" id="tzunghaor_settings.default_scope_provider" />
             <argument key="$collectionTitle" />
             <argument key="$collectionExtra" type="collection" />
 

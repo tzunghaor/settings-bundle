@@ -1,0 +1,7 @@
+tzunghaor_settings:
+  collections:
+    default:
+      mappings:
+        default:
+          dir: '%kernel.project_dir%/Settings'
+          prefix: Tzunghaor\SettingsBundle\Tests\TestProject\Settings\

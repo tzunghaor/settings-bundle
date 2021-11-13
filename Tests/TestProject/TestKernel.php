@@ -23,11 +23,13 @@ class TestKernel extends Kernel
 
     protected function configureContainer(ContainerConfigurator $c): void
     {
+        $environment = $this->getEnvironment();
         // the very useful test container used in KernelTestCase is defined here
         $c->import(__DIR__.'/../../vendor/symfony/framework-bundle/Resources/config/test.php');
 
         // test app config
-        $c->import(__DIR__.'/config/services*.yaml');
+        $c->import(__DIR__ . '/config/services_' . $environment . '.yaml');
         $c->import(__DIR__.'/config/packages/*.yaml');
+        $c->import(__DIR__.'/config/packages/' . $environment . '/*.yaml');
     }
 }
