@@ -19,4 +19,13 @@ class FunSettings extends AbstractBaseSettings
      * @var string
      */
     public $bar = 'bbb';
+
+    protected $minimum = 100;
+
+    /**
+     * Fun maximum
+     *
+     * Higher than normal maximum
+     */
+    protected $maximum = 200;
 }

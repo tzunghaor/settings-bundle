@@ -20,8 +20,6 @@ use Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel;
 
 class SettingsEditorControllerTest extends WebTestCase
 {
-    protected static $class = TestKernel::class;
-
     public function editDataProvider(): array
     {
         $defaultBoxSettings = new BoxSettings();
@@ -141,7 +139,7 @@ class SettingsEditorControllerTest extends WebTestCase
         $this->doEdits($browser, $edits);
 
         /** @var SettingsService $settingsService */
-        $settingsService = self::$container->get('tzunghaor_settings.settings_service');
+        $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service');
 
         foreach ($expectedSections as $sectionClass => $expectedScopedSections) {
             foreach ($expectedScopedSections as $scope => $expectedSection) {
@@ -164,7 +162,7 @@ class SettingsEditorControllerTest extends WebTestCase
         $this->setUpDatabase();
 
         /** @var SettingsService $settingsService */
-        $settingsService = self::$container->get('tzunghaor_settings.settings_service.other');
+        $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service.other');
 
         // the ForbiddenAuthorizationChecker denies editing scopes containing "forbidden"
         // unless "allow" query parameter is present in the HTTP request.
@@ -283,7 +281,7 @@ class SettingsEditorControllerTest extends WebTestCase
         $this->setUpDatabase();
 
         /** @var AdapterInterface $cache */
-        $cache = self::$container->get('test_other_cache');
+        $cache = self::getContainer()->get('test_other_cache');
         $cache->clear();
 
         self::assertNull($this->getJoeFunCachedItem(), 'test should have emptied TestProject cache');
@@ -336,7 +334,7 @@ class SettingsEditorControllerTest extends WebTestCase
         }
         
         // check that custom entity is used and "extra" is filled
-        $entityManager = self::$container->get('doctrine')->getManager();
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
         
         $joeEntity = $entityManager->find(OtherPersistedSetting::class, 
                                           ['scope' => 'name-joe', 'path' => 'FunSettings.name']);
@@ -371,7 +369,7 @@ class SettingsEditorControllerTest extends WebTestCase
     private function getJoeFunCachedItem()
     {
         /** @var CacheInterface $cache */
-        $cache = self::$container->get('test_other_cache');
+        $cache = self::getContainer()->get('test_other_cache');
 
         $cacheKey = 'tzunghaor_settings_section.Tzunghaor.SettingsBundle.Tests.TestProject.OtherSettings.FunSettings..name-joe';
         $cachedItem = $cache->get($cacheKey, function() { return null; });
@@ -527,7 +525,7 @@ class SettingsEditorControllerTest extends WebTestCase
     private function setUpDatabase(): void
     {
         /** @var EntityManagerInterface $entityManager */
-        $entityManager = self::$container->get('doctrine')->getManager();
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
 
         // drop existing database and build structure
         $allMetadata = $entityManager->getMetadataFactory()->getAllMetadata();

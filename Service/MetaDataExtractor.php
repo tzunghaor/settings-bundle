@@ -5,6 +5,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 
 
 use Doctrine\Common\Annotations\Reader;
+use ReflectionProperty;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -56,30 +57,44 @@ class MetaDataExtractor
      */
     public function createSectionMetaData(string $sectionName, string $sectionClass): SectionMetaData
     {
-        $settingsMetaArray = [];
-
         $reflectionClass = new \ReflectionClass($sectionClass);
 
         [$sectionTitle, $sectionDescription, $sectionExtra] = $this->extractSectionInfo($reflectionClass);
         $sectionTitle = empty($sectionTitle) ? $sectionName : $sectionTitle;
 
-        $defaultType = new Type('string');
-
         // collect properties, including ancestor classes private properties
+        // we will start with ancestors and allow subclasses to override properties
+        $reflectionProperties = [];
         $currentReflectionClass = $reflectionClass;
-        $reflectionProperties = $currentReflectionClass->getProperties();
-        while ($currentReflectionClass = $currentReflectionClass->getParentClass()) {
-            $reflectionProperties = array_merge($reflectionProperties, $currentReflectionClass->getProperties());
-        }
-        foreach ($reflectionProperties as $reflectionProperty) {
-            // extract data type
-            $propertyName = $reflectionProperty->getName();
-            // this happens when we meet an inherited public/protected property in the ancestor class again - can skip
-            if (array_key_exists($propertyName, $settingsMetaArray)) {
-                continue;
-            }
+        do {
+            $reflectionProperties = array_merge($currentReflectionClass->getProperties(), $reflectionProperties);
+        } while ($currentReflectionClass = $currentReflectionClass->getParentClass());
 
-            $propertyAnnotations = $this->annotationReader->getPropertyAnnotations($reflectionProperty);
+        $settingsMetaArray = $this->extractPropertyInfos($reflectionProperties);
+
+        return new SectionMetaData(
+            $sectionName, $sectionTitle, $sectionClass, $sectionDescription, $settingsMetaArray, $sectionExtra
+        );
+    }
+
+    /**
+     * Extracts settings metadata from class properties.
+     * If multiple property reflections are passed with the same name, then non-empty extracted data from later ones
+     * will override earlier ones.
+     *
+     * @param ReflectionProperty[] $reflectionProperties
+     * @return SettingMetaData[]
+     *
+     * @throws SettingsException
+     */
+    private function extractPropertyInfos(array $reflectionProperties): array
+    {
+        $settingsMetaArray = [];
+        $defaultDataType = new Type('string');
+
+        foreach ($reflectionProperties as $reflectionProperty) {
+            $sectionClass = $reflectionProperty->class;
+            $propertyName = $reflectionProperty->getName();
 
             $settingLabel = null;
             $settingHelp = null;
@@ -89,6 +104,7 @@ class MetaDataExtractor
             $formOptions = [];
             $isEnum = false;
 
+            $propertyAnnotations = $this->annotationReader->getPropertyAnnotations($reflectionProperty);
             foreach ($propertyAnnotations as $annotation) {
                 if ($annotation instanceof Setting) {
                     $formType = $annotation->formType;
@@ -109,29 +125,48 @@ class MetaDataExtractor
                 $dataTypes = $this->propertyInfo->getTypes($sectionClass, $propertyName);
 
                 if ($dataTypes === null) {
-                    $dataType = $defaultType;
+                    $dataType = null;
                 } elseif (count($dataTypes) === 1) {
                     $dataType = $dataTypes[0];
                 } else {
                     throw new SettingsException(sprintf('Multiple types are not supported for setting %s in %s',
-                                                        $propertyName, $sectionClass));
+                        $propertyName, $sectionClass));
                 }
             }
 
+            $settingLabel = $settingLabel ??
+                trim((string) $this->propertyInfo->getShortDescription($sectionClass, $propertyName));
+            $settingHelp = $settingHelp ??
+                (string) $this->propertyInfo->getLongDescription($sectionClass, $propertyName);
+
+            // --- end of extracting info from property, now applying defaults if something is not defined explicitly
+            $ancestorMetaData = $settingsMetaArray[$propertyName] ?? null;
+
+            if ($dataType === null) {
+                $dataType = $ancestorMetaData ? $ancestorMetaData->getDataType() : $defaultDataType;
+            }
+
+            // by default enum allows multi select
             if ($isEnum && $dataType->isCollection()) {
                 $formOptions['multiple'] = $formOptions['multiple'] ?? true;
             }
 
-            $settingLabel = $settingLabel ??
-                trim($this->propertyInfo->getShortDescription($sectionClass, $propertyName));
-            $settingHelp = $settingHelp ??
-                (string) $this->propertyInfo->getLongDescription($sectionClass, $propertyName);
-            $settingLabel = empty($settingLabel) ? $propertyName : $settingLabel;
-
-            $formType = $formType ?? $this->getFormTypeByDataType($dataType);
+            if (empty($settingLabel)) {
+                $settingLabel = $ancestorMetaData ? $ancestorMetaData->getLabel() : $propertyName;
+            }
+            if (empty($settingHelp) && $ancestorMetaData) {
+                $settingHelp = $ancestorMetaData->getHelp();
+            }
+            if (empty($formType)) {
+                $formType = $ancestorMetaData ? $ancestorMetaData->getFormType() : $this->getFormTypeByDataType($dataType);
+            }
 
             if ($formType === CollectionType::class) {
                 $formOptions = $this->getCollectionFormOptions($dataType, $formEntryType, $formOptions);
+            }
+
+            if ($ancestorMetaData) {
+                $formOptions = array_merge($ancestorMetaData->getFormOptions(), $formOptions);
             }
 
             $settingsMetaArray[$propertyName] = new SettingMetaData(
@@ -144,9 +179,7 @@ class MetaDataExtractor
             );
         }
 
-        return new SectionMetaData(
-            $sectionName, $sectionTitle, $sectionClass, $sectionDescription, $settingsMetaArray, $sectionExtra
-        );
+        return $settingsMetaArray;
     }
 
     /**

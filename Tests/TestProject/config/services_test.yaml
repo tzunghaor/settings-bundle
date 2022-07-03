@@ -26,7 +26,16 @@ services:
   test_other_cache:
     public: true
     class: Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter
+    arguments:
+      $directory: '%kernel.project_dir%/var/cache/test/other_cache'
 
   # fake authorization checker
   security.authorization_checker:
     class: Tzunghaor\SettingsBundle\Tests\TestProject\Security\ForbiddenAuthorizationChecker
+
+  # while we use bundle's composer.json for tests php-doc-extractor has to be manually tagged
+  property_info.php_doc_extractor:
+    class: Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor
+    tags:
+      - { name: 'property_info.description_extractor', priority: -1000 }
+      - { name: 'property_info.type_extractor', priority: -1001 }
