@@ -312,6 +312,10 @@ class SettingsEditorService
             );
         }
 
+        usort($twigList, static function(ViewItem $a, ViewItem $b) {
+            return strcasecmp($a->getTitle(), $b->getTitle());
+        });
+
         return $twigList;
     }
 

@@ -57,7 +57,6 @@
         <service id="tzunghaor_settings.editor_controller"
                  class="Tzunghaor\SettingsBundle\Controller\SettingsEditorController">
             <argument key="$settingsEditorService" type="service" id="tzunghaor_settings.settings_editor_service"/>
-            <argument key="$settingsServiceLocator" type="tagged_locator" tag="tzunghaor_settings.settings_service" index-by="key"/>
             <argument key="$router" type="service" id="router"/>
             <argument key="$twig" type="service" id="twig"/>
 

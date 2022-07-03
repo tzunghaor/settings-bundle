@@ -4,7 +4,8 @@
 namespace Tzunghaor\SettingsBundle\Controller;
 
 
-use Symfony\Component\DependencyInjection\ServiceLocator;
+use Exception;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,40 +29,35 @@ class SettingsEditorController
      * @var Environment
      */
     private $twig;
+
     /**
      * @var SettingsEditorService
      */
     private $settingsEditorService;
-    /**
-     * @var ServiceLocator
-     */
-    private $settingsServiceLocator;
 
 
     public function __construct(
         SettingsEditorService $settingsEditorService,
-        ServiceLocator $settingsServiceLocator,
         RouterInterface $router,
         Environment $twig
     ) {
         $this->router = $router;
         $this->twig = $twig;
         $this->settingsEditorService = $settingsEditorService;
-        $this->settingsServiceLocator = $settingsServiceLocator;
     }
 
     /**
      * Settings edit form controller action
      *
      * @param Request $request
-     * @param string  $collection
-     * @param string  $section
-     * @param string  $scope
+     * @param string|null $collection
+     * @param string|null $section
+     * @param string|null $scope
      *
      * @return RedirectResponse|Response
      *
-     * @throws \Exception
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function edit(Request $request, ?string $collection, ?string $section, ?string $scope): Response
     {
@@ -101,7 +97,7 @@ class SettingsEditorController
      *
      * @return Response
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function searchScope(Request $request): Response
     {
