@@ -18,7 +18,7 @@ You can define multiple routes to the edit controller action for different use c
 
 ### Use case 1
 
-For example you have only one "default" setting collection and don't want it to
+For example, you have only one "default" setting collection and don't want it to
 be present in the url (as it would be with the route provided by the bundle), you
 can configure it like this:
 
