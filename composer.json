@@ -33,6 +33,9 @@
             "Tzunghaor\\SettingsBundle\\": "./src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": { "Tzunghaor\\SettingsBundle\\Tests\\": "Tests/" }
+    },
     "require-dev": {
         "phpstan/phpstan": "^1.8",
         "phpunit/phpunit": "^8.5",
