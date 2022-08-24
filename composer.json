@@ -30,7 +30,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Tzunghaor\\SettingsBundle\\": "./"
+            "Tzunghaor\\SettingsBundle\\": "./src/"
         }
     },
     "require-dev": {

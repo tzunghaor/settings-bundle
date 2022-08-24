@@ -31,7 +31,7 @@ class TzunghaorSettingsExtension extends Extension
         // load bundle config yamls
         $loader = new XmlFileLoader(
             $container,
-            new FileLocator(__DIR__.'/../Resources/config')
+            new FileLocator(__DIR__ . '/config')
         );
         $loader->load('services.xml');
 

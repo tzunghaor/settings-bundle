@@ -7,7 +7,7 @@ use Tzunghaor\SettingsBundle\Annotation\Setting;
 abstract class AbstractBaseSettings
 {
     /**
-     * @Setting(label="public name label")
+     * @Setting(label="assets name label")
      */
     public $name = 'baba';
 
