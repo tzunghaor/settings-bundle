@@ -4,7 +4,6 @@
 namespace Tzunghaor\SettingsBundle;
 
 
-use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class TzunghaorSettingsBundle extends Bundle
@@ -16,7 +15,7 @@ class TzunghaorSettingsBundle extends Bundle
     {
         if (null === $this->path) {
             $reflected = new \ReflectionObject($this);
-            // assume the modern directory structure by default
+            // use the modern directory structure
             $this->path = \dirname($reflected->getFileName(), 2);
         }
 
