@@ -1,7 +1,9 @@
 <?php
 
-namespace Tzunghaor\SettingsBundle\Annotation;
+namespace Tzunghaor\SettingsBundle\Attribute;
 
+use \Attribute;
+#[Attribute(Attribute::TARGET_CLASS)]
 /**
  * @Annotation
  *
@@ -27,4 +29,10 @@ class SettingSection
      * @var array Extra data that you can use in your templates / extensions.
      */
     public $extra;
+
+    public function __construct(?string $label = null, ?string $help = null, array $extra = []) {
+        $this->label = $label;
+        $this->help = $help;
+        $this->extra = $extra;
+    }
 }

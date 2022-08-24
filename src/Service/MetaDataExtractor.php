@@ -16,7 +16,8 @@ use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
 use Tzunghaor\SettingsBundle\Annotation\Setting as SettingAnnotation;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
-use Tzunghaor\SettingsBundle\Annotation\SettingSection;
+use Tzunghaor\SettingsBundle\Annotation\SettingSection as SettingSectionAnnotation;
+use Tzunghaor\SettingsBundle\Attribute\SettingSection;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
@@ -129,21 +130,20 @@ class MetaDataExtractor
             }
 
             if (method_exists($reflectionProperty, 'getAttributes')) {
-                $propertyAttributes = $reflectionProperty->getAttributes();
-                foreach ($propertyAttributes as $attribute) {
-                    if ($attribute instanceof Setting) {
-                        $formType = $attribute->formType;
-                        $formEntryType = $attribute->formEntryType;
-                        $formOptions = $attribute->formOptions ?? $formOptions;
-                        if (is_array($attribute->enum)) {
-                            $formType = $formType ?? ChoiceType::class;
-                            $formOptions['choices'] = $formOptions['choices'] ?? array_combine($attribute->enum, $attribute->enum);
-                            $isEnum = true;
-                        }
-                        $settingLabel = $attribute->label;
-                        $settingHelp = $attribute->help;
-                        $dataType = $dataType ?? $this->extractDataType($attribute->dataType);
+                $propertyAttributes = $reflectionProperty->getAttributes(Setting::class);
+                foreach ($propertyAttributes as $reflectionAttribute) {
+                    $attribute = $reflectionAttribute->newInstance();
+                    $formType = $attribute->formType;
+                    $formEntryType = $attribute->formEntryType;
+                    $formOptions = $attribute->formOptions ?? $formOptions;
+                    if (is_array($attribute->enum)) {
+                        $formType = $formType ?? ChoiceType::class;
+                        $formOptions['choices'] = $formOptions['choices'] ?? array_combine($attribute->enum, $attribute->enum);
+                        $isEnum = true;
                     }
+                    $settingLabel = $attribute->label;
+                    $settingHelp = $attribute->help;
+                    $dataType = $dataType ?? $this->extractDataType($attribute->dataType);
                 }
             }
 
@@ -284,15 +284,28 @@ class MetaDataExtractor
     {
         // first try the annotation
         $sectionAnnotation = $this->annotationReader
-            ->getClassAnnotation($reflectionClass, SettingSection::class);
+            ->getClassAnnotation($reflectionClass, SettingSectionAnnotation::class);
 
         $sectionExtra = $sectionTitle = $sectionDescription = null;
 
-        if ($sectionAnnotation instanceof SettingSection) {
+        if ($sectionAnnotation instanceof SettingSectionAnnotation) {
             $sectionTitle = $sectionAnnotation->label;
             $sectionDescription = $sectionAnnotation->help;
             $sectionExtra = $sectionAnnotation->extra;
         }
+
+        // then try attributes
+        if (PHP_MAJOR_VERSION >= 8) {
+            $sectionAttributes = $reflectionClass->getAttributes(SettingSection::class);
+            if (count($sectionAttributes)) {
+                /** @var SettingSection $sectionAttribute */
+                $sectionAttribute = $sectionAttributes[0];
+                $sectionTitle = $sectionAttribute->label;
+                $sectionDescription = $sectionAttribute->help;
+                $sectionExtra = $sectionAttribute->extra;
+            }
+        }
+
 
         $docBlock = $reflectionClass->getDocComment();
         $docComment = trim($docBlock, "\t /");

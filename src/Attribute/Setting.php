@@ -55,13 +55,17 @@ class Setting
      */
     public $enum;
 
-    public function __construct(?string $label=null, ?array $enum=null, ?string $dataType=null, ?string $help=null, array $formOptions=[])
+    public function __construct(?string $label=null, ?array $enum=null, ?string $dataType=null, ?string $help=null, ?string $formType=null, array $formOptions=[])
     {
         $this->enum = $enum;
         $this->dataType = $dataType;
         $this->label = $label;
         $this->help = $help;
         $this->formOptions = $formOptions;
+        if ($formType) {
+            assert(class_exists($formType), "Class $formType does not exist.");
+            $this->formType = $formType;
+        }
 
     }
 }
