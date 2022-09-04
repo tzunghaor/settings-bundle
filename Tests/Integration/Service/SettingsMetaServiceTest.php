@@ -38,7 +38,7 @@ class SettingsMetaServiceTest extends KernelTestCase
                 // following two properties are defined in abstract parent class
                 'name' => new SettingMetaData(
                     'name', $stringType, TextType::class,
-                    [], 'public name label', ''
+                    [], 'assets name label', ''
                 ),
                 'address' => new SettingMetaData(
                     'address', $stringType, TextType::class,

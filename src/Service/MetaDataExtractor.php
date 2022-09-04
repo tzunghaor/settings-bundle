@@ -14,8 +14,10 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
-use Tzunghaor\SettingsBundle\Annotation\Setting;
-use Tzunghaor\SettingsBundle\Annotation\SettingSection;
+use Tzunghaor\SettingsBundle\Annotation\Setting as SettingAnnotation;
+use Tzunghaor\SettingsBundle\Attribute\Setting;
+use Tzunghaor\SettingsBundle\Annotation\SettingSection as SettingSectionAnnotation;
+use Tzunghaor\SettingsBundle\Attribute\SettingSection;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
@@ -65,12 +67,18 @@ class MetaDataExtractor
         // collect properties, including ancestor classes private properties
         // we will start with ancestors and allow subclasses to override properties
         $reflectionProperties = [];
+        $reflectionAttributes = [];
         $currentReflectionClass = $reflectionClass;
         do {
             $reflectionProperties = array_merge($currentReflectionClass->getProperties(), $reflectionProperties);
+            // only for php 8+.  This is only if we ever have an attribute for the class.
+            // OR if (PHP_VERSION_ID >= 80000) {
+            if (method_exists($currentReflectionClass, 'getAttributes')) {
+                $reflectionAttributes  = array_merge($currentReflectionClass->getAttributes(), $reflectionAttributes);
+            }
         } while ($currentReflectionClass = $currentReflectionClass->getParentClass());
 
-        $settingsMetaArray = $this->extractPropertyInfos($reflectionProperties);
+        $settingsMetaArray = $this->extractPropertyInfos($reflectionProperties, $reflectionAttributes);
 
         return new SectionMetaData(
             $sectionName, $sectionTitle, $sectionClass, $sectionDescription, $settingsMetaArray, $sectionExtra
@@ -106,7 +114,7 @@ class MetaDataExtractor
 
             $propertyAnnotations = $this->annotationReader->getPropertyAnnotations($reflectionProperty);
             foreach ($propertyAnnotations as $annotation) {
-                if ($annotation instanceof Setting) {
+                if ($annotation instanceof SettingAnnotation) {
                     $formType = $annotation->formType;
                     $formEntryType = $annotation->formEntryType;
                     $formOptions = $annotation->formOptions ?? $formOptions;
@@ -120,6 +128,25 @@ class MetaDataExtractor
                     $dataType = $dataType ?? $this->extractDataType($annotation->dataType);
                 }
             }
+
+            if (method_exists($reflectionProperty, 'getAttributes')) {
+                $propertyAttributes = $reflectionProperty->getAttributes(Setting::class);
+                foreach ($propertyAttributes as $reflectionAttribute) {
+                    $attribute = $reflectionAttribute->newInstance();
+                    $formType = $attribute->formType;
+                    $formEntryType = $attribute->formEntryType;
+                    $formOptions = $attribute->formOptions ?? $formOptions;
+                    if (is_array($attribute->enum)) {
+                        $formType = $formType ?? ChoiceType::class;
+                        $formOptions['choices'] = $formOptions['choices'] ?? array_combine($attribute->enum, $attribute->enum);
+                        $isEnum = true;
+                    }
+                    $settingLabel = $attribute->label;
+                    $settingHelp = $attribute->help;
+                    $dataType = $dataType ?? $this->extractDataType($attribute->dataType);
+                }
+            }
+
 
             if ($dataType === null) {
                 $dataTypes = $this->propertyInfo->getTypes($sectionClass, $propertyName);
@@ -257,15 +284,28 @@ class MetaDataExtractor
     {
         // first try the annotation
         $sectionAnnotation = $this->annotationReader
-            ->getClassAnnotation($reflectionClass, SettingSection::class);
+            ->getClassAnnotation($reflectionClass, SettingSectionAnnotation::class);
 
         $sectionExtra = $sectionTitle = $sectionDescription = null;
 
-        if ($sectionAnnotation instanceof SettingSection) {
+        if ($sectionAnnotation instanceof SettingSectionAnnotation) {
             $sectionTitle = $sectionAnnotation->label;
             $sectionDescription = $sectionAnnotation->help;
             $sectionExtra = $sectionAnnotation->extra;
         }
+
+        // then try attributes
+        if (PHP_MAJOR_VERSION >= 8) {
+            $sectionAttributes = $reflectionClass->getAttributes(SettingSection::class);
+            if (count($sectionAttributes)) {
+                /** @var SettingSection $sectionAttribute */
+                $sectionAttribute = $sectionAttributes[0];
+                $sectionTitle = $sectionAttribute->label;
+                $sectionDescription = $sectionAttribute->help;
+                $sectionExtra = $sectionAttribute->extra;
+            }
+        }
+
 
         $docBlock = $reflectionClass->getDocComment();
         $docComment = trim($docBlock, "\t /");

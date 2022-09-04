@@ -11,7 +11,7 @@ class TestKernel extends Kernel
 {
     use MicroKernelTrait;
 
-    public function getProjectDir()
+    public function getProjectDir(): string
     {
         return __DIR__;
     }
