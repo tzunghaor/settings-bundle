@@ -1,7 +1,7 @@
 Tzunghaor Settings Bundle
 ========================= 
 
-![editor](doc/editor.png)
+![editor](docs/editor.png)
 
 * Define your settings as php classes.
 * Settings are stored in database in a single table.
@@ -61,12 +61,12 @@ Additional recommended packages
     possibilities to define your settings  
 * **symfony/asset** - the setting editor twig template uses asset() - if you
     don't have it installed, then you have to override __editor_page.html.twig__: 
-    see [twig customization](doc/twig.md)
+    see [twig customization](docs/twig.md)
 * **symfony/validator** - with this you can define validation rules on your
     setting classes that will be used in the setting editor. 
     See [symfony validation](https://symfony.com/doc/current/validation.html).
 * **symfony/security-core** - using this you can create security voters to manage
-    who can edit which settings. See [security voters](doc/voter.md)
+    who can edit which settings. See [security voters](docs/voter.md)
     
 
 Setup
@@ -87,7 +87,7 @@ doctrine:
     mappings:
       Tzunghaor\SettingsBundle:
         type: annotation
-          dir: '%kernel.project_dir%/vendor/tzunghaor/settings-bundle/Entity'
+          dir: '%kernel.project_dir%/vendor/tzunghaor/settings-bundle/src/Entity'
           prefix: 'Tzunghaor\SettingsBundle\Entity'
 ``` 
 
@@ -107,7 +107,7 @@ or the fast and dangerous way on your developer machine:
 $ bin/console doctrine:schema:update --force
 ```
 
-[More about the database table](doc/database.md)
+[More about the database table](docs/database.md)
 
 Defining Setting Classes
 ------------------------
@@ -139,7 +139,7 @@ class BoxSettings
 Since at the beginning no settings are stored in the database, it is best to set
 sensible default values in your class.
 
-[More about setting classes](doc/define_section.md)
+[More about setting classes](docs/define_section.md)
 
 Then tell the bundle where your settings classes are in the config:
 
@@ -178,7 +178,7 @@ class MyService
         $doublePadding = $boxSettings->padding * 2; 
 ```
 
-More on [collections and services](doc/collections.md)
+More on [collections and services](docs/collections.md)
 
 Setting up the editor
 ---------------------
@@ -196,17 +196,17 @@ Add the route defined by the bundle to your routes:
 # config/routes.yaml
 
 tzunghaor_settings_editor:
-  resource: '@TzunghaorSettingsBundle/Resources/config/routes.xml'
+  resource: '@TzunghaorSettingsBundle/config/routes.xml'
   prefix: '/settings'
 ```
 
 Then go to `https://your.domain/settings/edit/` in your browser.
 
 You probably want to set up some firewall rules in your security config for
-this controller, and/or use [security voters](doc/voter.md).
+this controller, and/or use [security voters](docs/voter.md).
 
 You can have more control on the editor with route definition, 
-see [routing](doc/routing.md).
+see [routing](docs/routing.md).
 
 Setting up cache
 ----------------
@@ -275,4 +275,4 @@ tzunghaor_settings:
 ```
 
 For more advanced use (e.g. having one scope per user), you can define your
-own [scope provider](doc/scopes.md)
+own [scope provider](docs/scopes.md)

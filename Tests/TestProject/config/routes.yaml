@@ -1,5 +1,5 @@
 tzunghaor_settings:
-  resource: '../../../Resources/config/routes.xml'
+  resource: '../../../config/routes.xml'
   prefix: '/settings'
 
 other_edit_single_subject:

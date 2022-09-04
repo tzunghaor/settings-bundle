@@ -11,7 +11,7 @@ doctrine:
     mappings:
       Tzunghaor\SettingsBundle:
         type: annotation
-        dir: '%kernel.project_dir%/../../Entity'
+        dir: '%kernel.project_dir%/../../src/Entity'
         prefix: 'Tzunghaor\SettingsBundle\Entity'
 
       TestProject:
