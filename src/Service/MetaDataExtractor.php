@@ -67,18 +67,12 @@ class MetaDataExtractor
         // collect properties, including ancestor classes private properties
         // we will start with ancestors and allow subclasses to override properties
         $reflectionProperties = [];
-        $reflectionAttributes = [];
         $currentReflectionClass = $reflectionClass;
         do {
             $reflectionProperties = array_merge($currentReflectionClass->getProperties(), $reflectionProperties);
-            // only for php 8+.  This is only if we ever have an attribute for the class.
-            // OR if (PHP_VERSION_ID >= 80000) {
-            if (method_exists($currentReflectionClass, 'getAttributes')) {
-                $reflectionAttributes  = array_merge($currentReflectionClass->getAttributes(), $reflectionAttributes);
-            }
         } while ($currentReflectionClass = $currentReflectionClass->getParentClass());
 
-        $settingsMetaArray = $this->extractPropertyInfos($reflectionProperties, $reflectionAttributes);
+        $settingsMetaArray = $this->extractPropertyInfos($reflectionProperties);
 
         return new SectionMetaData(
             $sectionName, $sectionTitle, $sectionClass, $sectionDescription, $settingsMetaArray, $sectionExtra
@@ -308,9 +302,9 @@ class MetaDataExtractor
 
 
         $docBlock = $reflectionClass->getDocComment();
-        $docComment = trim($docBlock, "\t /");
 
-        if ($docComment !== false) {
+        if ($docBlock !== false) {
+            $docComment = trim($docBlock, "\t /");
             $commentLines = explode("\n", $docComment);
             $isBeginning = true;
             $descriptionLines = [];

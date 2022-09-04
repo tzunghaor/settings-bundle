@@ -57,49 +57,31 @@ class SettingMetaData
         $this->help = $help;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
     public function getDataType(): Type
     {
         return $this->dataType;
     }
 
-    /**
-     * @return string
-     */
     public function getFormType(): string
     {
         return $this->formType;
     }
 
-    /**
-     * @return array
-     */
     public function getFormOptions(): array
     {
         return $this->formOptions;
     }
 
-    /**
-     * @return string
-     */
     public function getLabel(): string
     {
         return $this->label;
     }
 
-    /**
-     * @return string
-     */
     public function getHelp(): string
     {
         return $this->help;

@@ -8,7 +8,8 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use Tzunghaor\SettingsBundle\Exception\AccessDeniedException;
+use Throwable;
+use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\SettingsEditorType;
 use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
@@ -37,7 +38,8 @@ class SettingsEditorService
      */
     private $defaultCollectionName;
     /**
-     * @var AuthorizationChecker|null
+     * @var object|null
+     * Optional Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface
      */
     private $authorizationChecker;
 
@@ -77,7 +79,7 @@ class SettingsEditorService
      *
      * @return SettingSectionAddress
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     public function createSectionAddress(
         ?string $sectionName,
@@ -107,8 +109,8 @@ class SettingsEditorService
      * @param SettingSectionAddress $sectionAddress
      * @return FormInterface|null returns null if $sectionAddress is not sufficient to identify a setting section
      *
-     * @throws \Psr\Cache\InvalidArgumentException
-     * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
+     * @throws SettingsException
+     * @throws Throwable
      */
     public function createForm(SettingSectionAddress $sectionAddress): ?FormInterface
     {
@@ -157,14 +159,14 @@ class SettingsEditorService
      *
      * @param SettingSectionAddress $sectionAddress
      * @param callable $urlGenerator function([$routeParam1, ...]) => $url
-     * @param FormInterface $form
+     * @param FormInterface|null $form
      * @param string|null $searchUrl url of scope search ajax call, null if that functionality should be disabled
      * @param string|null $route name of editor route
      * @param array $fixedParameters these route parameters cannot be changed for this route
      *
      * @return array
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     public function getTwigContext(
         SettingSectionAddress $sectionAddress,
@@ -251,11 +253,12 @@ class SettingsEditorService
     private function prepareTwigCollections(array $collectionNames, callable $urlGenerator): array
     {
         $twigList = [];
+        $checkIsGranted = $this->authorizationChecker !== null &&
+            method_exists($this->authorizationChecker, 'isGranted');
         foreach ($collectionNames as $collectionName) {
             $voterSubject = new SettingSectionAddress($collectionName, null, null);
 
-            $isGranted = $this->authorizationChecker === null ||
-                $this->authorizationChecker->isGranted('edit', $voterSubject);
+            $isGranted = !$checkIsGranted || $this->authorizationChecker->isGranted('edit', $voterSubject);
             if (!$isGranted) {
                 continue;
             }
@@ -375,8 +378,9 @@ class SettingsEditorService
      *
      * @param array $formData of SettingsEditorType
      * @param SettingSectionAddress $sectionAddress must be complete address
-     * @throws \Psr\Cache\InvalidArgumentException
-     * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
+     *
+     * @throws SettingsException
+     * @throws Throwable
      */
     public function save(array $formData, SettingSectionAddress $sectionAddress): void
     {
@@ -427,12 +431,13 @@ class SettingsEditorService
             return;
         }
 
+        $message = 'Not allowed to edit these settings.';
         // if symfony-security is not installed, then throw an HttpException which semantically might not be correct
-        $exceptionClass = Symfony\Component\Security\Core\Exception\AccessDeniedException::class;
-        if (!class_exists($exceptionClass)) {
-            $exceptionClass = AccessDeniedHttpException::class;
+        $exceptionClass = 'Symfony\Component\Security\Core\Exception\AccessDeniedException';
+        if (class_exists($exceptionClass)) {
+            throw new $exceptionClass($message);
         }
 
-        throw new $exceptionClass('Not allowed to edit these settings.');
+        throw new AccessDeniedHttpException($message);
     }
 }

@@ -7,6 +7,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Throwable;
 use Tzunghaor\SettingsBundle\DependencyInjection\Configuration;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Helper\ObjectHydrator;
@@ -60,7 +61,7 @@ class SettingsService
      * @return object
      *
      * @throws SettingsException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     public function getSection(string $sectionClass, $subject = null)
     {
@@ -79,7 +80,7 @@ class SettingsService
      * @return array [$settingName => $scopeName, ... ]
      *
      * @throws SettingsException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     public function getValueScopes(string $sectionClass, string $scope = ''): array
     {
@@ -93,8 +94,8 @@ class SettingsService
      * @param string $scope
      * @param array $values [$settingName => $value, ...] type of values should be what is defined in the section class
      *
-     * @throws \Psr\Cache\InvalidArgumentException
      * @throws SettingsException
+     * @throws Throwable
      */
     public function save(string $sectionClass, string $scope, array $values): void
     {
@@ -117,7 +118,7 @@ class SettingsService
      * @return SettingsCacheEntry
      *
      * @throws SettingsException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     private function getCacheEntry(string $sectionClass, string $scope): SettingsCacheEntry
     {
@@ -129,7 +130,7 @@ class SettingsService
 
         return $this->cache->get(
             $cacheKey,
-            function (ItemInterface $item) use ($sectionClass, $scope, $cacheKey) {
+            function (ItemInterface $item) use ($sectionClass, $scope) {
                 $scopePath = $this->settingsMetaService->getScopePath($scope);
                 $cacheKeys = [];
                 $parentEntry = null;
@@ -170,7 +171,7 @@ class SettingsService
      *
      * @return SettingsCacheEntry
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     private function getCacheEntry2(
         array $cacheKeys,
@@ -196,7 +197,7 @@ class SettingsService
      * @param string $sectionClass
      * @param string $scope
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     private function invalidateCache(string $sectionClass, string $scope): void
     {
@@ -217,9 +218,9 @@ class SettingsService
      *
      * @return SettingsCacheEntry
      *
-     * @throws \Psr\Cache\InvalidArgumentException
      * @throws \ReflectionException
      * @throws SettingsException
+     * @throws Throwable
      */
     private function loadCacheEntry(string $sectionClass, string $scope, ?SettingsCacheEntry $parentEntry): SettingsCacheEntry
     {

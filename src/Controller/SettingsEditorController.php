@@ -57,7 +57,6 @@ class SettingsEditorController
      * @return RedirectResponse|Response
      *
      * @throws Exception
-     * @throws InvalidArgumentException
      */
     public function edit(Request $request, ?string $collection, ?string $section, ?string $scope): Response
     {
@@ -114,7 +113,6 @@ class SettingsEditorController
         $urlGenerator = $this->createUrlGenerator($linkRouteName, $fixedParameters);
         $sectionAddress = $this->settingsEditorService->createSectionAddress($section, $currentScope, $collection);
 
-        /** @var SettingsService $settingsService */
         $twigContext = $this->settingsEditorService->getSearchScopeTwigContext($searchString, $sectionAddress, $urlGenerator);
 
         return new Response($this->twig->render('@TzunghaorSettings/list.html.twig', $twigContext));
@@ -131,9 +129,8 @@ class SettingsEditorController
     protected function createUrlGenerator(string $route, array $fixedParameters): callable
     {
         $fixedParametersFlipped = array_flip($fixedParameters);
-        $router = $this->router;
 
-        return function (array $parameters = []) use ($route, $router, $fixedParametersFlipped) {
+        return function (array $parameters = []) use ($route, $fixedParametersFlipped) {
             $filteredParameters = array_diff_key($parameters, $fixedParametersFlipped);
 
             return $this->router->generate($route, $filteredParameters);

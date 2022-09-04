@@ -7,6 +7,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Throwable;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
@@ -72,7 +73,7 @@ class SettingsMetaService implements CacheWarmerInterface
     /**
      * @return SectionMetaData[] [$sectionClass => $metaData, ...]
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     public function getSectionMetaDataArray(): array
     {
@@ -149,8 +150,8 @@ class SettingsMetaService implements CacheWarmerInterface
      *
      * @return SectionMetaData
      *
-     * @throws \Psr\Cache\InvalidArgumentException
      * @throws SettingsException
+     * @throws Throwable
      */
     public function getSectionMetaData(string $sectionClass): SectionMetaData
     {
@@ -173,7 +174,7 @@ class SettingsMetaService implements CacheWarmerInterface
      * @return SectionMetaData
      *
      * @throws SettingsException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     public function getSectionMetaDataByName(string $sectionName): SectionMetaData
     {
@@ -209,10 +210,12 @@ class SettingsMetaService implements CacheWarmerInterface
 
     /**
      * {@inheritdoc}
-     * @throws
+     * @throws Throwable
      */
     public function warmUp(string $cacheDir)
     {
         $this->getSectionMetaDataArray();
+
+        return [];
     }
 }

@@ -4,7 +4,6 @@ namespace Tzunghaor\SettingsBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Tzunghaor\SettingsBundle\Model\Item;
 
 class Configuration implements ConfigurationInterface
 {
@@ -33,6 +32,7 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder(self::CONFIG_ROOT, 'array');
 
+        /** @phpstan-ignore-next-line I trust that the correct subclasses will be returned */
         $treeBuilder->getRootNode()
             ->children()
                 ->booleanNode(self::SECURITY)

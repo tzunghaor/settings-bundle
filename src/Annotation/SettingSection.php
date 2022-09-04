@@ -10,21 +10,19 @@ namespace Tzunghaor\SettingsBundle\Annotation;
 class SettingSection
 {
     /**
-     * @var string Label in editor form
-     *             If phpdocumentor/reflection-docblock is installed, then the first line of the docblock can be used
-     *             instead.
+     * Label in editor form
+     * If phpdocumentor/reflection-docblock is installed, then the first line of the docblock can be used instead.
      */
-    public $label;
+    public ?string $label = null;
 
     /**
-     * @var string Help text in editor form
-     *             If phpdocumentor/reflection-docblock is installed, then the not-first line of the docblock can be
-     *             used instead.
+     * Help text in editor form
+     * If phpdocumentor/reflection-docblock is installed, then the not-first line of the docblock can be used instead.
      */
-    public $help;
+    public ?string $help = null;
 
     /**
-     * @var array Extra data that you can use in your templates / extensions.
+     * Extra data that you can use in your templates / extensions.
      */
-    public $extra;
+    public ?array $extra = null;
 }
