@@ -9,7 +9,7 @@ Tzunghaor Settings Bundle
 * Define your scopes: each scope has its own settings, setting inheritance is supported.
 * You can define multiple collections with different settings/scopes/config. 
 
-You can take a look in the Tests/TestProject for working examples.
+You can take a look in the Tests/TestApp for working examples.
 
 
 Installation

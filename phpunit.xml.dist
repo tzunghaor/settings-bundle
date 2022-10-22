@@ -7,7 +7,7 @@
 >
     <php>
         <ini name="error_reporting" value="-1" />
-        <env name="KERNEL_CLASS" value="Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel" />
+        <env name="KERNEL_CLASS" value="TestApp\TestKernel" />
     </php>
 
     <testsuites>

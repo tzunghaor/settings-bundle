@@ -1,0 +1,37 @@
+tzunghaor_settings:
+  security: true
+  collections:
+    default:
+      title: Nice Default Collection
+      scopes:
+        - name: root
+          title: Root of All
+          extra:
+            class: root-class
+          children:
+            - name: day
+              title: Beautiful Day
+              extra:
+                class: beautiful class
+              children:
+                - name: morning
+                - name: afternoon
+            - name: night
+        - name: forbidden
+
+      default_scope: root
+
+      mappings:
+        default:
+          dir: '%kernel.project_dir%/src/Settings'
+          prefix: TestApp\Settings\
+
+    other:
+      title: Super Other Collection
+      mappings:
+        default:
+          dir: '%kernel.project_dir%/src/OtherSettings'
+          prefix: TestApp\OtherSettings\
+      cache: test_other_cache
+      entity: TestApp\Entity\OtherPersistedSetting
+      scope_provider: TestApp\Service\OtherScopeProvider

@@ -1,6 +1,6 @@
 /.idea
 /var
 /vendor
-/Tests/TestProject/var
+/Tests/TestApp/var
 composer.lock
 .phpunit.result.cache

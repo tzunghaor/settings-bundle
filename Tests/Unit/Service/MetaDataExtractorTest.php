@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Tzunghaor\SettingsBundle\Tests\Unit\Service;
+namespace Unit\Service;
 
 
 use Doctrine\Common\Annotations\Reader;
@@ -13,13 +13,13 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
+use TestApp\UnitSettings\TestSingleSetting;
 use Tzunghaor\SettingsBundle\Annotation\Setting;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Service\MetaDataExtractor;
-use Tzunghaor\SettingsBundle\Tests\Setting\TestSingleSetting;
 
 class MetaDataExtractorTest extends TestCase
 {

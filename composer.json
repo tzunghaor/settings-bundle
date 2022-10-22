@@ -35,13 +35,17 @@
         }
     },
     "autoload-dev": {
-        "psr-4": { "Tzunghaor\\SettingsBundle\\Tests\\": "Tests/" }
+        "psr-4": {
+            "TestApp\\": "./Tests/TestApp/src/"
+        }
     },
     "require-dev": {
+        "phpdocumentor/reflection-docblock": "^5.3",
         "phpstan/phpstan": "^1.8",
         "phpunit/phpunit": "^8.5 || ^9.5",
         "rector/rector": "^0.14.0",
         "symfony/browser-kit": "^5.4 || ^6.0",
+        "symfony/framework-bundle": "^5.4 || ^6.0",
         "symfony/yaml": "^5.4 || ^6.0"
     }
 }

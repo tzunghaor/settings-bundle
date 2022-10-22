@@ -1,6 +1,6 @@
 <?php
 
-namespace Tzunghaor\SettingsBundle\Tests\Integration\Controller;
+namespace Integration\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -12,11 +12,10 @@ use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Cache\CacheInterface;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
-use Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherPersistedSetting;
-use Tzunghaor\SettingsBundle\Tests\TestProject\Entity\OtherSubject;
-use Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\FunSettings;
-use Tzunghaor\SettingsBundle\Tests\TestProject\Settings\Ui\BoxSettings;
-use Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel;
+use TestApp\Entity\OtherPersistedSetting;
+use TestApp\Entity\OtherSubject;
+use TestApp\OtherSettings\FunSettings;
+use TestApp\Settings\Ui\BoxSettings;
 
 class SettingsEditorControllerTest extends WebTestCase
 {
@@ -284,7 +283,7 @@ class SettingsEditorControllerTest extends WebTestCase
         $cache = self::getContainer()->get('test_other_cache');
         $cache->clear();
 
-        self::assertNull($this->getJoeFunCachedItem(), 'test should have emptied TestProject cache');
+        self::assertNull($this->getJoeFunCachedItem(), 'test should have emptied TestApp cache');
 
 
         // OtherScopeProvider uses request's "scopeSubject" as default scope
@@ -371,7 +370,7 @@ class SettingsEditorControllerTest extends WebTestCase
         /** @var CacheInterface $cache */
         $cache = self::getContainer()->get('test_other_cache');
 
-        $cacheKey = 'tzunghaor_settings_section.Tzunghaor.SettingsBundle.Tests.TestProject.OtherSettings.FunSettings..name-joe';
+        $cacheKey = 'tzunghaor_settings_section.TestApp.OtherSettings.FunSettings..name-joe';
         $cachedItem = $cache->get($cacheKey, function() { return null; });
 
         if ($cachedItem === null) {
@@ -503,10 +502,10 @@ class SettingsEditorControllerTest extends WebTestCase
             if ($expectedHref) {
                 self::assertEquals(1, $links->count());
                 self::assertEquals($expectedHref, $links->attr('href'));
-                $scopeTitle = $links->first()->text();
+                $scopeTitle = trim($links->first()->text());
             } else {
                 self::assertEquals(0, $links->count());
-                $scopeTitle = $li->filterXPath('./li/span')->text();
+                $scopeTitle = trim($li->filterXPath('./li/span')->text());
             }
             self::assertEquals($expectedName, $scopeTitle);
 
@@ -557,27 +556,28 @@ class SettingsEditorControllerTest extends WebTestCase
         $entityManager->flush();
     }
 
+    /**
+     * Helper method to assert certain aspects of html element(s) found by the crawler
+     *
+     * @param string $what 'count' | 'text' | 'class'
+     */
     private static function assertElement(Constraint $constraint, Crawler $element, string $what, string $message): void
     {
-        try {
-            switch ($what) {
-                case 'count':
-                    self::assertThat($element->count(), $constraint, $message);
-                    break;
+        switch ($what) {
+            case 'count':
+                self::assertThat($element->count(), $constraint, $message);
+                break;
 
-                case 'text':
-                    self::assertThat($element->text(), $constraint, $message);
-                    break;
+            case 'text':
+                self::assertThat(trim($element->text()), $constraint, $message);
+                break;
 
-                case 'class':
-                    self::assertThat($element->attr('class'), $constraint, $message);
-                    break;
+            case 'class':
+                self::assertThat($element->attr('class'), $constraint, $message);
+                break;
 
-                default:
-                    throw new \DomainException('Unknown $what in ' . __METHOD__);
-            }
-        } catch (\Throwable $t) {
-            throw new \RuntimeException('Error checking at "' . $message . '": ' . $t->getMessage());
+            default:
+                throw new \DomainException('Unknown $what in ' . __METHOD__);
         }
     }
 }
