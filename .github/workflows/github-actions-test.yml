@@ -10,7 +10,7 @@ jobs:
   run_tests:
     strategy:
       matrix:
-        php_version: ["7.4"]
+        php_version: ["7.4", "8.0", "8.1"]
         composer_args: ["", "--prefer-lowest"]
     runs-on: ubuntu-latest
     steps:
