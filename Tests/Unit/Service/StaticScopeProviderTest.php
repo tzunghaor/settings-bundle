@@ -1,6 +1,6 @@
 <?php
 
-namespace Tzunghaor\SettingsBundle\Tests\Unit\Service;
+namespace Unit\Service;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;

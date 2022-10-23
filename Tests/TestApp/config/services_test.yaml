@@ -1,0 +1,41 @@
+services:
+  _defaults:
+    autowire: true
+
+  TestApp\TestHelperTwigExtension:
+    class: TestApp\TestHelperTwigExtension
+    tags:
+      - twig.extension
+
+  TestApp\Service\TestService:
+    public: true
+    arguments:
+      $settingsMetaServiceLocator: !tagged_locator { tag: 'tzunghaor_settings.settings_meta_service', index_by: 'key' }
+
+  TestApp\Service\OtherScopeProvider: ~
+
+  app.test_controller:
+    class: TestApp\Controller\TestController
+    tags: ['controller.service_arguments']
+
+  TestApp\EventListener\DoctrineListener:
+    tags:
+      - name: 'doctrine.event_listener'
+        event: 'prePersist'
+
+  test_other_cache:
+    public: true
+    class: Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter
+    arguments:
+      $directory: '%kernel.project_dir%/var/cache/test/other_cache'
+
+  # fake authorization checker
+  security.authorization_checker:
+    class: TestApp\Security\ForbiddenAuthorizationChecker
+
+  # while we use bundle's composer.json for tests php-doc-extractor has to be manually tagged
+  property_info.php_doc_extractor:
+    class: Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor
+    tags:
+      - { name: 'property_info.description_extractor', priority: -1000 }
+      - { name: 'property_info.type_extractor', priority: -1001 }

@@ -1,13 +1,15 @@
 <?php
 
-namespace Tzunghaor\SettingsBundle\Tests\Integration;
+namespace Integration;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\FunSettings;
-use Tzunghaor\SettingsBundle\Tests\TestProject\Service\MinimalTestService;
-use Tzunghaor\SettingsBundle\Tests\TestProject\Service\TestService;
-use Tzunghaor\SettingsBundle\Tests\TestProject\Settings\Ui\BoxSettings;
-use Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel;
+use TestApp\OtherSettings\FunSettings;
+use TestApp\Service\MinimalTestService;
+use TestApp\Service\TestService;
+use TestApp\Settings\Ui\BoxSettings;
+use TestApp\TestKernel;
 
 class AutowiringTest extends KernelTestCase
 {
@@ -19,8 +21,9 @@ class AutowiringTest extends KernelTestCase
     public function testAutowiring(): void
     {
         self::bootKernel();
+        $this->setUpDatabase();
 
-        $testService = self::$container->get(TestService::class);
+        $testService = self::getContainer()->get(TestService::class);
 
         self::assertInstanceOf(BoxSettings::class, $testService->getBoxSettings('day'));
         self::assertInstanceOf(FunSettings::class, $testService->getFunSettings());
@@ -32,11 +35,23 @@ class AutowiringTest extends KernelTestCase
     public function testMinimalAutowiring(): void
     {
         self::bootKernel(['environment' => 'minimal']);
+        $this->setUpDatabase();
 
-        $testService = self::$container->get(MinimalTestService::class);
+        $testService = self::getContainer()->get(MinimalTestService::class);
 
         self::assertInstanceOf(BoxSettings::class, $testService->getBoxSettings());
         self::assertInstanceOf(BoxSettings::class, $testService->getBoxSettings('default'));
     }
 
+    private function setUpDatabase(): void
+    {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+
+        // drop existing database and build structure
+        $allMetadata = $entityManager->getMetadataFactory()->getAllMetadata();
+        $schemaTool = new SchemaTool($entityManager);
+        $schemaTool->dropSchema($allMetadata);
+        $schemaTool->updateSchema($allMetadata);
+    }
 }

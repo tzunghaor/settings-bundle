@@ -1,6 +1,6 @@
 <?php
 
-namespace Tzunghaor\SettingsBundle\Tests\Integration\Service;
+namespace Integration\Service;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -9,10 +9,9 @@ use Symfony\Component\PropertyInfo\Type;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
-use Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\AbstractBaseSettings;
-use Tzunghaor\SettingsBundle\Tests\TestProject\OtherSettings\FunSettings;
-use Tzunghaor\SettingsBundle\Tests\TestProject\Service\TestService;
-use Tzunghaor\SettingsBundle\Tests\TestProject\TestKernel;
+use TestApp\OtherSettings\AbstractBaseSettings;
+use TestApp\OtherSettings\FunSettings;
+use TestApp\Service\TestService;
 
 class SettingsMetaServiceTest extends KernelTestCase
 {
@@ -38,7 +37,7 @@ class SettingsMetaServiceTest extends KernelTestCase
                 // following two properties are defined in abstract parent class
                 'name' => new SettingMetaData(
                     'name', $stringType, TextType::class,
-                    [], 'public name label', ''
+                    [], 'assets name label', ''
                 ),
                 'address' => new SettingMetaData(
                     'address', $stringType, TextType::class,

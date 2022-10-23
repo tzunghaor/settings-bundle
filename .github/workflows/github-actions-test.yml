@@ -1,0 +1,36 @@
+name: Run tests
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  run_tests:
+    strategy:
+      matrix:
+        php_version: ["7.4", "8.0", "8.1"]
+        composer_args: ["", "--prefer-lowest"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout source
+        uses: actions/checkout@v3
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.json') }}
+
+      - name: Install dependencies
+        uses: php-actions/composer@v7
+        with:
+          php_version: ${{ matrix.php_version }}
+          args: ${{ matrix.composer_args }}
+
+      - name: Run tests
+        uses: php-actions/phpunit@v3
+        with:
+          php_version: ${{ matrix.php_version }}
+

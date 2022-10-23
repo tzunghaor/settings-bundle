@@ -1,10 +1,10 @@
 <?php
 
-namespace Tzunghaor\SettingsBundle\Tests\Unit\Helper;
+namespace Unit\Helper;
 
 use PHPUnit\Framework\TestCase;
+use TestApp\UnitSettings\HydratorSetting;
 use Tzunghaor\SettingsBundle\Helper\ObjectHydrator;
-use Tzunghaor\SettingsBundle\Tests\Setting\HydratorSetting;
 
 class ObjectHydratorTest extends TestCase
 {
@@ -18,7 +18,7 @@ class ObjectHydratorTest extends TestCase
             'publicA' => 'five',
         ];
 
-        /** @var HydratorSetting $object */
+        /** @var \TestApp\UnitSettings\HydratorSetting $object */
         $object = ObjectHydrator::hydrate(HydratorSetting::class, $values);
 
         self::assertInstanceOf(HydratorSetting::class, $object);

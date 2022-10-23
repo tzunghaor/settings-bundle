@@ -1,7 +1,0 @@
-services:
-  _defaults:
-    autowire: true
-
-  Tzunghaor\SettingsBundle\Tests\TestProject\Service\MinimalTestService:
-    public: true
-

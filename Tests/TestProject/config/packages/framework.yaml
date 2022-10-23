@@ -1,6 +1,0 @@
-framework:
-  # should test that security feature works even without CSRF
-  csrf_protection: false
-  secret: not_that_secret
-  session:
-    storage_id: 'session.storage.mock_file'
