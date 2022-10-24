@@ -1,6 +1,8 @@
 Tzunghaor Settings Bundle
 ========================= 
 
+![test badge](https://github.com/tzunghaor/settings-bundle/actions/workflows/test.yml/badge.svg?event=push)
+
 ![editor](docs/editor.png)
 
 * Define your settings as php classes.

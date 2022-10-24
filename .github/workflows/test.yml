@@ -10,8 +10,12 @@ jobs:
   run_tests:
     strategy:
       matrix:
-        php_version: ["7.4", "8.0", "8.1"]
+        php_version: ["7.4", "8.1"]
         composer_args: [""]
+        symfony_version: ["5.*", "6.*"]
+        exclude:
+          - php_version: "7.4"
+            symfony_version: "6.*"
         include:
           - php_version: "7.4"
             composer_args: "--prefer-lowest"
@@ -32,10 +36,14 @@ jobs:
           command: update
           php_version: ${{ matrix.php_version }}
           args: ${{ matrix.composer_args }}
+        env:
+          SYMFONY_REQUIRE: ${{ matrix.symfony_version }}
 
       - name: Run tests
         uses: php-actions/phpunit@v3
         with:
           php_version: ${{ matrix.php_version }}
           memory_limit: 512M
+        env:
+          APP_ENV: test
 
