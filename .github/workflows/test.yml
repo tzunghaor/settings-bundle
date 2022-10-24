@@ -44,4 +44,6 @@ jobs:
         with:
           php_version: ${{ matrix.php_version }}
           memory_limit: 512M
+        env:
+          APP_ENV: test
 
