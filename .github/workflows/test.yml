@@ -37,7 +37,7 @@ jobs:
           php_version: ${{ matrix.php_version }}
           args: ${{ matrix.composer_args }}
         env:
-          SYMFONY_REQUIRE: ${{ symfony_version }}
+          SYMFONY_REQUIRE: ${{ matrix.symfony_version }}
 
       - name: Run tests
         uses: php-actions/phpunit@v3
