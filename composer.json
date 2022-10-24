@@ -47,7 +47,7 @@
         "symfony/browser-kit": "^5.4 || ^6.0",
         "symfony/framework-bundle": "^5.4 || ^6.0",
         "symfony/yaml": "^5.4 || ^6.0",
-        "symfony/flex": "^5.4 || ^6.0"
+        "symfony/flex": "*"
     },
     "config": {
         "allow-plugins": {
