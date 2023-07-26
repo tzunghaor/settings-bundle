@@ -12,9 +12,10 @@ jobs:
       matrix:
         php_version: ["8.1"]
         composer_args: [""]
-        symfony_version: ["5.*", "6.*"]
+        symfony_version: ["6.*"]
         include:
           - symfony_version: "5.*"
+            php_version: "8.1"
             composer_args: "--prefer-lowest"
     runs-on: ubuntu-latest
     steps:
