@@ -2,6 +2,7 @@
 
 namespace TestApp\Settings\Ui;
 
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Tzunghaor\SettingsBundle\Annotation\Setting;
 
 /**
@@ -26,16 +27,16 @@ class BoxSettings
     private $borders;
 
     /**
-     * @return int
+     * @var bool
+     * @Setting(formType=CheckboxType::class, formOptions={"required": false})
      */
+    private $nightMode;
+
     public function getPadding(): int
     {
         return $this->padding;
     }
 
-    /**
-     * @return int
-     */
     public function getMargin(): int
     {
         return $this->margin;
@@ -49,10 +50,16 @@ class BoxSettings
         return $this->borders;
     }
 
-    public function __construct($padding = 0, $margin = 0, $borders = [])
+    public function getNightMode(): bool
+    {
+        return $this->nightMode;
+    }
+
+    public function __construct($padding = 0, $margin = 0, $borders = ['bottom'], $nightMode = true)
     {
         $this->padding = $padding;
         $this->margin = $margin;
         $this->borders = $borders;
+        $this->nightMode = $nightMode;
     }
 }

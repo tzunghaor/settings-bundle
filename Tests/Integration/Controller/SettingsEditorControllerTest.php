@@ -22,7 +22,7 @@ class SettingsEditorControllerTest extends WebTestCase
     public function editDataProvider(): array
     {
         $defaultBoxSettings = new BoxSettings();
-        $expectedDayBoxSettings = new BoxSettings(0, 14, ['top', 'left']);
+        $expectedDayBoxSettings = new BoxSettings(0, 14, [], false);
 
         // simple case: edit only in one scope
         $cases['day'] = [
@@ -32,11 +32,11 @@ class SettingsEditorControllerTest extends WebTestCase
                     'formEdits' => [
                         // set value for "margin" but not the "in_scope" radio button => it should not be saved
                         'settings_editor' => [
-                            'settings' => ['padding' => 12, 'margin' => 14],
-                            'in_scope' => ['padding' => 0, 'margin' => 1, 'borders' => 1],
+                            'settings' => ['padding' => 12, 'margin' => 14, 'nightMode' => false],
+                            'in_scope' => ['padding' => 0, 'margin' => 1, 'borders' => 1, 'nightMode' => 1],
                         ],
                         // multi-select must be set separately
-                        'settings_editor[settings][borders]' => ['top', 'left'],
+                        'settings_editor[settings][borders]' => [],
                     ],
                 ],
             ],
