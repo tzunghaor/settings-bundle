@@ -40,7 +40,8 @@ jobs:
       - name: Run tests
         uses: php-actions/phpunit@v3
         with:
-          vendored_phpunit_path: vendor/bin/phpunit
+          version: "9.5"
+          php_version: ${{ matrix.php_version }}
           memory_limit: 512M
         env:
           APP_ENV: test
