@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" colors="true" bootstrap="Tests/bootstrap.php">
+  <coverage>
+    <include>
+      <directory suffix=".php">./</directory>
+    </include>
+    <exclude>
+      <directory>Tests</directory>
+      <directory>var</directory>
+      <directory>vendor</directory>
+      <directory>Entity</directory>
+      <directory>Exception</directory>
+    </exclude>
+    <report>
+      <html outputDirectory="var/test-coverage-html" lowUpperBound="35" highLowerBound="70"/>
+    </report>
+  </coverage>
+  <php>
+    <ini name="error_reporting" value="-1"/>
+    <env name="KERNEL_CLASS" value="TestApp\TestKernel"/>
 
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/7.4/phpunit.xsd"
-         colors="true"
-         bootstrap="Tests/bootstrap.php"
->
-    <php>
-        <ini name="error_reporting" value="-1" />
-        <env name="KERNEL_CLASS" value="TestApp\TestKernel" />
-    </php>
+        <!-- ###+ symfony/framework-bundle ### -->
+        <env name="APP_ENV" value="test"/>
+        <env name="APP_SECRET" value="ee679988aff164560009e6f65963222f"/>
+        <!-- ###- symfony/framework-bundle ### -->
 
-    <testsuites>
-        <testsuite name="Project Test Suite">
-            <directory>Tests</directory>
-        </testsuite>
-    </testsuites>
-
-    <filter>
-        <whitelist>
-            <directory suffix=".php">./</directory>
-            <exclude>
-                <directory>Tests</directory>
-                <directory>var</directory>
-                <directory>vendor</directory>
-                <directory>Entity</directory>
-                <directory>Exception</directory>
-            </exclude>
-        </whitelist>
-    </filter>
-
-    <logging>
-        <log type="coverage-html" target="var/test-coverage-html" lowUpperBound="35" highLowerBound="70"/>
-    </logging>
+        <!-- ###+ doctrine/doctrine-bundle ### -->
+        <!-- Format described at https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url -->
+        <!-- IMPORTANT: You MUST configure your server version, either here or in config/packages/doctrine.yaml -->
+        <!--  -->
+        <!-- ###- doctrine/doctrine-bundle ### -->
+  </php>
+  <testsuites>
+    <testsuite name="Project Test Suite">
+      <directory>Tests</directory>
+    </testsuite>
+  </testsuites>
+  <logging/>
 </phpunit>

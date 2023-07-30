@@ -121,7 +121,7 @@ for your settings (e.g. src/Settings), and create a BoxSettings.php in it:
 ```php
 // src/Settings/BoxSettings.php
 namespace App\Settings;
-use Tzunghaor\SettingsBundle\Annotation\Setting;
+use Tzunghaor\SettingsBundle\Attribute\Setting;
 
 class BoxSettings
 {
@@ -132,8 +132,8 @@ class BoxSettings
 
     /**
      * @var string[]
-     * @Setting(enum={"bottom", "top", "left", "right"})
      */
+    #[Setting(enum: ["bottom", "top", "left", "right"])]
     public $borders = [];
 }
 ```

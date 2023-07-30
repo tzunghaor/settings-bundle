@@ -70,7 +70,6 @@
         </service>
 
         <service id="tzunghaor_settings.meta_data_extractor" class="Tzunghaor\SettingsBundle\Service\MetaDataExtractor">
-            <argument key="$annotationReader" type="service" id="annotation_reader"/>
             <argument key="$propertyInfo" type="service" id="property_info"/>
         </service>
 

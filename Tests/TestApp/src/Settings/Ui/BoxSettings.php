@@ -3,7 +3,7 @@
 namespace TestApp\Settings\Ui;
 
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Tzunghaor\SettingsBundle\Annotation\Setting;
+use Tzunghaor\SettingsBundle\Attribute\Setting;
 
 /**
  * UI Box Settings
@@ -22,14 +22,14 @@ class BoxSettings
 
     /**
      * @var string[]
-     * @Setting(enum={"bottom", "top", "left", "right"})
      */
+    #[Setting(enum: ["bottom", "top", "left", "right"])]
     private $borders;
 
     /**
      * @var bool
-     * @Setting(formType=CheckboxType::class, formOptions={"required": false})
      */
+    #[Setting(formType: CheckboxType::class, formOptions: ["required" => false])]
     private $nightMode;
 
     public function getPadding(): int
