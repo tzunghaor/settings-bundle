@@ -8,6 +8,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -21,8 +23,8 @@ use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 class SettingsEditorType extends AbstractType implements DataMapperInterface
 {
     /**
-     * I want to support form validation with validation constraint annotations in the setting section class,
-     * but I dont't want to have the validation component as a hard dependency. Therefore the data of this form type is
+     * I want to support form validation with validation constraint annotations/attributes in the setting section class,
+     * but I don't want to have the validation component as a hard dependency. Therefore, the data of this form type is
      * an array with keys defined here. (And not an object which would require explicitly propagating validation.)
      */
     // form data key of the settings of edited scope
@@ -92,6 +94,47 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
 
             $overrideForm->add($settingName, BoolType::class, $overrideOptions);
         }
+
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
+    }
+
+    public function onPreSubmit(FormEvent $event): void
+    {
+        // empty form inputs (e.g. not checked checkbox) are not submitted, so we need to set them to empty here
+        // explicitly - otherwise their old value would be kept instead
+        // todo: this doesn't happen in a single level form, so there could be a better solution for this
+        $data = $event->getData();
+        /** @var SectionMetaData $metaData */
+        $metaData = $event->getForm()->getConfig()->getOption(self::OPTION_SECTION_META);
+        $metaDataArray = $metaData->getSettingMetaDataArray();
+
+        foreach ($data[self::DATA_IN_SCOPE] as $settingName => $isInScope) {
+            // if setting is inherited, then it shouldn't have submitted value
+            if ($isInScope != 1) {
+                continue;
+            }
+
+            // if only empty inputs are submitted, then $data['settings'] doesn't exist at all
+            if (!isset($data[self::DATA_SETTINGS])) {
+                $data[self::DATA_SETTINGS] = [];
+            }
+
+            // if there is already settings in data, then nothing to do
+            if (array_key_exists($settingName, $data[self::DATA_SETTINGS])) {
+                continue;
+            }
+
+            // set empty input data based on setting type
+            $settingType = $metaDataArray[$settingName]->getDataType();
+            if ($settingType->isCollection()) {
+                $emptyValue = [];
+            } else {
+                $emptyValue = null;
+            }
+            $data[self::DATA_SETTINGS][$settingName] = $emptyValue;
+        }
+
+        $event->setData($data);
     }
 
     /**

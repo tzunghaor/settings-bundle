@@ -2,15 +2,15 @@ Defining Setting Classes
 ========================
 
 The bundle needs to write the settings into objects of your setting_section class,
-so the class attributes must be readable and writable. You have multiple 
+so the class properties must be readable and writable. You have multiple 
 possibilities:
 
-1. Simply make the class attributes public.
-2. Make the class attributes private, and create getter and setter methods.
+1. Simply make the class properties public.
+2. Make the class properties private, and create getter and setter methods.
 3. The previous possibilities have the disadvantage, when you receive the section
    object from the service, you can accidentally modify the values, which will
-   effect other services. If you want to avoid this, then you can have private 
-   attributes, getter methods and pass all attributes with the constructor. 
+   affect other services. If you want to avoid this, then you can have private 
+   properties, getter methods and pass all properties with the constructor. 
 
 Let's see an example first, then we break down the possibilities:
 
@@ -18,7 +18,7 @@ Let's see an example first, then we break down the possibilities:
 namespace App\Settings\Ui;
 
 use Symfony\Component\Validator\Constraints as Assert;
-use Tzunghaor\SettingsBundle\Annotation\Setting;
+use Tzunghaor\SettingsBundle\Attribute\Setting;
 use App\Form\CustomIntType;
 
 /**
@@ -29,16 +29,15 @@ use App\Form\CustomIntType;
 class BoxSettings
 {
     /**
-     * @Setting(
-     *     label="CSS Padding",
-     *     help="This padding is used where it is appropriate.",
-     *     formOptions={"attr": {"style": "border: 5px solid green;"}}
-     * )
-     *
      * @var int
      * @Assert\PositiveOrZero(message="padding should not be negative")
      * @Assert\LessThan(30, message="maximum accepted padding is {{ compared_value }} pixel")
      */
+    #[Setting(
+        label: "CSS Padding",
+        help: "This padding is used where it is appropriate.",
+        formOptions: ["attr" => ["style" => "border: 5px solid green;"]]
+    )]
     private $padding;
 
     /**
@@ -46,14 +45,10 @@ class BoxSettings
      *
      * I think you already understand how this help text works.
      *
-     * @Setting(
-     *     formType=CustomIntType::class,
-     *     dataType="int"
-     * )
-     *
      * @Assert\PositiveOrZero()
      * @Assert\LessThan(30, message="maximum accepted margin is {{ compared_value }} pixel")
      */
+    #[Setting(formType: CustomIntType::class, dataType: "int")]
     private $margin;
 
     public function __construct($padding = 0, $margin = 0, $borders = [])
@@ -65,8 +60,8 @@ class BoxSettings
 
     /**
      * @var string[]
-     * @Setting(enum={"bottom", "top", "left", "right"})
      */
+    #[Setting(enum: ["bottom", "top", "left", "right"])] 
     private $borders;
 
     /**
@@ -105,8 +100,8 @@ based on the fully qualified class name, controlled by
 the mapping configuration:
 
 1. The **prefix** part of the namespace is removed
-1. Namespace separators are converted to dots
-1. If the mapping name is not **default**, then the name is prefixed with it.
+2. Namespace separators are converted to dots
+3. If the mapping name is not **default**, then the name is prefixed with it.
 
 ```yaml
 # config/packages/tzunghaor_settings.yaml
@@ -130,12 +125,12 @@ App\Custom\Settings\Project\ExportSettings => custom.Project.ExportSettings
 Setting and section definition
 ------------------------------
 
-Every class attribute in your setting class will be used as a setting.
+Every class property in your setting class will be used as a setting.
 You can fine tune the data type and how it is displayed in the editor GUI, but
-the bundle also tries it's best to provide sensible defaults for usual cases.
+the bundle also tries its best to provide sensible defaults for usual cases.
 
-You can add **Tzunghaor\SettingsBundle\Annotation\Setting** to all/any of your
-setting attributes, whatever is defined with it takes precedence over any other
+You can add **Tzunghaor\SettingsBundle\Attribute\Setting** to all/any of your
+setting properties, whatever is defined with it takes precedence over any other
 method.
 
 I suggest to install phpdocumentor/reflection-docblock, which gives you more, and 
@@ -164,10 +159,10 @@ the above interface, and tag it with **tzunghaor_settings.setting_converter**. Y
 can use multiple converters supporting different types, the tag priority will
 determine in which order they are tried, the built-in converter has -1000 priority. 
 
-1. If you define **dataType** with the **Setting** annotation, it will be used.
+1. If you define **dataType** with the **Setting** attribute, it will be used.
 2. If you have **phpdocumentor/reflection-docblock** installed, the @var annotation
    will be used.
-3. Otherwise **symfony/property-info** will use all its magic - like the type of
+3. Otherwise, **symfony/property-info** will use all its magic - like the type of
    the default value - to find out the data type.
 4. If all else fails, **string** is used.
 
@@ -175,7 +170,7 @@ determine in which order they are tried, the built-in converter has -1000 priori
 
 These are used in the editor GUI.
 
-1. You can define **label** and **help** with the **Setting** annotation.
+1. You can define **label** and **help** with the **Setting** attribute.
 2. Otherwise, if you have **phpdocumentor/reflection-docblock** installed,
    the first and remaining lines of the docblock will be used, similarly as
    for the section class.
@@ -184,12 +179,13 @@ These are used in the editor GUI.
 
 These are used in the editor GUI.
 
-1. You can define **formType** and **formOptions** with the **Setting** annotation.
-2. You can define **enum** with the **Setting** annotation: it is just a convenience
-   feature, it will set formType=choice, 
-   formOptions={choices: {enum1: enum1, ...}}. If the dataType is array, then it 
+1. You can define **formType** and **formOptions** with the **Setting** attribute.
+2. You can define **enum** with the **Setting** attribute: it is just a convenience
+   feature, it will set `formType: "choice", 
+   formOptions: ["choices" => ["enum1" => "enum1", ...]]`. 
+   If the dataType is array, then it 
    also adds 'multiple' to the formOptions
-3. Otherwise the bundle chooses the formType based on the dataType
+3. Otherwise, the bundle chooses the formType based on the dataType
 
 Validation
 ----------

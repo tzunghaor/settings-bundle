@@ -3,9 +3,10 @@
     "description": "Database persisted settings",
     "type": "symfony-bundle",
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.0",
         "ext-json": "*",
-        "doctrine/doctrine-bundle": "^2.0",
+        "doctrine/doctrine-bundle": "^2.4.3",
+        "doctrine/annotations":  "^1 || ^2",
         "doctrine/orm": ">=2.7.0",
         "symfony/cache": "^5.4 || ^6.0",
         "symfony/config": "^5.4 || ^6.0",
@@ -42,9 +43,9 @@
     "require-dev": {
         "phpdocumentor/reflection-docblock": "^5.3",
         "phpstan/phpstan": "^1.8",
-        "phpunit/phpunit": "^8.5 || ^9.5",
+        "phpunit/phpunit": "^9.5",
         "rector/rector": "^0.14.0",
-        "symfony/browser-kit": "^5.4 || ^6.0",
+        "symfony/browser-kit": "^6.0",
         "symfony/framework-bundle": "^5.4 || ^6.0",
         "symfony/yaml": "^5.4 || ^6.0",
         "symfony/flex": "*"
@@ -52,6 +53,12 @@
     "config": {
         "allow-plugins": {
             "symfony/flex": true
+        }
+    },
+    "scripts": {
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
         }
     }
 }

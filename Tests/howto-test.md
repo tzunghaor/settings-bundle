@@ -8,15 +8,15 @@
 
 ## Build custom docker images for testing
  
-* `docker build -t tzunghaor:php7.4-cli Tests/Resources/docker/php7.4-cli`
 * `docker build -t tzunghaor:php8.0-cli Tests/Resources/docker/php8.0-cli`
 * `docker build -t tzunghaor:php8.1-cli Tests/Resources/docker/php8.1-cli`
+* `docker build -t tzunghaor:php8.2-cli Tests/Resources/docker/php8.2-cli`
 
 ## Run tests in different environments
 
-Install composer requirements with lowest and highest versions for each supported PHP version and run tests.
+Install composer requirements with lowest and highest versions for the selected PHP version and run tests.
 
-* `docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli var/composer.phar update --prefer-lowest && \
+* `docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli var/composer.phar update --prefer-lowest && 
    docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli vendor/bin/phpunit`
-* `docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli var/composer.phar update && \
+* `docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli var/composer.phar update && 
    docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli vendor/bin/phpunit`

@@ -2,18 +2,14 @@
 
 namespace TestApp\OtherSettings;
 
-use Tzunghaor\SettingsBundle\Annotation\Setting;
+use Tzunghaor\SettingsBundle\Attribute\Setting;
 
 abstract class AbstractBaseSettings
 {
-    /**
-     * @Setting(label="assets name label")
-     */
+    #[Setting(label: "assets name label")]
     public $name = 'baba';
 
-    /**
-     * @Setting(label="private address label")
-     */
+    #[Setting(label: "private address label")]
     private $address = 'yaga';
 
     /**
@@ -29,6 +25,7 @@ abstract class AbstractBaseSettings
      * This is the maximum description
      * @Setting(formOptions={"attr": {"class": "max"}})
      */
+    #[Setting(formOptions: ["attr" => ["class" => "max"]])]
     protected $maximum = 20;
 
     /**

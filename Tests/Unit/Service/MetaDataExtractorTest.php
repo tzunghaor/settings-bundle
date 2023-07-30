@@ -4,7 +4,6 @@
 namespace Unit\Service;
 
 
-use Doctrine\Common\Annotations\Reader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -13,8 +12,13 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
-use TestApp\UnitSettings\TestSingleSetting;
-use Tzunghaor\SettingsBundle\Annotation\Setting;
+use TestApp\UnitSettings\TestBoolSetting;
+use TestApp\UnitSettings\TestDateTimeSetting;
+use TestApp\UnitSettings\TestMultiEnumSetting;
+use TestApp\UnitSettings\TestSimpleSetting;
+use TestApp\UnitSettings\TestSingleEnumSetting;
+use TestApp\UnitSettings\TestSingleNumberSetting;
+use TestApp\UnitSettings\TestUnknowTypeSetting;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
@@ -27,7 +31,7 @@ class MetaDataExtractorTest extends TestCase
     {
         return [
             'default' => [
-                [],
+                TestSimpleSetting::class,
                 true,
                 null,
                 false,
@@ -43,7 +47,7 @@ class MetaDataExtractorTest extends TestCase
                 ],
             ],
             'number' =>  [
-                [$this->createAnnotationSetting('cool number', 'help for the number', 'int')],
+                TestSingleNumberSetting::class,
                 false,
                 null,
                 false,
@@ -59,7 +63,7 @@ class MetaDataExtractorTest extends TestCase
                 ],
             ],
             'singleEnum' => [
-                [$this->createAnnotationSetting('simple choice', null, 'string', null, null, ['one', 'two'])],
+                TestSingleEnumSetting::class,
                 false,
                 null,
                 false,
@@ -75,7 +79,7 @@ class MetaDataExtractorTest extends TestCase
                 ],
             ],
             'multiEnum' => [
-                [$this->createAnnotationSetting(null, null, 'string[]', null, null, ['yay', 'nay'])],
+                TestMultiEnumSetting::class,
                 false,
                 null,
                 false,
@@ -91,21 +95,21 @@ class MetaDataExtractorTest extends TestCase
                 ],
             ],
             'unknown type' => [
-                [$this->createAnnotationSetting(null, null, 'nosuchtype')],
+                TestUnknowTypeSetting::class,
                 false,
                 null,
                 true,
                 null,
             ],
             'too many type' => [
-                [],
+                TestSimpleSetting::class,
                 true,
                 [new Type('int'), new Type('string')],
                 true,
                 null,
             ],
             'datetime type' => [
-                [$this->createAnnotationSetting(null, null, 'DateTime')],
+                TestDateTimeSetting::class,
                 false,
                 null,
                 false,
@@ -121,7 +125,7 @@ class MetaDataExtractorTest extends TestCase
                 ],
             ],
             'bool' => [
-                [$this->createAnnotationSetting(null, null, '', null, ['attr' => 'yay'])],
+                TestBoolSetting::class,
                 true,
                 [new Type('bool')],
                 false,
@@ -137,7 +141,7 @@ class MetaDataExtractorTest extends TestCase
                 ],
             ],
             'float' => [
-                [],
+                TestSimpleSetting::class,
                 true,
                 [new Type('float')],
                 false,
@@ -158,29 +162,16 @@ class MetaDataExtractorTest extends TestCase
     /**
      * @dataProvider createSectionMetaDataProvider
      *
-     * @param array $annotations
-     * @param bool $expectGetTypes
-     * @param array|null $types
-     * @param bool $expectException
-     * @param array|null $expectedSettingMetaDataArray
-     *
      * @throws SettingsException
      * @throws \ReflectionException
      */
     public function testCreateSectionMetaData(
-        array $annotations,
-        bool $expectGetTypes,
+        string $settingClassName,
+        bool   $expectGetTypes,
         ?array $types,
-        bool $expectException,
+        bool   $expectException,
         ?array $expectedSettingMetaDataArray
     ) {
-        $readerMock = $this->createMock(Reader::class);
-        $readerMock
-            ->expects($this->once())
-            ->method('getPropertyAnnotations')
-            ->willReturn($annotations)
-        ;
-
         $propertyInfoMock = $this->createMock(PropertyInfoExtractorInterface::class);
         if ($expectGetTypes) {
             $propertyInfoMock
@@ -196,29 +187,16 @@ class MetaDataExtractorTest extends TestCase
             self::expectException(SettingsException::class);
         }
 
-        $extractor = new MetaDataExtractor($readerMock, $propertyInfoMock);
+        $extractor = new MetaDataExtractor($propertyInfoMock);
 
         // tested method
-        $metaData = $extractor->createSectionMetaData('testSection', TestSingleSetting::class);
+        $metaData = $extractor->createSectionMetaData('testSection', $settingClassName);
 
         self::assertInstanceOf(SectionMetaData::class, $metaData);
         self::assertEquals('testSection', $metaData->getName());
-        self::assertEquals(TestSingleSetting::class, $metaData->getDataClass());
+        self::assertEquals($settingClassName, $metaData->getDataClass());
         self::assertEquals('Single Setting Section', $metaData->getTitle());
         self::assertEquals("My test description.\nIn multiple lines.", $metaData->getDescription());
         self::assertEquals($expectedSettingMetaDataArray, $metaData->getSettingMetaDataArray());
-    }
-
-    private function createAnnotationSetting($label, $help, $dataType, $formType = null, $formOptions = null, $enum = null)
-    {
-        $setting = new Setting();
-        $setting->label = $label;
-        $setting->help = $help;
-        $setting->dataType = $dataType;
-        $setting->formType = $formType;
-        $setting->formOptions = $formOptions;
-        $setting->enum = $enum;
-
-        return $setting;
     }
 }
