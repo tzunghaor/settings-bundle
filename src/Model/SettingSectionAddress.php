@@ -7,20 +7,11 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class SettingSectionAddress
 {
-    /**
-     * @var string
-     */
-    private $collectionName;
+    private string $collectionName;
 
-    /**
-     * @var string|null
-     */
-    private $scope;
+    private ?string $scope;
 
-    /**
-     * @var string|null
-     */
-    private $sectionName;
+    private ?string $sectionName;
 
     public function __construct(string $collectionName, ?string $scope, ?string $sectionName)
     {
@@ -29,25 +20,19 @@ class SettingSectionAddress
         $this->sectionName = $sectionName;
     }
 
-    /**
-     * @return string
-     */
+
     public function getCollectionName(): string
     {
         return $this->collectionName;
     }
 
-    /**
-     * @return string|null
-     */
+
     public function getScope(): ?string
     {
         return $this->scope;
     }
 
-    /**
-     * @return string|null
-     */
+
     public function getSectionName(): ?string
     {
         return $this->sectionName;

@@ -28,28 +28,24 @@ use App\Form\CustomIntType;
  */
 class BoxSettings
 {
-    /**
-     * @var int
-     * @Assert\PositiveOrZero(message="padding should not be negative")
-     * @Assert\LessThan(30, message="maximum accepted padding is {{ compared_value }} pixel")
-     */
     #[Setting(
         label: "CSS Padding",
         help: "This padding is used where it is appropriate.",
         formOptions: ["attr" => ["style" => "border: 5px solid green;"]]
     )]
-    private $padding;
+    #[Assert\PositiveOrZero(message: "padding should not be negative")]
+    #[Assert\LessThan(30, message: "maximum accepted padding is {{ compared_value }} pixel")]
+    private int $padding;
 
     /**
      * CSS margin
      *
      * I think you already understand how this help text works.
-     *
-     * @Assert\PositiveOrZero()
-     * @Assert\LessThan(30, message="maximum accepted margin is {{ compared_value }} pixel")
      */
     #[Setting(formType: CustomIntType::class, dataType: "int")]
-    private $margin;
+    #[Assert\PositiveOrZero]
+    #[Assert\LessThan(30, message: "maximum accepted margin is {{ compared_value }} pixel")]
+    private int $margin;
 
     public function __construct($padding = 0, $margin = 0, $borders = [])
     {
@@ -62,27 +58,21 @@ class BoxSettings
      * @var string[]
      */
     #[Setting(enum: ["bottom", "top", "left", "right"])] 
-    private $borders;
+    private array $borders;
 
-    /**
-     * @return int
-     */
+
     public function getPadding(): int
     {
         return $this->padding;
     }
 
-    /**
-     * @return int
-     */
+
     public function getMargin(): int
     {
         return $this->margin;
     }
 
-    /**
-     * @return string[]
-     */
+
     public function getBorders(): array
     {
         return $this->borders;

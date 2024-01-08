@@ -1,1 +1,1 @@
-This directory doesn't contain tests, but an application that get tested.
+This directory doesn't contain tests, but an application that gets tested.

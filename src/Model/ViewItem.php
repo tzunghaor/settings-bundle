@@ -7,10 +7,7 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class ViewItem extends Item
 {
-    /**
-     * @var string|null url
-     */
-    private $url;
+    private ?string $url;
 
     public function __construct(
         string $name,
@@ -23,9 +20,7 @@ class ViewItem extends Item
         $this->url = $url;
     }
 
-    /**
-     * @return string|null
-     */
+
     public function getUrl(): ?string
     {
         return $this->url;

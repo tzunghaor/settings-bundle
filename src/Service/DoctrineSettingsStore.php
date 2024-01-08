@@ -9,15 +9,12 @@ use Tzunghaor\SettingsBundle\Model\PersistedSettingInterface;
  */
 class DoctrineSettingsStore implements SettingsStoreInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
+    private EntityManagerInterface $em;
 
     /**
      * @var string class name, must be an entity implementing PersistedSettingInterface
      */
-    private $entityClass;
+    private string $entityClass;
 
     public function __construct(EntityManagerInterface $em, string $entityClass)
     {
@@ -81,9 +78,6 @@ class DoctrineSettingsStore implements SettingsStoreInterface
 
     /**
      * Loads persisted setting entities from DB
-     *
-     * @param string $sectionName
-     * @param string $scope
      *
      * @return PersistedSettingInterface[] [$settingName => $persistedSetting, ...]
      */

@@ -8,35 +8,20 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class SectionMetaData
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var string
-     */
-    private $dataClass;
+    private string $dataClass;
 
-    /**
-     * @var string
-     */
-    private $description;
+    private string $description;
 
     /**
      * @var SettingMetaData[]
      */
-    private $settingMetaDataArray;
+    private array $settingMetaDataArray;
 
-    /**
-     * @var string
-     */
-    private $title;
+    private string $title;
 
-    /**
-     * @var array
-     */
-    private $extra;
+    private array $extra;
 
     /**
      * @param string $name used as identifier in DB and url
@@ -62,33 +47,25 @@ class SectionMetaData
         $this->extra = $extra;
     }
 
-    /**
-     * @return string
-     */
+
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
+
     public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * @return string
-     */
+
     public function getDataClass(): string
     {
         return $this->dataClass;
     }
 
-    /**
-     * @return string
-     */
+
     public function getDescription(): string
     {
         return $this->description;
@@ -102,9 +79,7 @@ class SectionMetaData
         return $this->settingMetaDataArray;
     }
 
-    /**
-     * @return array
-     */
+
     public function getExtra(): array
     {
         return $this->extra;

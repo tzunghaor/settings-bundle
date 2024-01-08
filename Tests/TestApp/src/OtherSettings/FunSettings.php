@@ -10,22 +10,16 @@ namespace TestApp\OtherSettings;
  */
 class FunSettings extends AbstractBaseSettings
 {
-    /**
-     * @var string
-     */
-    public $foo = 'fff';
+    public string $foo = 'fff';
 
-    /**
-     * @var string
-     */
-    public $bar = 'bbb';
+    public string $bar = 'bbb';
 
-    protected $minimum = 100;
+    protected int $minimum = 100;
 
     /**
      * Fun maximum
      *
      * Higher than normal maximum
      */
-    protected $maximum = 200;
+    protected int $maximum = 200;
 }

@@ -15,31 +15,23 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Tzunghaor\SettingsBundle\Entity\AbstractPersistedSetting;
 
-/**
- * @ORM\Entity()
- * @ORM\HasLifecycleCallbacks()
- * @ORM\Table(name="my_persisted_setting")
- */
+ #[ORM\Entity]
+ #[ORM\HasLifecycleCallbacks]
+ #[ORM\Table(name: "my_persisted_setting")]
 class MyPersistedSetting extends AbstractPersistedSetting
 {
-    /**
-     * @var string
-     * @ORM\Id()
-     * @ORM\Column(type="string", name="my_path")
-     */
-    protected $path;
+    #[ORM\Id]
+    #[ORM\Column(type: "string", name: "my_path")]
+    protected string $path;
 
     /**
      * Doctrine lifecycle events will increase this counter.
-     * @var integer
-     * @ORM\Column(type="integer")
      */
-    private $version = 0;
+    #[ORM\Column(type: "integer")]
+    private int $version = 0;
 
-    /**
-     * @ORM\PrePersist()
-     * @ORM\PreUpdate()
-     */
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
     public function incrementVersion()
     {
         $this->version ++;
@@ -69,7 +61,7 @@ doctrine:
       mappings:
         TzunghaorSettingsBundle:
           is_bundle: false
-          type: annotation
+          type: attribute
           dir: '%kernel.project_dir%/src/Entity'
           prefix: 'App\Entity'
 ```
