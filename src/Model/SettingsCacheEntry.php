@@ -8,15 +8,9 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class SettingsCacheEntry
 {
-    /**
-     * @var array
-     */
-    private $values;
+    private array $values;
 
-    /**
-     * @var array
-     */
-    private $valueScopes;
+    private array $valueScopes;
 
     /**
      * @var object|null
@@ -36,17 +30,13 @@ class SettingsCacheEntry
         $this->object = $object;
     }
 
-    /**
-     * @return array
-     */
+
     public function getValues(): array
     {
         return $this->values;
     }
 
-    /**
-     * @return array
-     */
+
     public function getValueScopes(): array
     {
         return $this->valueScopes;

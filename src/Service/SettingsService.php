@@ -19,25 +19,16 @@ use Tzunghaor\SettingsBundle\Model\SettingsCacheEntry;
  */
 class SettingsService
 {
-    /**
-     * @var SettingsMetaService
-     */
-    private $settingsMetaService;
+    private SettingsMetaService $settingsMetaService;
 
-    /**
-     * @var CacheInterface
-     */
-    private $cache;
+    private CacheInterface $cache;
 
-    /**
-     * @var SettingsStoreInterface
-     */
-    private $store;
+    private SettingsStoreInterface $store;
 
     /**
      * @var SettingConverterInterface[]
      */
-    private $dataConverters;
+    private array $dataConverters;
 
     public function __construct(
         SettingsMetaService $settingsMetaService,
@@ -54,7 +45,6 @@ class SettingsService
     /**
      * Retrieves the setting section object filled with values for the given scope
      *
-     * @param string $sectionClass
      * @param mixed|null $subject Can be scope name or an object or anything your ScopeProvider supports.
      *                            If null, default scope is used.
      *
@@ -74,9 +64,6 @@ class SettingsService
      * Tells in which section are defined the setting values returned by self::getSection($sectionClass, $scope).
      * If a setting is not in the returned array, then that uses the default value defined in the section class.
      *
-     * @param string $sectionClass
-     * @param string $scope
-     *
      * @return array [$settingName => $scopeName, ... ]
      *
      * @throws SettingsException
@@ -90,8 +77,6 @@ class SettingsService
     /**
      * Saves settings to DB
      *
-     * @param string $sectionClass
-     * @param string $scope
      * @param array $values [$settingName => $value, ...] type of values should be what is defined in the section class
      *
      * @throws SettingsException
@@ -111,9 +96,6 @@ class SettingsService
 
     /**
      * Returns a SettingsCacheEntry, loads from DB if it is not loaded yet.
-     *
-     * @param string $sectionClass
-     * @param string $scope
      *
      * @return SettingsCacheEntry
      *
@@ -164,12 +146,7 @@ class SettingsService
      * To call this method, you already need to have the SettingsCacheEntry of the parent scope.
      * This method is used only in case of nested scopes alongside of getCacheEntry() to avoid recursion
      *
-     * @param array $cacheKeys
-     * @param string $sectionClass
-     * @param string $scope
      * @param SettingsCacheEntry|null $parentEntry null for top-level scopes
-     *
-     * @return SettingsCacheEntry
      *
      * @throws Throwable
      */
@@ -194,9 +171,6 @@ class SettingsService
     /**
      * Invalidates cached values for the given $sectionClass in the given $scope and all descendant scopes
      *
-     * @param string $sectionClass
-     * @param string $scope
-     *
      * @throws Throwable
      */
     private function invalidateCache(string $sectionClass, string $scope): void
@@ -212,11 +186,7 @@ class SettingsService
     /**
      * Loads settings for a section + scope pair from DB
      *
-     * @param string $sectionClass
-     * @param string $scope
      * @param SettingsCacheEntry|null $parentEntry values not saved for current scope should be inherited from this entry
-     *
-     * @return SettingsCacheEntry
      *
      * @throws \ReflectionException
      * @throws SettingsException
@@ -245,11 +215,6 @@ class SettingsService
 
     /**
      * Generates a cache key
-     *
-     * @param string $sectionClass
-     * @param string $scope
-     *
-     * @return string
      */
     private function getCacheKey(string $sectionClass, string $scope): string
     {
@@ -262,8 +227,6 @@ class SettingsService
      *
      * @param array $persistedValues [$settingName => $value, ...]
      * @param SettingMetaData[] $settingMetaArray
-     *
-     * @return array
      *
      * @throws SettingsException
      */
@@ -299,8 +262,6 @@ class SettingsService
      *
      * @param array $values [$settingName => $value, ...]
      * @param SettingMetaData[] $settingMetaArray
-     *
-     * @return array
      *
      * @throws SettingsException
      */

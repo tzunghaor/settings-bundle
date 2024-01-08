@@ -19,38 +19,25 @@ use Tzunghaor\SettingsBundle\Model\SectionMetaData;
  */
 class SettingsMetaService implements CacheWarmerInterface
 {
-    /**
-     * @var CacheInterface
-     */
-    private $cache;
+    private CacheInterface $cache;
+
+    private MetaDataExtractor $metaDataExtractor;
+
+    private ScopeProviderInterface $scopeProvider;
+
+    private string $collectionName;
+
+    private Item $collectionItem;
 
     /**
      * @var array [$sectionName => $sectionClass, ...]
      */
-    private $sectionClasses;
+    private array $sectionClasses;
 
     /**
      * @var SectionMetaData[] [$sectionClass => $metaData, ...]
      */
-    private $sectionMetaDataArray;
-
-    /**
-     * @var MetaDataExtractor
-     */
-    private $metaDataExtractor;
-    /**
-     * @var ScopeProviderInterface
-     */
-    private $scopeProvider;
-    /**
-     * @var string
-     */
-    private $collectionName;
-    /**
-     * @var Item
-     */
-    private $collectionItem;
-
+    private ?array $sectionMetaDataArray = null;
 
     public function __construct(
         CacheInterface $cache,

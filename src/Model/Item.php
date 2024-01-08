@@ -10,22 +10,19 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class Item
 {
-    /**
-     * @var string
-     */
-    private $name;
-    /**
-     * @var string
-     */
-    private $title;
+    private string $name;
+
+    private string $title;
+
     /**
      * @var Item[]
      */
-    private $children;
+    private array $children;
+
     /**
      * @var array extra data that you can use in your templates / extensions
      */
-    private $extra;
+    private array $extra;
 
     public function __construct(
         string $name,
@@ -39,17 +36,13 @@ class Item
         $this->extra = $extra;
     }
 
-    /**
-     * @return string
-     */
+
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
+
     public function getTitle(): string
     {
         return $this->title;
@@ -63,9 +56,7 @@ class Item
         return $this->children;
     }
 
-    /**
-     * @return array
-     */
+
     public function getExtra(): array
     {
         return $this->extra;

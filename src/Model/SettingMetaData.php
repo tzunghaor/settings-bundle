@@ -11,35 +11,17 @@ use Symfony\Component\PropertyInfo\Type;
  */
 class SettingMetaData
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var Type
-     */
-    private $dataType;
+    private Type $dataType;
 
-    /**
-     * @var string
-     */
-    private $formType;
+    private string $formType;
 
-    /**
-     * @var array
-     */
-    private $formOptions;
+    private array $formOptions;
 
-    /**
-     * @var string
-     */
-    private $label;
+    private string $label;
 
-    /**
-     * @var string
-     */
-    private $help;
+    private string $help;
 
     public function __construct(
         string $name,

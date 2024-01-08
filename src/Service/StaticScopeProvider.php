@@ -14,22 +14,19 @@ class StaticScopeProvider implements ScopeProviderInterface
     /**
      * @var Item[]
      */
-    private $scopeHierarchy;
+    private array $scopeHierarchy;
 
     /**
      * @var Item[] [$scopeName => Scope, ...]
      */
-    private $scopeLookup;
+    private array $scopeLookup;
 
     /**
      * @var string[][] [$scopeName => [$topAncestor, ...], ...]
      */
-    private $scopePathLookup;
+    private array $scopePathLookup;
 
-    /**
-     * @var Item
-     */
-    private $defaultScope;
+    private Item $defaultScope;
 
     /**
      * @param Item[] $scopeHierarchy

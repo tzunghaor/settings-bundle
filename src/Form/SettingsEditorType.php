@@ -23,7 +23,7 @@ use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 class SettingsEditorType extends AbstractType implements DataMapperInterface
 {
     /**
-     * I want to support form validation with validation constraint annotations/attributes in the setting section class,
+     * I want to support form validation with validation constraint attributes in the setting section class,
      * but I don't want to have the validation component as a hard dependency. Therefore, the data of this form type is
      * an array with keys defined here. (And not an object which would require explicitly propagating validation.)
      */

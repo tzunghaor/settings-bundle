@@ -4,5 +4,5 @@ namespace TestApp\OtherSettings;
 
 class SadSettings extends AbstractBaseSettings
 {
-    public $reason = 'nothing';
+    public string $reason = 'nothing';
 }

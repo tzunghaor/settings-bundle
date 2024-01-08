@@ -27,10 +27,7 @@ use Tzunghaor\SettingsBundle\Model\SettingMetaData;
  */
 class MetaDataExtractor
 {
-    /**
-     * @var PropertyInfoExtractorInterface
-     */
-    private $propertyInfo;
+    private PropertyInfoExtractorInterface $propertyInfo;
 
     public function __construct(
         PropertyInfoExtractorInterface $propertyInfo
@@ -39,11 +36,6 @@ class MetaDataExtractor
     }
 
     /**
-     * @param string $sectionName
-     * @param string $sectionClass
-     *
-     * @return SectionMetaData
-     *
      * @throws SettingsException
      * @throws \ReflectionException
      */
@@ -176,8 +168,6 @@ class MetaDataExtractor
     /**
      * Returns the default form type to be used for the given data type.
      *
-     * @param Type $dataType
-     *
      * @return string FQCN of form type
      */
     private function getFormTypeByDataType(Type $dataType): string
@@ -187,8 +177,6 @@ class MetaDataExtractor
 
     /**
      * Returns the default base form type (entry type in case of collection) to be used for the given data type
-     *
-     * @param Type $dataType
      *
      * @return string FQCN of form type
      */
@@ -239,10 +227,6 @@ class MetaDataExtractor
 
     /**
      * Simple naive method to extract title and description from a docblock
-     *
-     * @param \ReflectionClass $reflectionClass
-     *
-     * @return array
      */
     private function extractSectionInfo(\ReflectionClass $reflectionClass): array
     {
@@ -285,10 +269,6 @@ class MetaDataExtractor
 
     /**
      * Simple naive method to extract data type from a type definition string (e.g. "\DateTime[]")
-     *
-     * @param string|null $dataTypeStringIn
-     *
-     * @return Type|null
      *
      * @throws SettingsException
      */
