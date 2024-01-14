@@ -6,7 +6,7 @@ namespace Tzunghaor\SettingsBundle\Attribute;
 /**
  * Attribute to set custom values for a setting section class
  */
-#[\Attribute(\Attribute::TARGET_PROPERTY)]
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class SettingSection
 {
     /**
