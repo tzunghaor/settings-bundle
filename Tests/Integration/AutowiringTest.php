@@ -13,8 +13,6 @@ use TestApp\TestKernel;
 
 class AutowiringTest extends KernelTestCase
 {
-    protected static $class = TestKernel::class;
-
     /**
      * test environment="test" which has complex config
      */

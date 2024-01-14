@@ -2,11 +2,11 @@
 
 namespace Tzunghaor\SettingsBundle\Attribute;
 
-use \Attribute;
-#[Attribute(Attribute::TARGET_CLASS)]
+
 /**
  * Attribute to set custom values for a setting section class
  */
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class SettingSection
 {
     /**

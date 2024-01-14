@@ -233,7 +233,7 @@ class MetaDataExtractor
         $sectionAttributes = $reflectionClass->getAttributes(SettingSection::class);
         if (count($sectionAttributes)) {
             /** @var SettingSection $sectionAttribute */
-            $sectionAttribute = $sectionAttributes[0];
+            $sectionAttribute = $sectionAttributes[0]->newInstance();
             $sectionTitle = $sectionAttribute->label;
             $sectionDescription = $sectionAttribute->help;
             $sectionExtra = $sectionAttribute->extra;

@@ -190,7 +190,7 @@ class SettingsMetaService implements CacheWarmerInterface
     /**
      * {@inheritdoc}
      */
-    public function isOptional()
+    public function isOptional(): bool
     {
         return true;
     }
@@ -199,7 +199,7 @@ class SettingsMetaService implements CacheWarmerInterface
      * {@inheritdoc}
      * @throws Throwable
      */
-    public function warmUp(string $cacheDir)
+    public function warmUp(string $cacheDir, string $buildDir = null): array
     {
         $this->getSectionMetaDataArray();
 

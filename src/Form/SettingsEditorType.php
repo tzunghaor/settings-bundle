@@ -151,13 +151,13 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
     /**
      * {@inheritdoc}
      */
-    public function mapDataToForms($viewData, iterable $forms)
+    public function mapDataToForms(mixed $viewData, \Traversable $forms): void
     {
-        /** @var FormInterface[] $forms */
-        $forms = iterator_to_array($forms);
+        /** @var FormInterface[] $formsArray */
+        $formsArray = iterator_to_array($forms);
         $propertyAccessor = PropertyAccess::createPropertyAccessor();
 
-        foreach ($forms as $settingName => $childForm) {
+        foreach ($formsArray as $settingName => $childForm) {
             $childForm->setData($propertyAccessor->getValue($viewData, $settingName));
         }
     }
@@ -165,7 +165,7 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
     /**
      * {@inheritdoc}
      */
-    public function mapFormsToData(iterable $forms, &$viewData)
+    public function mapFormsToData(\Traversable $forms, mixed &$viewData): void
     {
         $values = [];
 

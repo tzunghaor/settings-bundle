@@ -13,7 +13,7 @@ class TzunghaorSettingsBundle extends Bundle
      */
     public function getPath(): string
     {
-        if (null === $this->path) {
+        if (!isset($this->path)) {
             $reflected = new \ReflectionObject($this);
             // use the modern directory structure
             $this->path = \dirname($reflected->getFileName(), 2);
