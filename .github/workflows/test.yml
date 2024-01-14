@@ -17,6 +17,8 @@ jobs:
           - symfony_version: "5.*"
             php_version: "8.0"
             composer_args: "--prefer-lowest"
+          - symfony_version: "7.*"
+            php_version: "8.3"
     runs-on: ubuntu-latest
     steps:
       - name: checkout source
