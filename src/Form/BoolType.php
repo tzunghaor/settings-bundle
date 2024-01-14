@@ -42,7 +42,7 @@ class BoolType extends AbstractType implements DataMapperInterface
     /**
      * {@inheritdoc}
      */
-    public function mapDataToForms($viewData, iterable $forms)
+    public function mapDataToForms(mixed $viewData, \Traversable $forms): void
     {
         /** @var FormInterface $radio */
         foreach ($forms as $radio) {
@@ -54,7 +54,7 @@ class BoolType extends AbstractType implements DataMapperInterface
     /**
      * {@inheritdoc}
      */
-    public function mapFormsToData(iterable $forms, &$viewData)
+    public function mapFormsToData(\Traversable $forms, mixed &$viewData): void
     {
         /** @var FormInterface $radio */
         foreach ($forms as $radio) {
