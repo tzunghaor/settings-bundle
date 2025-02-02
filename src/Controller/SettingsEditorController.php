@@ -56,6 +56,7 @@ class SettingsEditorController
         // The form defines PATCH, but it doesn't work without `http_method_override` set to true in the config,
         // and that is false by default, and I don't want to make people enable it only for this form.
         $request->setMethod(Request::METHOD_PATCH);
+        $referer = $request->headers->get('referer');
 
         $route = $request->attributes->get('_route');
         $fixedParameters = $request->attributes->get('fixedParameters', []);
@@ -64,6 +65,7 @@ class SettingsEditorController
         $template = $request->attributes->get('template', '@TzunghaorSettings/editor_page.html.twig');
         $urlGenerator = $this->createUrlGenerator($route, $fixedParameters);
         $sectionAddress = $this->settingsEditorService->createSectionAddress($section, $scope, $collection);
+        $session = $request->getSession();
 
         $form = $this->settingsEditorService->createForm($sectionAddress);
 
@@ -73,6 +75,11 @@ class SettingsEditorController
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $this->settingsEditorService->save($form->getData(), $sectionAddress);
+                if ($referer =  $session->get('referer')) {
+                    return new RedirectResponse($referer);
+                }
+
+                // otherwise, stay on the form edit page
                 $routeParameters = ['collection' => $collection, 'section' => $section, 'scope' => $scope];
                 $uri = $urlGenerator($routeParameters);
 
@@ -82,6 +89,7 @@ class SettingsEditorController
 
         $twigContext = $this->settingsEditorService->getTwigContext($sectionAddress, $urlGenerator, $form,
                                                                     $searchUrl, $route, $fixedParameters);
+        $session->set('referer', $referer);
 
         return new Response($this->twig->render($template, $twigContext));
     }
