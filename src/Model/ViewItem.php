@@ -11,9 +11,9 @@ class ViewItem extends Item
 
     public function __construct(
         string $name,
-        string $url = null,
+        ?string $url = null,
         array $extra = [],
-        string $customTitle = null,
+        ?string $customTitle = null,
         array $children = []
     ) {
         parent::__construct($name, $customTitle, $children, $extra);
