@@ -199,7 +199,7 @@ class SettingsMetaService implements CacheWarmerInterface
      * {@inheritdoc}
      * @throws Throwable
      */
-    public function warmUp(string $cacheDir, string $buildDir = null): array
+    public function warmUp(string $cacheDir, ?string $buildDir = null): array
     {
         $this->getSectionMetaDataArray();
 

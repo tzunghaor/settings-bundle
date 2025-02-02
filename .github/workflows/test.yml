@@ -10,7 +10,7 @@ jobs:
   run_tests:
     strategy:
       matrix:
-        php_version: ["8.0", "8.3"]
+        php_version: ["8.0", "8.4"]
         composer_args: [""]
         symfony_version: ["6.*"]
         include:
@@ -18,7 +18,7 @@ jobs:
             php_version: "8.0"
             composer_args: "--prefer-lowest"
           - symfony_version: "7.*"
-            php_version: "8.3"
+            php_version: "8.4"
     runs-on: ubuntu-latest
     steps:
       - name: checkout source
