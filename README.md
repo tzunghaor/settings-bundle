@@ -74,10 +74,6 @@ Additional recommended packages
 Setup
 =====
 
-In the `framework.yaml` in your Symfony config - set 
-[http_method_override](https://symfony.com/doc/current/reference/configuration/framework.html#configuration-framework-http_method_override)
-to true, otherwise the setting form submit won't work.
-
 Database Setup
 --------------
 
