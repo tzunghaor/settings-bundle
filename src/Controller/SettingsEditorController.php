@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 use Throwable;
 use Twig\Environment;
+use Tzunghaor\SettingsBundle\Helper\UrlGenerator;
 use Tzunghaor\SettingsBundle\Service\SettingsEditorService;
 
 /**
@@ -17,21 +18,11 @@ use Tzunghaor\SettingsBundle\Service\SettingsEditorService;
  */
 class SettingsEditorController
 {
+    private RouterInterface $router;
 
-    /**
-     * @var RouterInterface
-     */
-    private $router;
+    private Environment $twig;
 
-    /**
-     * @var Environment
-     */
-    private $twig;
-
-    /**
-     * @var SettingsEditorService
-     */
-    private $settingsEditorService;
+    private SettingsEditorService $settingsEditorService;
 
 
     public function __construct(
@@ -62,7 +53,7 @@ class SettingsEditorController
         $searchRoute = $request->attributes->get('searchRoute', 'tzunghaor_settings_scope_search');
         $searchUrl = empty($searchRoute) ? null : $this->router->generate($searchRoute);
         $template = $request->attributes->get('template', '@TzunghaorSettings/editor_page.html.twig');
-        $urlGenerator = $this->createUrlGenerator($route, $fixedParameters);
+        $urlGenerator = new UrlGenerator($this->router, $route, $fixedParameters);
         $sectionAddress = $this->settingsEditorService->createSectionAddress($section, $scope, $collection);
 
         $form = $this->settingsEditorService->createForm($sectionAddress);
@@ -74,7 +65,7 @@ class SettingsEditorController
             if ($form->isSubmitted() && $form->isValid()) {
                 $this->settingsEditorService->save($form->getData(), $sectionAddress);
                 $routeParameters = ['collection' => $collection, 'section' => $section, 'scope' => $scope];
-                $uri = $urlGenerator($routeParameters);
+                $uri = $urlGenerator->generateUrl($routeParameters);
 
                 return new RedirectResponse($uri);
             }
@@ -103,27 +94,11 @@ class SettingsEditorController
 
         $linkRoute = $this->router->getRouteCollection()->get($linkRouteName);
         $fixedParameters = $linkRoute->getDefault('fixedParameters') ?? [];
-        $urlGenerator = $this->createUrlGenerator($linkRouteName, $fixedParameters);
+        $urlGenerator = new UrlGenerator($this->router, $linkRouteName, $fixedParameters);
         $sectionAddress = $this->settingsEditorService->createSectionAddress($section, $currentScope, $collection);
 
         $twigContext = $this->settingsEditorService->getSearchScopeTwigContext($searchString, $sectionAddress, $urlGenerator);
 
         return new Response($this->twig->render('@TzunghaorSettings/list.html.twig', $twigContext));
-    }
-
-    /**
-     * Creates a function that can generate urls to the editor page
-     *
-     * @return callable function(array $routeParameters): string
-     */
-    protected function createUrlGenerator(string $route, array $fixedParameters): callable
-    {
-        $fixedParametersFlipped = array_flip($fixedParameters);
-
-        return function (array $parameters = []) use ($route, $fixedParametersFlipped) {
-            $filteredParameters = array_diff_key($parameters, $fixedParametersFlipped);
-
-            return $this->router->generate($route, $filteredParameters);
-        };
     }
 }

@@ -11,6 +11,7 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 use Throwable;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\SettingsEditorType;
+use Tzunghaor\SettingsBundle\Helper\UrlGenerator;
 use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
@@ -21,22 +22,14 @@ use Tzunghaor\SettingsBundle\Model\ViewItem;
  */
 class SettingsEditorService
 {
-    /**
-     * @var ServiceLocator
-     */
-    private $settingsServiceLocator;
-    /**
-     * @var ServiceLocator
-     */
-    private $settingsMetaServiceLocator;
-    /**
-     * @var FormFactoryInterface
-     */
-    private $formFactory;
-    /**
-     * @var string
-     */
-    private $defaultCollectionName;
+    private ServiceLocator $settingsServiceLocator;
+
+    private ServiceLocator $settingsMetaServiceLocator;
+
+    private FormFactoryInterface $formFactory;
+
+    private string $defaultCollectionName;
+
     /**
      * @var object|null
      * Optional Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface
@@ -157,20 +150,15 @@ class SettingsEditorService
     /**
      * Returns an array that contains the expected variables of editor_page.html.twig
      *
-     * @param SettingSectionAddress $sectionAddress
-     * @param callable $urlGenerator function([$routeParam1, ...]) => $url
-     * @param FormInterface|null $form
      * @param string|null $searchUrl url of scope search ajax call, null if that functionality should be disabled
      * @param string|null $route name of editor route
      * @param array $fixedParameters these route parameters cannot be changed for this route
-     *
-     * @return array
      *
      * @throws Throwable
      */
     public function getTwigContext(
         SettingSectionAddress $sectionAddress,
-        callable $urlGenerator,
+        UrlGenerator $urlGenerator,
         ?FormInterface $form,
         ?string $searchUrl,
         ?string $route = '',
@@ -217,17 +205,11 @@ class SettingsEditorService
 
     /**
      * Searches scopes matching $searchString and returns an array that contains the expected variables of list.html.twig
-     *
-     * @param string $searchString
-     * @param SettingSectionAddress $sectionAddress
-     * @param callable $urlGenerator
-     *
-     * @return array
      */
     public function getSearchScopeTwigContext(
         string $searchString,
         SettingSectionAddress $sectionAddress,
-        callable $urlGenerator
+        UrlGenerator $urlGenerator
     ): array {
         $currentCollection = $sectionAddress->getCollectionName();
 
@@ -245,12 +227,9 @@ class SettingsEditorService
      * Filters the setting collections with isGranted if available.
      * Returns an array as expected in the twig templates.
      *
-     * @param array $collectionNames
-     * @param callable $urlGenerator
-     *
      * @return ViewItem[]
      */
-    private function prepareTwigCollections(array $collectionNames, callable $urlGenerator): array
+    private function prepareTwigCollections(array $collectionNames, UrlGenerator $urlGenerator): array
     {
         $twigList = [];
         $checkIsGranted = $this->authorizationChecker !== null &&
@@ -266,7 +245,7 @@ class SettingsEditorService
             /** @var SettingsMetaService $metaService */
             $metaService = $this->settingsMetaServiceLocator->get($collectionName);
 
-            $url = $urlGenerator([
+            $url = $urlGenerator->generateUrl([
                 'collection' => $collectionName,
             ]);
 
@@ -282,13 +261,14 @@ class SettingsEditorService
      * Returns an array as expected in the twig templates.
      *
      * @param SectionMetaData[] $sectionMetaDataArray
-     * @param SettingSectionAddress $sectionAddress
-     * @param callable $urlGenerator
      *
      * @return ViewItem[]
      */
-    private function prepareTwigSections(array $sectionMetaDataArray, SettingSectionAddress $sectionAddress, callable $urlGenerator): array
-    {
+    private function prepareTwigSections(
+        array                 $sectionMetaDataArray,
+        SettingSectionAddress $sectionAddress,
+        UrlGenerator          $urlGenerator
+    ): array {
         $twigList = [];
         foreach ($sectionMetaDataArray as $sectionMetaData) {
             $sectionName = $sectionMetaData->getName();
@@ -304,7 +284,7 @@ class SettingsEditorService
                 continue;
             }
 
-            $url = $urlGenerator([
+            $url = $urlGenerator->generateUrl([
                 'collection' => $sectionAddress->getCollectionName(),
                 'section' => $sectionName,
                 'scope' => $sectionAddress->getScope(),
@@ -327,13 +307,14 @@ class SettingsEditorService
      * Returns an array as expected in the twig templates.
      *
      * @param Item[] $scopes
-     * @param SettingSectionAddress $sectionAddress
-     * @param callable $urlGenerator
      *
      * @return ViewItem[]
      */
-    private function prepareTwigScopes(array $scopes, SettingSectionAddress $sectionAddress, callable $urlGenerator): array
-    {
+    private function prepareTwigScopes(
+        array                 $scopes,
+        SettingSectionAddress $sectionAddress,
+        UrlGenerator          $urlGenerator
+    ): array {
         $twigList = [];
         foreach ($scopes as $scope) {
             $scopeName = $scope->getName();
@@ -353,7 +334,7 @@ class SettingsEditorService
                     $this->authorizationChecker->isGranted('edit', $voterSubject)
             ;
             if ($needsLink) {
-                $url = $urlGenerator([
+                $url = $urlGenerator->generateUrl([
                     'collection' => $sectionAddress->getCollectionName(),
                     'section' => $sectionAddress->getSectionName(),
                     'scope' => $scopeName,
