@@ -67,6 +67,10 @@ class SettingsEditorController
                 $routeParameters = ['collection' => $collection, 'section' => $section, 'scope' => $scope];
                 $uri = $urlGenerator->generateUrl($routeParameters);
 
+                if ($request->hasSession() && method_exists($request->getSession(), 'getFlashBag')) {
+                    $request->getSession()->getFlashBag()->add('success', 'Settings saved');
+                }
+
                 return new RedirectResponse($uri);
             }
         }

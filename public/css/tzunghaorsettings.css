@@ -98,6 +98,10 @@
     background-color: #EEEEEE;
 }
 
+.tzunghaor_settings_main {
+    position: relative;
+}
+
 .tzunghaor_settings_editor {
     padding: 0 1rem;
 }
@@ -120,4 +124,42 @@
 
 .tzunghaor_settings_error ul {
     margin: 0.2rem 0 0 0;
+}
+
+.tzunghaor_settings_messages {
+    position: absolute;
+    right: 0;
+}
+
+.tzunghaor_settings_message {
+    padding: 0.2rem 1rem;
+    margin: 0.2rem 0;
+    border-radius: 0.2rem;
+    box-shadow: -0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.5);
+    animation: 5s tzunghaor_appear_vanish forwards;
+}
+
+@keyframes tzunghaor_appear_vanish {
+    0% {
+        opacity: 0;
+        display: inherit;
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    85% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        display: none;
+    }
+}
+
+.tzunghaor_settings_message.flash-success {
+    background-color: #338844;
+    color: white;
 }

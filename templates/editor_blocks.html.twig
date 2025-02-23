@@ -62,11 +62,25 @@
         {% endblock ts_sidebar %}
 
 
-        {% block ts_setting_form %}
-            {% if form is not null %}
-                {{ include('@TzunghaorSettings/setting_form.html.twig') }}
+        <div class="tzunghaor_settings_main">
+            {% if ts_messages %}
+                <div class="tzunghaor_settings_messages">
+                {% for label, messages in ts_messages %}
+                    {% for message in messages %}
+                        <div class="tzunghaor_settings_message flash-{{ label }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                </div>
             {% endif %}
-        {% endblock ts_setting_form %}
+
+            {% block ts_setting_form %}
+                {% if form is not null %}
+                    {{ include('@TzunghaorSettings/setting_form.html.twig') }}
+                {% endif %}
+            {% endblock ts_setting_form %}
+        </div>
     </div>
 {% endblock %}
 
