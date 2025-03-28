@@ -8,6 +8,8 @@
     {{ block('ts_stylesheets') }}
 </head>
 <body>
+
+{% set ts_messages=app.flashes %}
 {{ block('ts_body') }}
 {{ block('ts_javascripts') }}
 </body>

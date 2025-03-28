@@ -13,6 +13,20 @@ Tzunghaor Settings Bundle
 
 You can take a look in the Tests/TestApp for working examples.
 
+Get Started
+===========
+
+You have to do at least the following things to be able to use this settings editor:
+
+1. [Install](#installation) - This is the usual Symfony bundle installation with some additional 
+   suggested packages which you might already have installed.
+2. [Database Setup](#database-setup) - You will need a table where the settings are stored.
+3. [Defining Settings](#defining-setting-classes) - Define your editable settings as PHP classes, and
+   tell this bundle about them in its configuration file
+4. [Setting up the editor](#setting-up-the-editor) - Add the editor controller to your router. 
+
+Furthermore, there are links to more advanced use cases in the above listed sections and 
+[at the end of this readme](#advanced-usage).
 
 Installation
 ============
@@ -210,10 +224,13 @@ this controller, and/or use [security voters](docs/voter.md).
 You can have more control on the editor with route definition, 
 see [routing](docs/routing.md).
 
+Advanced Usage
+==============
+
 Setting up cache
 ----------------
 
-It is strongly advised to use a cache with this bundle, e.g.:
+It is advised to use a cache with this bundle, e.g. use the default Symfony application cache:
 
 ```yaml
 # config/packages/tzunghaor_settings.yaml
@@ -224,11 +241,8 @@ tzunghaor_settings:
       cache: 'cache.app'
 ```
 
-Currently you need to clear the cache every time you do changes in your 
-setting section classes.
-
-Advanced Usage
-==============
+Currently, you need to clear the cache every time you make changes in your 
+setting section PHP files.
 
 Using scopes
 ------------
