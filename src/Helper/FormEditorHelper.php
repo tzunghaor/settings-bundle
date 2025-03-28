@@ -9,6 +9,9 @@ use Tzunghaor\SettingsBundle\Model\EditorUrlParameters;
 use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 use Tzunghaor\SettingsBundle\Service\SettingsEditorService;
 
+/**
+ * Helper class that makes it easier to write custom controller action for settings editor
+ */
 class FormEditorHelper
 {
     private bool $isSuccessfulSubmit;
@@ -47,7 +50,7 @@ class FormEditorHelper
         return $this->sectionAddress;
     }
 
-    public function geteditorUrlParameters(): EditorUrlParameters
+    public function getEditorUrlParameters(): EditorUrlParameters
     {
         return $this->editorUrlParameters;
     }

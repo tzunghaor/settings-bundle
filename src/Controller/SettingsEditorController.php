@@ -48,7 +48,10 @@ class SettingsEditorController
                 $request->getSession()->getFlashBag()->add('success', 'Settings saved');
             }
 
-            return new RedirectResponse($formEditorHelper->getEditorUrl($this->router));
+            // For AJAX requests POST-redirect-GET is not useful, we can return the form without redirect
+            if (!$request->isXmlHttpRequest()) {
+                return new RedirectResponse($formEditorHelper->getEditorUrl($this->router));
+            }
         }
 
         return new Response($formEditorHelper->renderForm($this->settingsEditorService, $this->twig));
