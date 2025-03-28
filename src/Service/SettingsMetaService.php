@@ -57,6 +57,12 @@ class SettingsMetaService implements CacheWarmerInterface
         $this->collectionName = $collectionName;
     }
 
+
+    public function getCollectionName(): string
+    {
+        return $this->collectionName;
+    }
+
     /**
      * @return SectionMetaData[] [$sectionClass => $metaData, ...]
      *
