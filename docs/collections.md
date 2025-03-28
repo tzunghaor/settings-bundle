@@ -1,15 +1,20 @@
 Collections and Services
 ========================
 
-You can configure multiple collections, for example:
+Multiple collections
+--------------------
+
+You can configure multiple collections. For example, if you want some 'season' settings that are different
+for each season, and 'user' settings that are different for each user, then you can do something like 
+([more on defining scopes](scopes.md)):
 
 ```yaml
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
   collections:
-    system:
-      default_scope: foo
+    season:
+      default_scope: summer
       # ...
     user:
       scope_provider: my_scope_provider
@@ -48,3 +53,25 @@ to use.
 
 Alternatively you can override the **tzunghaor_settings.default_collection** config parameter
 to set a different name for the default collection. 
+
+Multiple mappings
+-----------------
+
+You might want to spread your setting classes in multiple independent directories: in that 
+case you can define multiple **mappings** instead of a single **mapping**:
+
+```yaml
+# config/packages/tzunghaor_settings.yaml
+
+tzunghaor_settings:
+  collections:
+    season:
+      # ...
+      mappings:
+        core:
+          dir: '%kernel.project_dir%/src/Core/SeasonSettings'
+          prefix: App\Core\SeasonSettings\
+        sales:
+          dir: '%kernel.project_dir%/src/Sales/SeasonSettings'
+          prefix: App\Sales\SeasonSettings\
+```
