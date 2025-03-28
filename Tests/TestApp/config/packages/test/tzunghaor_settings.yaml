@@ -21,10 +21,9 @@ tzunghaor_settings:
 
       default_scope: root
 
-      mappings:
-        default:
-          dir: '%kernel.project_dir%/src/Settings'
-          prefix: TestApp\Settings\
+      mapping:
+        dir: '%kernel.project_dir%/src/Settings'
+        prefix: TestApp\Settings\
 
     other:
       title: Super Other Collection
