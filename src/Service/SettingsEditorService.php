@@ -56,8 +56,8 @@ class SettingsEditorService
     }
 
     /**
-     * Instance of AuthorizationCheckerInterface can be passed. Not using it as type-hint to avoid hard dependency
-     * on symfony/security-core
+     * Instance of AuthorizationCheckerInterface can be passed.
+     * Not using that interface as type-hint to avoid hard dependency on symfony/security-core.
      *
      * @param object $authorizationChecker
      */

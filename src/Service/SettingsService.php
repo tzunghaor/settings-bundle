@@ -13,6 +13,7 @@ use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Helper\ObjectHydrator;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingsCacheEntry;
+use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 
 /**
  * This service retrieves and saves settings persisted in DB
@@ -58,6 +59,19 @@ class SettingsService
         $scopeName = $this->settingsMetaService->getScope($subject)->getName();
 
         return $this->getCacheEntry($sectionClass, $scopeName)->getObject();
+    }
+
+    /**
+     * Creates a SettingSectionAddress instance:
+     * * the collection is t
+     */
+    public function getSectionAddress(string $sectionClass, $subject = null): SettingSectionAddress
+    {
+        return new SettingSectionAddress(
+            $this->settingsMetaService->getCollectionName(),
+            $this->settingsMetaService->getScope($subject)->getName(),
+            $this->settingsMetaService->getSectionMetaData($sectionClass)->getName()
+        );
     }
 
     /**
