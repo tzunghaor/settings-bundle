@@ -62,8 +62,9 @@ class SettingsService
     }
 
     /**
-     * Creates a SettingSectionAddress instance:
-     * * the collection is t
+     * Creates a SettingSectionAddress object to the setting section returned by self::getSection() with the same
+     * arguments.
+     * This address can be used for isGranted() checks
      */
     public function getSectionAddress(string $sectionClass, $subject = null): SettingSectionAddress
     {

@@ -94,6 +94,7 @@ class TzunghaorSettingsExtension extends Extension
             // add autowiring support for this service with using specific argument names
             $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name);
             $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name . '_settings');
+            $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name . '_settings_service');
         }
 
         $settingsServiceDefinition->addTag('tzunghaor_settings.settings_service', ['key' => $name]);

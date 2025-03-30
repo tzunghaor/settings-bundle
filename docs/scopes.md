@@ -9,20 +9,15 @@ Create a class that implements **Tzunghaor\SettingsBundle\Service\ScopeProviderI
 (see the documentation in the interface) and set it in your configuration.
 
 ```yaml
-# config/services.yaml
-
-services:
-  app.user_scope_provider:
-    class: App\Service\UserScopeProvider
-```
-
-```yaml
 # config/packages/tzunghaor_settings.yaml
 
 tzunghaor_settings:
   collections:
     user:
-      scope_provider: app.user_scope_provider
+      # The service id of your scope provider.
+      # It is the fully qualified class name when using default Symfony config.
+      scope_provider: 'App\Service\UserScopeProvider'
+      # ...
 ```
 
 For a detailed example, see OtherScopeProvider in the test project.
