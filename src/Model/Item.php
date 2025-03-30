@@ -20,7 +20,7 @@ class Item
     private array $children;
 
     /**
-     * @var array extra data that you can use in your templates / extensions
+     * @var array extra data that you can use in your templates / extensions - the bundle itself doesn't need it
      */
     private array $extra;
 

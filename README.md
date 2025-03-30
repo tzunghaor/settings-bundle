@@ -166,12 +166,13 @@ tzunghaor_settings:
     # Each entry under "tzunghaor_settings" configures a setting collection.
     # Use "default" if you define only one collection
     default:
-      mappings:
-        # I used "default" as mapping name, but it is up to you.
-        # You can have multiple mappings
-        default:
-          dir: '%kernel.project_dir%/src/Settings'
-          prefix: App\Settings\
+      mapping:
+        # The root directory of your settings. 
+        # All php files in it and its subdirectories will be 
+        #  handled as setting sections.
+        dir: '%kernel.project_dir%/src/Settings'
+        # The php namespace in the directory. 
+        prefix: App\Settings\
 ```
 
 Now you can get your settings from the service provided by the bundle. 

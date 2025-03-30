@@ -9,6 +9,7 @@ class Configuration implements ConfigurationInterface
 {
     public const CONFIG_ROOT = 'tzunghaor_settings';
     public const COLLECTIONS = 'collections';
+    public const MAPPING = 'mapping';
     public const MAPPINGS = 'mappings';
     public const DIR = 'dir';
     public const PREFIX = 'prefix';
@@ -44,8 +45,20 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey(self::NAME, false)
                     ->arrayPrototype()
                         ->children()
+                            ->arrayNode(self::MAPPING)
+                                ->info('Location of setting classes - single directory')
+                                ->children()
+                                    ->scalarNode(self::DIR)
+                                        ->info('Root directory containing setting classes')
+                                    ->end()
+                                    ->scalarNode(self::PREFIX)
+                                        ->info('Namespace prefix of the directory (with trailing \\)')
+                                    ->end()
+                                ->end()
+                            ->end()
+
                             ->arrayNode(self::MAPPINGS)
-                                ->info('Location of setting classes')
+                                ->info('Location of setting classes - multiple directories')
                                 ->arrayPrototype()
                                     ->children()
                                         ->scalarNode(self::DIR)

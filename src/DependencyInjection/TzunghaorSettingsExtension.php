@@ -94,15 +94,22 @@ class TzunghaorSettingsExtension extends Extension
             // add autowiring support for this service with using specific argument names
             $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name);
             $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name . '_settings');
+            $container->registerAliasForArgument($settingsServiceId, SettingsService::class, $name . '_settings_service');
         }
 
         $settingsServiceDefinition->addTag('tzunghaor_settings.settings_service', ['key' => $name]);
         $settingsMetaServiceDefinition->addTag('tzunghaor_settings.settings_meta_service', ['key' => $name]);
 
+        if (!empty($config[Configuration::MAPPINGS])) {
+            $mappings = $config[Configuration::MAPPINGS];
+        } elseif (!empty($config[Configuration::MAPPING])) {
+            $mappings = [$defaultMappingName => $config[Configuration::MAPPING]];
+        }
+
         $settingsMetaServiceDefinition->replaceArgument('$collectionName', $name);
         $settingsMetaServiceDefinition->replaceArgument(
             '$sectionClasses',
-            $this->getSectionClasses($config[Configuration::MAPPINGS], $defaultMappingName)
+            $this->getSectionClasses($mappings, $defaultMappingName)
         );
 
         if (isset($config[Configuration::CACHE])) {
