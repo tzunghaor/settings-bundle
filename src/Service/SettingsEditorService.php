@@ -282,12 +282,10 @@ class SettingsEditorService
     private function prepareTwigCollections(array $collectionNames, EditorUrlParameters $editorUrlParameters): array
     {
         $twigList = [];
-        $checkIsGranted = $this->authorizationChecker !== null &&
-            method_exists($this->authorizationChecker, 'isGranted');
         foreach ($collectionNames as $collectionName) {
             $voterSubject = new SettingSectionAddress($collectionName, null, null);
 
-            $isGranted = !$checkIsGranted || $this->authorizationChecker->isGranted('edit', $voterSubject);
+            $isGranted = $this->isEditGranted($voterSubject);
             if (!$isGranted) {
                 continue;
             }
@@ -329,8 +327,7 @@ class SettingsEditorService
                 $sectionName
             );
 
-            $isGranted = $this->authorizationChecker === null ||
-                $this->authorizationChecker->isGranted('edit', $voterSubject);
+            $isGranted = $this->isEditGranted($voterSubject);
             if (!$isGranted) {
                 continue;
             }
@@ -381,10 +378,7 @@ class SettingsEditorService
                 $children = $this->prepareTwigScopes($children, $sectionAddress, $editorUrlParameters);
             }
 
-            $needsLink =
-                    $this->authorizationChecker === null ||
-                    $this->authorizationChecker->isGranted('edit', $voterSubject)
-            ;
+            $needsLink = $this->isEditGranted($voterSubject);
             if ($needsLink) {
                 $routeParameters = [
                     'collection' => $sectionAddress->getCollectionName(),
@@ -451,27 +445,34 @@ class SettingsEditorService
     }
 
     /**
-     * Throws an exception if authorizationChecker is set, and 'edit' is not granted for $sectionAddress
+     * Throws an exception if authorizationChecker is set, and setting editing is not granted for $sectionAddress
      *
      * @param SettingSectionAddress $sectionAddress
      */
     private function throwExceptionIfNotAuthorized(SettingSectionAddress $sectionAddress): void
     {
-        if ($this->authorizationChecker === null) {
-            return;
-        }
-
-        if ($this->authorizationChecker->isGranted('edit', $sectionAddress)) {
+        if ($this->isEditGranted($sectionAddress)) {
             return;
         }
 
         $message = 'Not allowed to edit these settings.';
-        // if symfony-security is not installed, then throw an HttpException which semantically might not be correct
-        $exceptionClass = 'Symfony\Component\Security\Core\Exception\AccessDeniedException';
-        if (class_exists($exceptionClass)) {
-            throw new $exceptionClass($message);
-        }
 
         throw new AccessDeniedHttpException($message);
+    }
+
+    /**
+     * @return bool true if editing settings pointed by $sectionAddress is granted to authenticated user
+     */
+    private function isEditGranted(SettingSectionAddress $sectionAddress): bool
+    {
+        if ($this->authorizationChecker === null) {
+            return true;
+        }
+
+        /** @var SettingsMetaService $settingMetaService */
+        $settingMetaService = $this->settingsMetaServiceLocator->get($sectionAddress->getCollectionName());
+        [$attribute, $subject] = $settingMetaService->getIsGrantedArguments($sectionAddress);
+
+        return $this->authorizationChecker->isGranted($attribute, $subject);
     }
 }

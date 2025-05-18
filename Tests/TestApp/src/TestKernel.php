@@ -29,6 +29,7 @@ class TestKernel extends Kernel
 
         // test app config
         $c->import(__DIR__ . '/../config/services_' . $environment . '.yaml');
+        $c->import(__DIR__ . '/../config/services_' . $environment . '_symfony_v' . self::MAJOR_VERSION . '.yaml', null, true);
         $c->import(__DIR__ . '/../config/packages/*.yaml');
         $c->import(__DIR__ . '/../config/packages_symfony_v' . self::MAJOR_VERSION . '/*.yaml');
         $c->import(__DIR__ . '/../config/packages/' . $environment . '/*.yaml');

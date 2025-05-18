@@ -20,3 +20,7 @@ custom_template:
   controller: 'tzunghaor_settings.editor_controller::edit'
   defaults:
     template: 'custom_page.html.twig'
+
+custom_grant:
+  path: /custom-grant-test/{userId}
+  controller: 'app.test_controller::customGrant'

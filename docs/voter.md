@@ -3,13 +3,15 @@ Using security voters
 
 You can create security voter(s) if you need finer control over who might edit which settings.
 
-Make sure that security-core component is installed:
+Make sure that symfony/security-bundle or at least symfony/security-core component is installed 
+(if you only have security-core, then you have to manually wire together the voters and the
+authorization checker):
 
 ```sh
-$ composer require symfony/security-core
+$ composer require symfony/security-bundle
 ```
 
-Turn on security for the bundle:
+Turn on security for the settings bundle:
 
 ```yaml
 # config/packages/tzunghaor_settings.yaml
