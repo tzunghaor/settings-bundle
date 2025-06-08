@@ -8,9 +8,9 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use TestApp\Entity\Project;
 use TestApp\Entity\User;
 use Tzunghaor\SettingsBundle\Model\Item;
-use Tzunghaor\SettingsBundle\Service\GrantedSupportScopeProviderInterface;
+use Tzunghaor\SettingsBundle\Service\IsGrantedSupportingScopeProviderInterface;
 
-class CustomGrantScopeProvider implements GrantedSupportScopeProviderInterface
+class CustomGrantScopeProvider implements IsGrantedSupportingScopeProviderInterface
 {
     private const PREFIX_USER = 'user';
     private const PREFIX_PROJECT = 'proj';
@@ -71,7 +71,7 @@ class CustomGrantScopeProvider implements GrantedSupportScopeProviderInterface
 
     public function getScopeDisplayHierarchy(?string $searchString = null): array
     {
-        // no scope display hierarchy is not necessary for the tests
+        // no scope display hierarchy: it is not necessary for the tests
         return [];
     }
 

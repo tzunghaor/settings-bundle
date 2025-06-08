@@ -25,16 +25,21 @@ tzunghaor_settings:
 Create your custom voter
 ------------------------
 
+Two kinds of voter supported which will be described in detail:
+
+* The more granular votes on SettingSectionAddress (which is a tuple of collection name, 
+  scope name and setting section name).
+* The other votes on your own entities / models - for this you need to implement a special scope provider.
+
+
+### Granular voter
+
 Create a [security voter](https://symfony.com/doc/current/security/voters.html) 
 that supports **Tzunghaor\SettingsBundle\Model\SettingSectionAddress** as subject
 and "edit" as attribute.
 
 Any or all of the three fields of a SettingSectionAddress might be null, then the
 question is: "Can we fill the nulls in a way that the user has right to edit?"
-
-If you are using your own [scope provider](scopes.md), then make sure that the
-scope provider's getScopeDisplayHierarchy() method takes the security voter's logic in 
-account. (Optimally it should return only scopes that your voter approves.)
 
 ```php
 // src/Security/SettingsVoter.php
@@ -93,12 +98,13 @@ class SettingsVoter extends Voter
 }
 ```
 
-Use the voter in your code
---------------------------
+#### Use this granular voter in your code
 
 If you want to do the same authorization check that the bundle does 
 (e.g. to show an edit settings link on your page only if the authenticated user can edit those settings),
-you can use the isGranted() method in Symfony's security component:
+you can use the **isGranted()** method in Symfony's security component passing "edit" and a 
+**SettingSectionAddress**. **SettingsService::getSectionAddress()** can help you create an appropriate
+setting section address object.
 
 ```php
 // src/Controller/MyController.php
@@ -131,3 +137,10 @@ class IndexController extends AbstractController
     }    
 }
 ```
+
+### Voter supporting your own entities / models
+
+To use this, you have to implement a special [scope provider](scopes.md)
+**Tzunghaor\SettingsBundle\Service\IsGrantedSupportingScopeProviderInterface** in which
+**getIsGrantedAttribute()** and **getSubject()** should return the attribute and subject passed
+to Symfony security component's **isGranted()** method. 

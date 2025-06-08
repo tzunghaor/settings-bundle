@@ -220,7 +220,7 @@ class SettingsMetaService implements CacheWarmerInterface
      */
     public function getIsGrantedArguments(SettingSectionAddress $sectionAddress): array
     {
-        if ($this->scopeProvider instanceof GrantedSupportScopeProviderInterface) {
+        if ($this->scopeProvider instanceof IsGrantedSupportingScopeProviderInterface) {
             if ($sectionAddress->getScope() === null) {
                 $subject = null;
             } else {

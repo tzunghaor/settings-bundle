@@ -6,7 +6,7 @@ namespace Tzunghaor\SettingsBundle\Service;
  * Implement this interface if instead of `isGranted($settingSectionAddress, 'edit')` you want to use
  * something like `isGranted($myObject, 'edit_settings')`.
  */
-interface GrantedSupportScopeProviderInterface extends ScopeProviderInterface
+interface IsGrantedSupportingScopeProviderInterface extends ScopeProviderInterface
 {
     /**
      * @param string $scope the scope name (the Item::$name returned by this ScopeProvider::getScope())
