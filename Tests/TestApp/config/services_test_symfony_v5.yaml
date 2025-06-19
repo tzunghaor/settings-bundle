@@ -4,4 +4,5 @@ services:
     arguments:
       $tokenStorage: '@security.token_storage'
       $accessDecisionManager: '@security.access_decision_manager'
+      $alwaysAuthenticate: false
       $exceptionOnNoToken: false
