@@ -22,7 +22,7 @@ interface ScopeProviderInterface
      * @return Item of the subject.
      *         Wherever the bundle calls this method, it won't use the item's children, so it is not necessary to fill.
      */
-    public function getScope($subject = null): Item;
+    public function getScope(mixed $subject = null): Item;
 
     /**
      * Pay attention that the returned path shouldn't contain the scope of the $subject itself.
@@ -35,7 +35,7 @@ interface ScopeProviderInterface
      *                  * if 'bar' doesn't have value for that setting either, then inherit it from 'foo'
      *                  * if 'foo' doesn't have it either, then use the default of the setting section class
      */
-    public function getScopePath($subject = null): array;
+    public function getScopePath(mixed $subject = null): array;
 
     /**
      * Scope hierarchy to be displayed to user on settings edit page, filtered by the optional $searchString entered
@@ -52,7 +52,7 @@ interface ScopeProviderInterface
      *
      * @param string|null $searchString The user typed in the scope search input, or null on initial page render.
      *
-     * @return Item[] - returning null causes error, in the next relase the return type declaration will be **array**
+     * @return Item[]
      */
-    public function getScopeDisplayHierarchy(?string $searchString = null): ?array;
+    public function getScopeDisplayHierarchy(?string $searchString = null): array;
 }

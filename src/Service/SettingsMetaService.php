@@ -11,11 +11,12 @@ use Throwable;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
+use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 
 /**
  * Keeps track of setting metadata and scopes
  *
- * @internal it is not meant to be used outside of TzunghaorSettingsBundle
+ * @internal it is not meant to be used in code outside TzunghaorSettingsBundle
  */
 class SettingsMetaService implements CacheWarmerInterface
 {
@@ -210,5 +211,28 @@ class SettingsMetaService implements CacheWarmerInterface
         $this->getSectionMetaDataArray();
 
         return [];
+    }
+
+    /**
+     * Returns arguments to check whether current user has right to edit settings pointed by $sectionAddress
+     *
+     * @return array [$attribute, $subject] to be used in Symfony AuthorizationCheckerInterface::isGranted($attribute, $subject)
+     */
+    public function getIsGrantedArguments(SettingSectionAddress $sectionAddress): array
+    {
+        if ($this->scopeProvider instanceof IsGrantedSupportingScopeProviderInterface) {
+            if ($sectionAddress->getScope() === null) {
+                $subject = null;
+            } else {
+                $subject =  $this->scopeProvider->getSubject($sectionAddress->getScope());
+            }
+
+            $attribute = $this->scopeProvider->getIsGrantedAttribute();
+        } else {
+            $subject = $sectionAddress;
+            $attribute = 'edit';
+        }
+
+        return [$attribute, $subject];
     }
 }

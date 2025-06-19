@@ -13,10 +13,13 @@ services:
       $settingsMetaServiceLocator: !tagged_locator { tag: 'tzunghaor_settings.settings_meta_service', index_by: 'key' }
 
   TestApp\Service\OtherScopeProvider: ~
+  TestApp\Service\CustomGrantScopeProvider: ~
 
   app.test_controller:
     class: TestApp\Controller\TestController
     tags: ['controller.service_arguments']
+    arguments:
+      $authorizationChecker: '@security.authorization_checker'
 
   TestApp\EventListener\DoctrineListener:
     tags:
@@ -29,9 +32,20 @@ services:
     arguments:
       $directory: '%kernel.project_dir%/var/cache/test/other_cache'
 
-  # fake authorization checker
-  security.authorization_checker:
-    class: TestApp\Security\ForbiddenAuthorizationChecker
+  # basic authorization checker setup without full symfony/security-bundle
+  TestApp\Security\SettingSectionAddressVoter: ~
+  TestApp\Security\UserProjectVoter: ~
+
+  security.token_storage:
+    class: Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage
+    public: true
+
+  security.access_decision_manager:
+    class: Symfony\Component\Security\Core\Authorization\AccessDecisionManager
+    arguments:
+      $voters:
+        - '@TestApp\Security\SettingSectionAddressVoter'
+        - '@TestApp\Security\UserProjectVoter'
 
   # while we use bundle's composer.json for tests php-doc-extractor has to be manually tagged
   property_info.php_doc_extractor:

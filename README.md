@@ -81,7 +81,8 @@ Additional recommended packages
 * **symfony/validator** - with this you can define validation rules on your
     setting classes that will be used in the setting editor. 
     See [symfony validation](https://symfony.com/doc/current/validation.html).
-* **symfony/security-core** - using this you can create security voters to manage
+* **symfony/security-bundle** or only **symfony/security-core** - 
+    with this you can create security voters to manage
     who can edit which settings. See [security voters](docs/voter.md)
     
 
@@ -242,8 +243,12 @@ tzunghaor_settings:
       cache: 'cache.app'
 ```
 
+If you don't specify one, then the application's default cache will be used.
+
 Currently, you need to clear the cache every time you make changes in your 
 setting section PHP files.
+
+Collections with nested scopes need a cache implementing TagAwareCacheInterface.
 
 Using scopes
 ------------

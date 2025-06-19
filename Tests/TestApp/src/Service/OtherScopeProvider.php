@@ -10,19 +10,10 @@ use TestApp\Entity\OtherSubject;
 
 class OtherScopeProvider implements ScopeProviderInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-
-    public function __construct(EntityManagerInterface $em, RequestStack $requestStack)
-    {
-        $this->em = $em;
-        $this->requestStack = $requestStack;
+    public function __construct(
+        private EntityManagerInterface $em,
+        private RequestStack $requestStack,
+    ) {
     }
 
     /**
@@ -54,7 +45,7 @@ class OtherScopeProvider implements ScopeProviderInterface
     public function getScopePath($subject = null): array
     {
         // get default scope name if $subject is null
-        $subject = $subject ?? $this->getDefaultScope();
+        $subject = $subject ?? $this->getDefaultScope()->getName();
 
         // if $subject is string, then it is already a scope name
         if (is_string($subject)) {
@@ -80,7 +71,7 @@ class OtherScopeProvider implements ScopeProviderInterface
     /**
      * @inheritdoc
      */
-    public function getScopeDisplayHierarchy(?string $searchString = null): ?array
+    public function getScopeDisplayHierarchy(?string $searchString = null): array
     {
         $hierarchy = [];
 

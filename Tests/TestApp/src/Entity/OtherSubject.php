@@ -15,7 +15,7 @@ class OtherSubject
     #[ORM\Column(type: "string")]
     private string $name;
 
-    #[ORM\Column(type: "string", name: "mygroup")]
+    #[ORM\Column(name: "mygroup", type: "string")]
     private string $group;
 
 

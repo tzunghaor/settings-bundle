@@ -74,7 +74,7 @@ class StaticScopeProvider implements ScopeProviderInterface
     /**
      * @inheritdoc
      */
-    public function getScopeDisplayHierarchy(?string $searchString = null): ?array
+    public function getScopeDisplayHierarchy(?string $searchString = null): array
     {
         if (empty($searchString)) {
             return $this->scopeHierarchy;

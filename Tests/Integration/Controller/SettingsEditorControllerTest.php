@@ -11,6 +11,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Cache\CacheInterface;
+use TestApp\Entity\User;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 use TestApp\Entity\OtherPersistedSetting;
 use TestApp\Entity\OtherSubject;
@@ -163,7 +164,7 @@ class SettingsEditorControllerTest extends WebTestCase
         /** @var SettingsService $settingsService */
         $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service.other');
 
-        // the ForbiddenAuthorizationChecker denies editing scopes containing "forbidden"
+        // the TestApp SettingSectionAddressVoter denies editing scopes containing "forbidden"
         // unless "allow" query parameter is present in the HTTP request.
 
         $uri = '/settings/edit/other/name-forbidden/FunSettings';
@@ -184,7 +185,6 @@ class SettingsEditorControllerTest extends WebTestCase
         );
 
         $formData = [
-            '_method' => 'PATCH',
             'settings_editor' => [
                 'in_scope' => ['foo' => '1'],
                 'settings' => ['foo' => 'edited'],
@@ -206,6 +206,64 @@ class SettingsEditorControllerTest extends WebTestCase
             $settingsService->getSection(FunSettings::class, 'name-forbidden')->foo,
             'setting should be changed after allowed POST request'
         );
+    }
+
+    public function testCustomGranted(): void
+    {
+        $browser = static::createClient();
+        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $this->setUpDatabase();
+
+        /** @var SettingsService $settingsService */
+        $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service.custom_grant');
+
+        // the TestApp UserProjectVoter allows editing settings of user set in query param and their projects
+
+        $uri = '/settings/edit/custom_grant/user-bob/Ui.BoxSettings';
+        $browser->request('get', $uri . '?user=alice');
+        self::assertEquals(Response::HTTP_FORBIDDEN, $browser->getResponse()->getStatusCode());
+        self::assertEquals(
+            0,
+            $settingsService->getSection(BoxSettings::class, 'user-bob')->getMargin(),
+            'setting should NOT be changed after GET request'
+        );
+
+        $browser->request('get', $uri . '?user=bob');
+        self::assertEquals(Response::HTTP_OK, $browser->getResponse()->getStatusCode());
+        self::assertEquals(
+            0,
+            $settingsService->getSection(BoxSettings::class, 'user-bob')->getMargin(),
+            'setting should NOT be changed after GET request'
+        );
+
+        $formData = [
+            'settings_editor' => [
+                'in_scope' => ['margin' => 1],
+                'settings' => ['margin' => 10],
+            ],
+        ];
+
+        $browser->request('post', $uri . '?user=alice', $formData);
+        self::assertEquals(Response::HTTP_FORBIDDEN, $browser->getResponse()->getStatusCode());
+        self::assertEquals(
+            0,
+            $settingsService->getSection(BoxSettings::class, 'user-bob')->getMargin(),
+            'setting should NOT be changed after forbidden POST request'
+        );
+
+        $browser->request('post', $uri . '?user=bob', $formData);
+        self::assertEquals(Response::HTTP_FOUND, $browser->getResponse()->getStatusCode());
+        self::assertEquals(
+            10,
+            $settingsService->getSection(BoxSettings::class, 'user-bob')->getMargin(),
+            'setting should be changed after allowed POST request'
+        );
+
+        $browser->request('get', '/custom-grant-test/alice?user=bob');
+        self::assertEquals('NOT granted', $browser->getResponse()->getContent());
+
+        $browser->request('get', '/custom-grant-test/alice?user=alice');
+        self::assertEquals('granted', $browser->getResponse()->getContent());
     }
 
     public function templateDataProvider(): array
@@ -552,6 +610,14 @@ class SettingsEditorControllerTest extends WebTestCase
         $otherSubjectForbidden->setName('forbidden');
         $otherSubjectForbidden->setGroup('forbidden');
         $entityManager->persist($otherSubjectForbidden);
+
+        $alice = new User();
+        $alice->setId('alice');
+        $entityManager->persist($alice);
+
+        $bob = new User();
+        $bob->setId('bob');
+        $entityManager->persist($bob);
 
         $entityManager->flush();
     }

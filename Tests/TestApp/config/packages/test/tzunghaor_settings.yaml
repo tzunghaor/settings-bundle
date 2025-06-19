@@ -34,3 +34,11 @@ tzunghaor_settings:
       cache: test_other_cache
       entity: TestApp\Entity\OtherPersistedSetting
       scope_provider: TestApp\Service\OtherScopeProvider
+
+    custom_grant:
+      title: Custom Provider for isGranted
+      mapping:
+        dir: '%kernel.project_dir%/src/Settings'
+        prefix: TestApp\Settings\
+      cache: test_other_cache
+      scope_provider: TestApp\Service\CustomGrantScopeProvider
