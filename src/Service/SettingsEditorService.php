@@ -367,31 +367,44 @@ class SettingsEditorService
         $twigList = [];
         foreach ($scopes as $scope) {
             $scopeName = $scope->getName();
-            $voterSubject = new SettingSectionAddress(
-                $sectionAddress->getCollectionName(),
-                $scopeName,
-                $sectionAddress->getSectionName()
-            );
 
             $children = $scope->getChildren();
             if (!empty($children)) {
                 $children = $this->prepareTwigScopes($children, $sectionAddress, $editorUrlParameters);
             }
 
-            $needsLink = $this->isEditGranted($voterSubject);
+            $scopeExtra = $scope->getExtra();
+            if (isset($scopeExtra[Item::EXTRA_EDITABLE])) {
+                $needsLink = $scopeExtra[Item::EXTRA_EDITABLE];
+                // don't remove items if the scope provider did explicitly set 'editable' extra data
+                $canBeRemoved = false;
+            } else {
+                $voterSubject = new SettingSectionAddress(
+                    $sectionAddress->getCollectionName(),
+                    $scopeName,
+                    $sectionAddress->getSectionName()
+                );
+                $needsLink = $this->isEditGranted($voterSubject);
+                // not editable items can be removed if they have no children
+                $canBeRemoved = !$needsLink && (count($children) === 0);
+            }
+
+            if ($canBeRemoved) {
+                continue;
+            }
+
             if ($needsLink) {
                 $routeParameters = [
                     'collection' => $sectionAddress->getCollectionName(),
                     'section' => $sectionAddress->getSectionName(),
                     'scope' => $scopeName,
                 ];
-                $url = $this->router->generate($editorUrlParameters->getRoute(), $editorUrlParameters->filterParameters($routeParameters));
+                $url = $this->router->generate(
+                    $editorUrlParameters->getRoute(),
+                    $editorUrlParameters->filterParameters($routeParameters)
+                );
             } else {
                 $url = null;
-
-                if (count($children) === 0) {
-                    continue;
-                }
             }
 
             $twigList[] = new ViewItem($scopeName, $url, $scope->getExtra(), $scope->getTitle(), $children);

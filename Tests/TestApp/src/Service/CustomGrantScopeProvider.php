@@ -77,7 +77,7 @@ class CustomGrantScopeProvider implements IsGrantedSupportingScopeProviderInterf
 
     // ---------- isGranted supporting functions
 
-    public function getSubject(string $scope): object
+    public function getSubject(string $scope): ?object
     {
         [$prefix, $identifier] = explode('-', $scope, 2);
 

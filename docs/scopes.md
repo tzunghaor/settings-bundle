@@ -42,7 +42,7 @@ class ProjectScopeProvider implements IsGrantedSupportingScopeProviderInterface
 {
     // ...
 
-    public function getSubject(string $scope): object
+    public function getSubject(string $scope): ?object
     {
         return $this->em->find(Project::class, $scope);
     }
