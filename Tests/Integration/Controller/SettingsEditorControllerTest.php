@@ -228,13 +228,20 @@ class SettingsEditorControllerTest extends WebTestCase
             'setting should NOT be changed after GET request'
         );
 
-        $browser->request('get', $uri . '?user=bob');
+        $crawler = $browser->request('get', $uri . '?user=bob');
         self::assertEquals(Response::HTTP_OK, $browser->getResponse()->getStatusCode());
         self::assertEquals(
             0,
             $settingsService->getSection(BoxSettings::class, 'user-bob')->getMargin(),
             'setting should NOT be changed after GET request'
         );
+
+        $scopeList = $crawler->filterXPath('//div[contains(@class,"tzunghaor_settings_scopes_list")]/ul');
+        $bobExpectedScopes = [
+            'Alice' => ['href' => null],
+            'Bob' => ['href' => '/settings/edit/custom_grant/user-bob/Ui.BoxSettings', 'current' => true],
+        ];
+        self::assertCorrectScopeList($scopeList, $bobExpectedScopes);
 
         $formData = [
             'settings_editor' => [
@@ -451,6 +458,7 @@ class SettingsEditorControllerTest extends WebTestCase
                     'linkRoute' => 'tzunghaor_settings_edit',
                 ],
                 [
+                    // scopes with 'forbidden' in their name should be removed based on SettingSectionAddressVoter
                     'Root of All' => [
                         'href' => '/settings/edit/default/root/foo',
                         'current' => true,
@@ -469,6 +477,16 @@ class SettingsEditorControllerTest extends WebTestCase
                             'night' => [
                                 'href' => '/settings/edit/default/night/foo',
                             ],
+                            // 'forbidden' child should be present because it has editable children.
+                            // But it should not have a link, because it is not editable.
+                            'forbidden_child' => [
+                                'href' => null,
+                                'children' => [
+                                    'allowed' => [
+                                        'href' => '/settings/edit/default/allowed/foo',
+                                    ]
+                                ]
+                            ]
                         ],
                     ],
                 ],

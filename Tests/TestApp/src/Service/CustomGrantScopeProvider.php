@@ -71,8 +71,11 @@ class CustomGrantScopeProvider implements IsGrantedSupportingScopeProviderInterf
 
     public function getScopeDisplayHierarchy(?string $searchString = null): array
     {
-        // no scope display hierarchy: it is not necessary for the tests
-        return [];
+        // no searching, no auth for test - just testing explicit EXTRA_EDITABLE works as expected
+        return [
+            new Item(self::PREFIX_USER . '-alice', 'Alice', extra: [Item::EXTRA_EDITABLE => false]),
+            new Item(self::PREFIX_USER . '-bob', 'Bob', extra: [Item::EXTRA_EDITABLE => true]),
+        ];
     }
 
     // ---------- isGranted supporting functions
