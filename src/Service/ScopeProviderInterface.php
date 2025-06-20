@@ -46,9 +46,13 @@ interface ScopeProviderInterface
      *
      * You are free to decide what scopes you return, or whether you return anything at all.
      *
-     * If you are using a Voter, then the editor will filter out the not editable items from the returned hierarchy,
-     * and if no editable scope remain, then the scope selector will not be displayed at all. So if you are returning
-     * only a subset of matching scopes, then pay attention to return a subset that is editable according to your Voter.
+     * * If you set Item::EXTRA_EDITABLE in the returned Items extra data, then it will be used to determine whether
+     *   the item will have a link in the sidebar's scope selector.
+     *   If you use IsGrantedSupportingScopeProviderInterface, then setting this might benefit performance, because
+     *   then the bundle will not call your scope provider's getSubject() for each returned Item.
+     * * If not, but you set `security: true` in tzunghaor_settings.yaml, then the bundle will remove not editable
+     *   Items from the returned hierarchy. If no editable scope remain, then the scope selector will not be displayed
+     *   at all.
      *
      * @param string|null $searchString The user typed in the scope search input, or null on initial page render.
      *

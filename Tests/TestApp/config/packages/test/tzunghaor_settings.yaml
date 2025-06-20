@@ -15,8 +15,12 @@ tzunghaor_settings:
                 class: beautiful class
               children:
                 - name: morning
+                - name: forbidden_grandchild
                 - name: afternoon
             - name: night
+            - name: forbidden_child
+              children:
+                - name: allowed
         - name: forbidden
 
       default_scope: root
