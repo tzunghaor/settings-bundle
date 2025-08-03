@@ -13,6 +13,9 @@ Tzunghaor Settings Bundle
 
 You can take a look in the Tests/TestApp for working examples.
 
+Check out the [online example application](https://primandras.hu/settings-example/). 
+(It's [source](https://github.com/tzunghaor/settings-bundle) is also available.)
+
 Get Started
 ===========
 

@@ -52,14 +52,6 @@ use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 
 class SettingsVoter extends Voter
 {
-    private TokenStorageInterface $tokenStorage;
-
-    public function __construct(TokenStorageInterface $tokenStorage)
-    {
-        $this->tokenStorage = $tokenStorage;
-    }
-
-
     protected function supports(string $attribute, $subject): bool
     {
         return $subject instanceof SettingSectionAddress && $attribute === 'edit';
@@ -68,7 +60,7 @@ class SettingsVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        $user = $this->tokenStorage->getToken() ? $this->tokenStorage->getToken()->getUser() : null;
+        $user = $token ? $token->getUser() : null;
         
         if ($user === null) {
             // not authenticated users are not allowed to edit any settings
