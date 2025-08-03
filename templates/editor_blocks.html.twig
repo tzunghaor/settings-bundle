@@ -34,7 +34,8 @@
                         {% endblock %}
 
                         {% if searchUrl is defined and searchUrl is not null %}
-                            <input class="tzunghaor_settings_scope_search" type="text" />
+                            <input class="tzunghaor_settings_scope_search" type="text"
+                                   placeholder="{% block ts_scope_search_placeholder %}Search scopes{% endblock %}" />
                         {% endif %}
                         <div class="tzunghaor_settings_scopes_list tzunghaor_settings_list_container">
                             {% block ts_scopes_list %}

@@ -100,6 +100,7 @@
 
 .tzunghaor_settings_main {
     position: relative;
+    flex-grow: 1; /* without this Chrome display <select multiple> 0 px high */
 }
 
 .tzunghaor_settings_editor {
