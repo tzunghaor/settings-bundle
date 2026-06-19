@@ -224,7 +224,7 @@ class MetaDataExtractorTest extends TestCase
 
 
 
-        $a = new Type('bool');
+        $a = new Type('int');
         $b = new Type('bool');
         $comparator = Factory::getInstance()->getComparatorFor($a, $b);
         $info = 'Class before:' . get_class($comparator) . "\n";
@@ -232,7 +232,6 @@ class MetaDataExtractorTest extends TestCase
         $b->getTypeInfoType();
         $comparator = Factory::getInstance()->getComparatorFor($a, $b);
         $info .= 'Class after:' . get_class($comparator) . "\n";
-        die($info);
 
         self::assertEquals($a, $b);
 

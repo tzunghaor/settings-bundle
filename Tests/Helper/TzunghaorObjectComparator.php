@@ -34,7 +34,7 @@ class TzunghaorObjectComparator extends Comparator
             $expected->isNullable() !== $actual->isNullable()
         ) {
             throw new ComparisonFailure(
-                $expected, $actual, '', '', 'Types do not match'
+                $expected, $actual, 'bing', 'bong', 'Type objects do not match'
             );
         }
     }
