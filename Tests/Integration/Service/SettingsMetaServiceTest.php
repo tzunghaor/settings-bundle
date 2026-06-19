@@ -1,20 +1,27 @@
 <?php
 
-namespace Integration\Service;
+namespace Tzunghaor\SettingsBundle\Test\Integration\Service;
 
+use SebastianBergmann\Comparator\Factory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\PropertyInfo\Type;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
+use Tzunghaor\SettingsBundle\Model\Type;
 use TestApp\OtherSettings\AbstractBaseSettings;
 use TestApp\OtherSettings\FunSettings;
 use TestApp\Service\TestService;
+use Tzunghaor\SettingsBundle\Test\Helper\TzunghaorObjectComparator;
 
 class SettingsMetaServiceTest extends KernelTestCase
 {
+    public function setUp(): void
+    {
+        Factory::getInstance()->register(new TzunghaorObjectComparator());
+    }
+
     public function testInheritance(): void
     {
         self::bootKernel(['environment' => 'test', 'debug' => false]);

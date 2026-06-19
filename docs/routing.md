@@ -24,7 +24,7 @@ can configure it like this:
 
 ```yaml
 # config/routes.yml
-# not including default bundle routes.xml
+# not including default bundle routes.php
 settings_scope_search:
   path: '/settings/scope-search'
   controller: 'tzunghaor_settings.editor_controller::searchScope'
@@ -38,7 +38,7 @@ settings_edit:
     searchRoute: 'settings_scope_search'
 ```
 
-If you don't include the routes.xml of the bundle but want to use the scope search
+If you don't include the routes.php of the bundle but want to use the scope search
 functionality, then you have to define a route for searchScope. But if you name
 this route "tzunghaor_settings_scope_search", then you don't need to pass it to the
 editor route.

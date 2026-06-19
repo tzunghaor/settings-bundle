@@ -217,7 +217,7 @@ Add the route defined by the bundle to your routes:
 # config/routes.yaml
 
 tzunghaor_settings_editor:
-  resource: '@TzunghaorSettingsBundle/config/routes.xml'
+  resource: '@TzunghaorSettingsBundle/config/routes.php'
   prefix: '/settings'
 ```
 

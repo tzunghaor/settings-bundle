@@ -42,7 +42,7 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
     /**
      * {@inheritdoc}
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         /** @var SectionMetaData $metaData */
         $metaData = $options[self::OPTION_SECTION_META];
@@ -140,7 +140,7 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired([self::OPTION_SECTION_META]);
         $resolver->setAllowedTypes(self::OPTION_SECTION_META, SectionMetaData::class);

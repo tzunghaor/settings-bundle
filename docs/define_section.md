@@ -142,12 +142,17 @@ needs to know the data type of the settings to correctly hydrate the
 setting section object.
 
 The converting from/to database values are done by classes implementing
-**Tzunghaor\SettingsBundle\Service\SettingConverterInterface**. The built-in
+**Tzunghaor\SettingsBundle\Service\SettingValueConverterInterface** (For Symfony versions 
+older than 7.1 you can still use the deprecated symfony/property-info Type based
+**Tzunghaor\SettingsBundle\Service\SettingConverterInterface**). The built-in
 converter supports simple types, arrays of simple types and the DateTime class. 
 If you need support for other types, you will need to create a service implementing
 the above interface, and tag it with **tzunghaor_settings.setting_converter**. You
 can use multiple converters supporting different types, the tag priority will
 determine in which order they are tried, the built-in converter has -1000 priority. 
+
+**!! Currently only simple types, classes and one dimensional indexed arrays of those are supported. Even if 
+you create your own converter, improper type info might reach it in case of more complex types !!**
 
 1. If you define **dataType** with the **Setting** attribute, it will be used.
 2. If you have **phpdocumentor/reflection-docblock** installed, the @var annotation
@@ -165,7 +170,7 @@ These are used in the editor GUI.
    the first and remaining lines of the docblock will be used, similarly as
    for the section class.
    
-### Setting form type an options
+### Setting form type and options
 
 These are used in the editor GUI.
 

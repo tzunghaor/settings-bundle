@@ -1,0 +1,7 @@
+services:
+  security.authorization_checker:
+    class: Symfony\Component\Security\Core\Authorization\AuthorizationChecker
+    arguments:
+      $tokenStorage: '@security.token_storage'
+      $accessDecisionManager: '@security.access_decision_manager'
+

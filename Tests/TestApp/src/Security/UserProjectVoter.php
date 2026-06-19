@@ -4,6 +4,7 @@ namespace TestApp\Security;
 
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use TestApp\Entity\Project;
 use TestApp\Entity\User;
@@ -24,7 +25,7 @@ class UserProjectVoter extends Voter
         return $attribute === 'edit_settings' && ($subject instanceof User || $subject instanceof Project);
     }
 
-    protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
+    protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         // normally we would get the authenticated user from $token, but for this test we just take it from query param
         $authenticatedUserId = $this->requestStack->getCurrentRequest()->query->get('user');

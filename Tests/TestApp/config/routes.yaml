@@ -1,5 +1,5 @@
 tzunghaor_settings:
-  resource: '@TzunghaorSettingsBundle/config/routes.xml'
+  resource: '@TzunghaorSettingsBundle/config/routes.php'
   prefix: '/settings'
 
 other_edit_single_subject:
