@@ -5,7 +5,6 @@ namespace Tzunghaor\SettingsBundle\Test\Unit\Service;
 
 
 use PHPUnit\Framework\TestCase;
-use SebastianBergmann\Comparator\Factory;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -26,15 +25,9 @@ use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\Type;
 use Tzunghaor\SettingsBundle\Service\MetaDataExtractor;
-use Tzunghaor\SettingsBundle\Test\Helper\TzunghaorObjectComparator;
 
 class MetaDataExtractorTest extends TestCase
 {
-    public function setUp(): void
-    {
-        Factory::getInstance()->register(new TzunghaorObjectComparator());
-    }
-
     public function createSectionMetaDataProvider()
     {
         return [

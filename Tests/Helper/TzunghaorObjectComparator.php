@@ -2,15 +2,14 @@
 
 namespace Tzunghaor\SettingsBundle\Test\Helper;
 
+use SebastianBergmann\Comparator\Comparator;
 use SebastianBergmann\Comparator\ComparisonFailure;
-use SebastianBergmann\Comparator\ObjectComparator;
 use Tzunghaor\SettingsBundle\Model\Type;
 
-class TzunghaorObjectComparator extends ObjectComparator
+class TzunghaorObjectComparator extends Comparator
 {
     public function accepts($expected, $actual): bool
     {
-        die('TzunghaorObjectComparator::accept');
         return $expected instanceof Type && $actual instanceof Type;
     }
 
@@ -27,7 +26,6 @@ class TzunghaorObjectComparator extends ObjectComparator
         array &$processed = []
     ): void
     {
-        die('TzunghaorObjectComparator::assertEquals');
         // compare only the interesting properties
         if (
             $expected->getTypeIdentifier() !== $actual->getTypeIdentifier() ||
