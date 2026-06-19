@@ -46,7 +46,7 @@ jobs:
       - name: Run tests
         uses: php-actions/phpunit@v4
         with:
-          version: "9.5"
+          version: "9.6"
           php_version: ${{ matrix.php_version }}
           memory_limit: 512M
           configuration: phpunit.xml.dist
