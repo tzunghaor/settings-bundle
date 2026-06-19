@@ -13,9 +13,9 @@ jobs:
 #         php_version: ["8.4"]
 #         composer_args: [""]
 #         symfony_version: ["6.*", "7.*"]
-         php_version: []
+         php_version: [""]
          composer_args: [""]
-         symfony_version: []
+         symfony_version: [""]
         include:
             # the oldest supported config
 #           - symfony_version: "5.*"
