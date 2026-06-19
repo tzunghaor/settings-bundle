@@ -232,8 +232,9 @@ class MetaDataExtractorTest extends TestCase
         $b->getTypeInfoType();
         $comparator = Factory::getInstance()->getComparatorFor($a, $b);
         $info .= 'Class after:' . get_class($comparator) . "\n";
-        self::assertEquals($a, $b);
         die($info);
+
+        self::assertEquals($a, $b);
 
 
 
