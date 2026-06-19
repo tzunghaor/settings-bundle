@@ -10,6 +10,7 @@ class TzunghaorObjectComparator extends ObjectComparator
 {
     public function accepts($expected, $actual): bool
     {
+        die($actual);
         return $expected instanceof Type && $actual instanceof Type;
     }
 
@@ -26,6 +27,8 @@ class TzunghaorObjectComparator extends ObjectComparator
         array &$processed = []
     ): void
     {
+        var_dump($expected);
+        var_dump($actual);
         // compare only the interesting properties
         if (
             $expected->getTypeIdentifier() !== $actual->getTypeIdentifier() ||
