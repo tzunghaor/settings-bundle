@@ -44,7 +44,7 @@ jobs:
           SYMFONY_REQUIRE: ${{ matrix.symfony_version }}
 
       - name: Run tests
-        uses: php-actions/phpunit@v3
+        uses: php-actions/phpunit@v4
         with:
           version: "9.5"
           php_version: ${{ matrix.php_version }}
