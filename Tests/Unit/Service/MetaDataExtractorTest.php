@@ -29,14 +29,6 @@ use Tzunghaor\SettingsBundle\Service\MetaDataExtractor;
 
 class MetaDataExtractorTest extends TestCase
 {
-//    public function setUp(): void
-//    {
-//        $a = new Type('bool');
-//        $b = new Type('string');
-//        $comparator = Factory::getInstance()->getComparatorFor($a, $b);
-//        die(get_class($comparator));
-//    }
-
     public function createSectionMetaDataProvider()
     {
         return [
@@ -229,6 +221,21 @@ class MetaDataExtractorTest extends TestCase
 
         // tested method
         $metaData = $extractor->createSectionMetaData('testSection', $settingClassName);
+
+
+
+        $a = new Type('bool');
+        $b = new Type('string');
+        $comparator = Factory::getInstance()->getComparatorFor($a, $b);
+        $info = 'Class before:' . get_class($comparator) . "\n";
+
+        $b->getTypeInfoType();
+        $comparator = Factory::getInstance()->getComparatorFor($a, $b);
+        $info .= 'Class after:' . get_class($comparator) . "\n";
+        self::assertEquals($a, $b);
+
+
+
 
         self::assertInstanceOf(SectionMetaData::class, $metaData);
         self::assertEquals('testSection', $metaData->getName());
