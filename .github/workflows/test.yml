@@ -40,7 +40,7 @@ jobs:
           dev: no
           command: update
           php_version: ${{ matrix.php_version }}
-          args: ${{ matrix.composer_args }}
+          args: ${{ matrix.composer_args }} --no-dev
         env:
           SYMFONY_REQUIRE: ${{ matrix.symfony_version }}
 
