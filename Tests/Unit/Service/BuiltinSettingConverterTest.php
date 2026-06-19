@@ -51,7 +51,7 @@ class BuiltinSettingConverterTest extends TestCase
             self::assertEquals($dataValue, $converter->convertFromString($type->getTypeInfoType(), $storedValue));
         }
 
-        if (class_exists(Symfony\Component\PropertyInfo\Type::class)) {
+        if (class_exists(\Symfony\Component\PropertyInfo\Type::class)) {
             self::assertTrue($converter->supports($type->getPropertyInfoType()));
             self::assertEquals($dataValue, $converter->convertFromString($type->getPropertyInfoType(), $storedValue));
         }
@@ -76,8 +76,8 @@ class BuiltinSettingConverterTest extends TestCase
             self::assertEquals($storedValue, $converter->convertToString($type->getTypeInfoType(), $dataValue));
         }
 
-        if (class_exists(Symfony\Component\PropertyInfo\Type::class)) {
-            self::assertTrue($converter->supports($type->getTypeInfoType()));
+        if (class_exists(\Symfony\Component\PropertyInfo\Type::class)) {
+            self::assertTrue($converter->supports($type->getPropertyInfoType()));
             self::assertEquals($storedValue, $converter->convertToString($type->getPropertyInfoType(), $dataValue));
         }
     }
@@ -92,7 +92,7 @@ class BuiltinSettingConverterTest extends TestCase
             self::assertFalse($converter->supports($type->getTypeInfoType()));
         }
 
-        if (class_exists(Symfony\Component\PropertyInfo\Type::class)) {
+        if (class_exists(\Symfony\Component\PropertyInfo\Type::class)) {
             self::assertFalse($converter->supports($type->getPropertyInfoType()));
         }
     }
