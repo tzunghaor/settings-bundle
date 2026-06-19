@@ -49,6 +49,7 @@ jobs:
           php_version: ${{ matrix.php_version }}
           memory_limit: 512M
           configuration: phpunit.xml.dist
+          args: --debug -v
         env:
           APP_ENV: test
 
