@@ -29,13 +29,13 @@ use Tzunghaor\SettingsBundle\Service\MetaDataExtractor;
 
 class MetaDataExtractorTest extends TestCase
 {
-    public function setUp(): void
-    {
-        $a = new Type('bool');
-        $b = new Type('string');
-        $comparator = Factory::getInstance()->getComparatorFor($a, $b);
-        die(get_class($comparator));
-    }
+//    public function setUp(): void
+//    {
+//        $a = new Type('bool');
+//        $b = new Type('string');
+//        $comparator = Factory::getInstance()->getComparatorFor($a, $b);
+//        die(get_class($comparator));
+//    }
 
     public function createSectionMetaDataProvider()
     {
