@@ -24,9 +24,22 @@ class TzunghaorObjectComparator extends Comparator
         $canonicalize = false,
         $ignoreCase = false,
         array &$processed = []
-    ): void
-    {
+    ): void {
+
         // compare only the interesting properties
+        $expectedArray = [
+            'typeIdentifier' => $expected->getTypeIdentifier(),
+            'className' => $expected->getClassName(),
+            'collection' => $expected->isCollection(),
+            'nullable' => $expected->isNullable(),
+        ];
+        $actualArray = [
+            'typeIdentifier' => $actual->getTypeIdentifier(),
+            'className' => $actual->getClassName(),
+            'collection' => $actual->isCollection(),
+            'nullable' => $actual->isNullable(),
+        ];
+
         if (
             $expected->getTypeIdentifier() !== $actual->getTypeIdentifier() ||
             $expected->getClassName() !== $actual->getClassName() ||
@@ -34,7 +47,11 @@ class TzunghaorObjectComparator extends Comparator
             $expected->isNullable() !== $actual->isNullable()
         ) {
             throw new ComparisonFailure(
-                $expected, $actual, 'bing', 'bong', 'Type objects do not match'
+                $expected,
+                $actual,
+                json_encode($expectedArray, JSON_PRETTY_PRINT),
+                json_encode($actualArray, JSON_PRETTY_PRINT),
+                'Type objects do not match',
             );
         }
     }
