@@ -10,7 +10,6 @@ class TzunghaorObjectComparator extends ObjectComparator
 {
     public function accepts($expected, $actual): bool
     {
-        var_dump($expected);
         return $expected instanceof Type && $actual instanceof Type;
     }
 
