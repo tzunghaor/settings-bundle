@@ -10,12 +10,10 @@ jobs:
   run_tests:
     strategy:
       matrix:
-#         php_version: ["8.4"]
-#         composer_args: [""]
+        php_version: ["8.4"]
+        composer_args: [""]
 #         symfony_version: ["6.*", "7.*"]
-         php_version: [""]
-         composer_args: [""]
-         symfony_version: [""]
+        symfony_version: ["7.*"]
         include:
             # the oldest supported config
 #           - symfony_version: "5.*"
