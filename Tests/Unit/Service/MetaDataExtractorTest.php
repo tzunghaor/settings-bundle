@@ -5,7 +5,6 @@ namespace Tzunghaor\SettingsBundle\Test\Unit\Service;
 
 
 use PHPUnit\Framework\TestCase;
-use SebastianBergmann\Comparator\Factory;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -221,21 +220,6 @@ class MetaDataExtractorTest extends TestCase
 
         // tested method
         $metaData = $extractor->createSectionMetaData('testSection', $settingClassName);
-
-
-
-        $a = new Type('int');
-        $b = new Type('bool');
-        $comparator = Factory::getInstance()->getComparatorFor($a, $b);
-        $info = 'Class before:' . get_class($comparator) . "\n";
-
-        $b->getTypeInfoType();
-        $comparator = Factory::getInstance()->getComparatorFor($a, $b);
-        $info .= 'Class after:' . get_class($comparator) . "\n";
-
-        self::assertEquals($a, $b, $info);
-
-
 
         self::assertInstanceOf(SectionMetaData::class, $metaData);
         self::assertEquals('testSection', $metaData->getName());
