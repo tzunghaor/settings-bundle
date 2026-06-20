@@ -7,7 +7,7 @@ use Tzunghaor\SettingsBundle\Test\Helper\TzunghaorObjectComparator;
 
 require_once (__DIR__ . '/../vendor/autoload.php');
 
-// @todo: generate TestApp autoload for tests even if composer is run with --no-dev or use phpunit PHAR only
+// @todo: generate TestApp autoload for tests even if composer is run with --no-dev or use phpunit PHAR only (adjust test.yml too)
 if (class_exists(PharComparatorFactory::class)) {
     $comparatorFactory = PharComparatorFactory::class;
     // alias PHPUnit classes used in my custom Comparator class
