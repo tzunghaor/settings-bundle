@@ -7,9 +7,7 @@ COMPOSER_ARGS=${COMPOSER_ARGS:-}
 # update composer dependencies
 docker run --rm -it -v "$PWD":/app -v ~/.cache/composer:/root/.composer/cache -w /app tzunghaor:php${PHP_VERSION} composer update ${COMPOSER_ARGS}
 
-# run phpunit with xdebug port 9003 exposed
-docker run --rm -it -v "$PWD":/app -w /app -e PHP_IDE_CONFIG="serverName=docker" tzunghaor:php${PHP_VERSION} vendor/bin/phpunit ${PHP_UNIT_ARGS}
-
-# docker run --rm -it -v "$PWD":/app -w /app -e PHP_IDE_CONFIG="serverName=docker" -v ./..:/tzunghaor tzunghaor:php${PHP_VERSION} php /tzunghaor/phpunit-9.6.34.phar ${PHP_UNIT_ARGS}
+# run tests with debugging support
+docker run --rm -it -v "$PWD":/app -w /app -e PHP_IDE_CONFIG="serverName=docker" -v ./../phpunit:/phpunit tzunghaor:php${PHP_VERSION} php /phpunit/phpunit-9.6.34.phar ${PHP_UNIT_ARGS}
 
 
