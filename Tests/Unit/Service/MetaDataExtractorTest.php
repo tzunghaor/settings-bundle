@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Unit\Service;
+namespace Tzunghaor\SettingsBundle\Test\Unit\Service;
 
 
 use PHPUnit\Framework\TestCase;
@@ -11,7 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\Type\UnionType;
 use TestApp\UnitSettings\TestBoolSetting;
 use TestApp\UnitSettings\TestDateTimeSetting;
 use TestApp\UnitSettings\TestMultiEnumSetting;
@@ -23,6 +23,7 @@ use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
+use Tzunghaor\SettingsBundle\Model\Type;
 use Tzunghaor\SettingsBundle\Service\MetaDataExtractor;
 
 class MetaDataExtractorTest extends TestCase
@@ -173,14 +174,42 @@ class MetaDataExtractorTest extends TestCase
         ?array $expectedSettingMetaDataArray
     ) {
         $propertyInfoMock = $this->createMock(PropertyInfoExtractorInterface::class);
-        if ($expectGetTypes) {
-            $propertyInfoMock
-                ->expects($this->once())
-                ->method('getTypes')
-                ->willReturn($types)
-            ;
+
+        // PropertyInfo/Type and TypeInfo/Type era has different method in PropertyInfoExtractor, handle both cases
+        if (method_exists(PropertyInfoExtractorInterface::class, 'getTypes')) {
+            if ($expectGetTypes) {
+                $propertyInfoTypes = is_array($types) ? array_map(fn(Type $type) => $type->getPropertyInfoType(), $types) : null;
+
+                $propertyInfoMock
+                    ->expects($this->once())
+                    ->method('getTypes')
+                    ->willReturn($propertyInfoTypes)
+                ;
+            } else {
+                $propertyInfoMock->expects($this->never())->method('getTypes');
+            }
         } else {
-            $propertyInfoMock->expects($this->never())->method('getTypes');
+            if ($expectGetTypes) {
+                $typeInfoTypes = is_array($types) ? array_map(fn(Type $type) => $type->getTypeInfoType(), $types) : null;
+
+                if ($typeInfoTypes !== null) {
+                    if (count($typeInfoTypes) > 1) {
+                        $origTypes = UnionType::union(...$typeInfoTypes);
+                    } else {
+                        $origTypes = $typeInfoTypes[0] ?? null;
+                    }
+                } else {
+                    $origTypes = null;
+                }
+
+                $propertyInfoMock
+                    ->expects($this->once())
+                    ->method('getType')
+                    ->willReturn($origTypes)
+                ;
+            } else {
+                $propertyInfoMock->expects($this->never())->method('getType');
+            }
         }
 
         if ($expectException) {

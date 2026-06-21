@@ -1,6 +1,6 @@
 <?php
 
-namespace Integration\Controller;
+namespace Tzunghaor\SettingsBundle\Test\Integration\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -396,11 +396,11 @@ class SettingsEditorControllerTest extends WebTestCase
 
             self::assertEquals($expectedOutput, $crawler->text());
         }
-        
+
         // check that custom entity is used and "extra" is filled
         $entityManager = self::getContainer()->get('doctrine')->getManager();
-        
-        $joeEntity = $entityManager->find(OtherPersistedSetting::class, 
+
+        $joeEntity = $entityManager->find(OtherPersistedSetting::class,
                                           ['scope' => 'name-joe', 'path' => 'FunSettings.name']);
         self::assertEquals('extra-joe', $joeEntity->getExtra());
         $fooEntity = $entityManager->find(OtherPersistedSetting::class,

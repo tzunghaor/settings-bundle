@@ -43,6 +43,6 @@ class SettingSectionAddress
      */
     public function isComplete(): bool
     {
-        return $this->collectionName !== null && $this->scope !== null && $this->sectionName !== null;
+        return $this->scope !== null && $this->sectionName !== null;
     }
 }

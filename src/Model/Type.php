@@ -1,0 +1,140 @@
+<?php
+
+namespace Tzunghaor\SettingsBundle\Model;
+
+use Symfony\Component\PropertyInfo\Type as PropertyInfoType;
+use Symfony\Component\TypeInfo\Type as TypeInfoType;
+use Symfony\Component\TypeInfo\TypeIdentifier;
+
+/**
+ * Abstraction layer to support both old symfony/property-info and the new symfony/type-info Type.
+ *
+ * @todo: remove this and use symfony/type-info directly when symfony <7.1 support is dropped
+ */
+class Type
+{
+    private ?TypeInfoType $typeInfoType = null;
+    private ?PropertyInfoType $propertyInfoType = null;
+
+    private string $typeIdentifier;
+    private bool $nullable;
+    private ?string $className;
+    private bool $collection;
+
+
+    /**
+     * For arrays $typeIdentifier / $className should be the array item type / class and $collection should be set to true
+     */
+    public function __construct(
+        string  $typeIdentifier,
+        bool    $nullable = false,
+        ?string $className = null,
+        bool    $collection = false
+    ) {
+        $this->typeIdentifier = $typeIdentifier;
+        $this->nullable = $nullable;
+        $this->className = $className;
+        $this->collection = $collection;
+    }
+
+
+    public static function createFromPropertyInfo(PropertyInfoType $propertyInfoType): self
+    {
+        $typeIdentifier = $propertyInfoType->getBuiltinType();;
+        $nullable = $propertyInfoType->isNullable();
+        $className = $propertyInfoType->getClassName();
+        $isCollection = $propertyInfoType->isCollection();
+
+        $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
+        $instance->propertyInfoType = $propertyInfoType;
+
+        return $instance;
+    }
+
+    public static function createFromTypeInfo(TypeInfoType $typeInfoType): self
+    {
+        $typeIdentifier = method_exists($typeInfoType, 'getTypeIdentifier') ?
+            $typeInfoType->getTypeIdentifier()->value : '';
+        $nullable = $typeInfoType->isNullable();
+        $isCollection = $typeInfoType instanceof TypeInfoType\CollectionType;
+        if ($typeInfoType instanceof TypeInfoType\CollectionType) {
+            $itemType = $typeInfoType->getCollectionValueType();
+        } else {
+            $itemType = $typeInfoType;
+        }
+        $className = $itemType instanceof TypeInfoType\ObjectType ? $itemType->getClassName() : null;
+
+        $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
+        $instance->typeInfoType = $typeInfoType;
+
+        return $instance;
+    }
+
+    public static function createFromAnyType(TypeInfoType | PropertyInfoType $anyType): self
+    {
+        return $anyType instanceof TypeInfoType ?
+            self::createFromTypeInfo($anyType) :
+            self::createFromPropertyInfo($anyType);
+    }
+
+    public static function isBuiltinType(string $dataTypeString): bool
+    {
+        if (class_exists(TypeIdentifier::class)) {
+            return TypeIdentifier::tryFrom($dataTypeString) !== null;
+        }
+
+        return in_array($dataTypeString, PropertyInfoType::$builtinTypes, true);
+    }
+
+    public function isCollection(): bool
+    {
+        return $this->collection;
+    }
+
+    public function getClassName(): ?string
+    {
+        return $this->className;
+    }
+
+    public function getTypeIdentifier(): string
+    {
+        return $this->typeIdentifier;
+    }
+
+    public function isNullable(): bool
+    {
+        return $this->nullable;
+    }
+
+    public function getTypeInfoType(): TypeInfoType
+    {
+        if ($this->typeInfoType === null) {
+            $typeIdentifier = TypeIdentifier::tryFrom($this->typeIdentifier);
+            if ($typeIdentifier === TypeIdentifier::OBJECT) {
+                $this->typeInfoType = TypeInfoType::object($this->className);
+            } else {
+                $this->typeInfoType = TypeInfoType::builtin($typeIdentifier);
+            }
+
+            if ($this->collection) {
+                $this->typeInfoType = TypeInfoType::list($this->typeInfoType);
+            }
+            if ($this->nullable) {
+                $this->typeInfoType = TypeInfoType::nullable($this->typeInfoType);
+            }
+        }
+
+        return $this->typeInfoType;
+    }
+
+    public function getPropertyInfoType(): PropertyInfoType
+    {
+        if ($this->propertyInfoType === null) {
+            $this->propertyInfoType = new PropertyInfoType(
+                $this->typeIdentifier, $this->nullable, $this->className, $this->collection);
+        }
+
+        return $this->propertyInfoType;
+
+    }
+}

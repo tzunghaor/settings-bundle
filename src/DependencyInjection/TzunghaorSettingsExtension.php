@@ -9,15 +9,19 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\TypeInfo\Type;
 use Tzunghaor\SettingsBundle\Model\PersistedSettingInterface;
 use Tzunghaor\SettingsBundle\Service\DoctrineSettingsStore;
 use Tzunghaor\SettingsBundle\Service\SettingsMetaService;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 use Tzunghaor\SettingsBundle\Service\StaticScopeProvider;
 
+/**
+ * @todo: load services from the bundle class when Symfony 5.* support is dropped
+ */
 class TzunghaorSettingsExtension extends Extension
 {
     /**
@@ -26,15 +30,23 @@ class TzunghaorSettingsExtension extends Extension
      * @throws \InvalidArgumentException When provided tag is not defined in this extension
      * @throws \Exception
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
-        // load bundle config yamls
-        $loader = new XmlFileLoader(
+        if (!class_exists(\Symfony\Component\PropertyInfo\Type::class)
+            && !class_exists(Type::class)) {
+            throw new \LogicException(
+                'You must install either "symfony/property-info" (Symfony 5.4–7.*) ' .
+                'or "symfony/type-info" (Symfony 7.1+).'
+            );
+        }
+
+        // load bundle config
+        $loader = new PhpFileLoader(
             $container,
-            new FileLocator($x = __DIR__ . '/../../config')
+            new FileLocator(__DIR__ . '/../../config')
         );
 
-        $loader->load('services.xml');
+        $loader->load('services.php');
 
         // process configuration
         $configuration = new Configuration();
@@ -104,6 +116,8 @@ class TzunghaorSettingsExtension extends Extension
             $mappings = $config[Configuration::MAPPINGS];
         } elseif (!empty($config[Configuration::MAPPING])) {
             $mappings = [$defaultMappingName => $config[Configuration::MAPPING]];
+        } else {
+            $mappings = [];
         }
 
         $settingsMetaServiceDefinition->replaceArgument('$collectionName', $name);

@@ -1,5 +1,5 @@
 <?php
-namespace Unit\Service;
+namespace Tzunghaor\SettingsBundle\Test\Unit\Service;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

@@ -12,7 +12,5 @@ composer.lock
 /vendor/
 ###< symfony/framework-bundle ###
 
-###> phpunit/phpunit ###
-/phpunit.xml
-.phpunit.result.cache
-###< phpunit/phpunit ###
+/.phpunit.result.cache
+/Tests/TestApp/config/reference.php

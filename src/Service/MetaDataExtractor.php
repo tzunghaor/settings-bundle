@@ -12,13 +12,14 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\Type\UnionType;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 use Tzunghaor\SettingsBundle\Attribute\SettingSection;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
+use Tzunghaor\SettingsBundle\Model\Type;
 
 /**
  * Extracts metadata from setting section classes
@@ -88,6 +89,7 @@ class MetaDataExtractor
             $formOptions = [];
             $isEnum = false;
 
+            // 1. If there is a #[Setting] attribute defined on the property, get the infos from there
             $propertyAttributes = $reflectionProperty->getAttributes(Setting::class);
             foreach ($propertyAttributes as $reflectionAttribute) {
                 $attribute = $reflectionAttribute->newInstance();
@@ -104,17 +106,29 @@ class MetaDataExtractor
                 $dataType = $dataType ?? $this->extractDataType($attribute->dataType);
             }
 
+            // 2. If there is no #[Setting], or it didn't specify dataType, try to deduce it
             if ($dataType === null) {
-                $dataTypes = $this->propertyInfo->getTypes($sectionClass, $propertyName);
+                // backwards compatibility with older property-info method
+                if (method_exists($this->propertyInfo, 'getTypes')) {
+                    $origDataTypes = $this->propertyInfo->getTypes($sectionClass, $propertyName);
 
-                if ($dataTypes === null) {
-                    $dataType = null;
-                } elseif (count($dataTypes) === 1) {
-                    $dataType = $dataTypes[0];
+                    if ($origDataTypes === null) {
+                        $origDataType = null;
+                    } elseif (count($origDataTypes) === 1) {
+                        $origDataType = $origDataTypes[0];
+                    } else {
+                        throw new SettingsException(sprintf('Multiple types are not supported for setting %s in %s',
+                            $propertyName, $sectionClass));
+                    }
                 } else {
-                    throw new SettingsException(sprintf('Multiple types are not supported for setting %s in %s',
-                        $propertyName, $sectionClass));
+                    $origDataType = $this->propertyInfo->getType($sectionClass, $propertyName);
+                    if ($origDataType instanceof UnionType) {
+                        throw new SettingsException(sprintf('Multiple types are not supported for setting %s in %s',
+                            $propertyName, $sectionClass));
+                    }
                 }
+
+                $dataType = $origDataType === null ? null : Type::createFromAnyType($origDataType);
             }
 
             $settingLabel = $settingLabel ??
@@ -122,7 +136,7 @@ class MetaDataExtractor
             $settingHelp = $settingHelp ??
                 (string) $this->propertyInfo->getLongDescription($sectionClass, $propertyName);
 
-            // --- end of extracting info from property, now applying defaults if something is not defined explicitly
+            // 3. End of extracting info from property: now applying defaults if something is not defined explicitly
             $ancestorMetaData = $settingsMetaArray[$propertyName] ?? null;
 
             if ($dataType === null) {
@@ -187,7 +201,7 @@ class MetaDataExtractor
                 return DateTimeType::class;
         }
 
-        switch ($dataType->getBuiltinType()) {
+        switch ($dataType->getTypeIdentifier()) {
             case 'bool':
                 return BoolType::class;
 
@@ -284,7 +298,7 @@ class MetaDataExtractor
             $dataTypeString = substr($dataTypeString, 0, -2);
         }
 
-        if (in_array($dataTypeString, Type::$builtinTypes, true)) {
+        if (Type::isBuiltinType($dataTypeString)) {
             return new Type($dataTypeString, false, null, $isCollection);
         }
 
@@ -292,6 +306,6 @@ class MetaDataExtractor
             throw new SettingsException(sprintf('unknown #[Setting(dataType: "%s")]', $dataTypeStringIn));
         }
 
-        return new Type(Type::BUILTIN_TYPE_OBJECT, false, $dataTypeString, $isCollection);
+        return new Type('object', false, $dataTypeString, $isCollection);
     }
 }

@@ -10,15 +10,18 @@ jobs:
   run_tests:
     strategy:
       matrix:
-        php_version: ["8.0", "8.4"]
+        php_version: ["8.4"]
         composer_args: [""]
-        symfony_version: ["6.*"]
+        symfony_version: ["6.*", "7.*"]
         include:
+            # the oldest supported config
           - symfony_version: "5.*"
             php_version: "8.0"
-            composer_args: "--prefer-lowest"
-          - symfony_version: "7.*"
-            php_version: "8.4"
+            # php 8.0 compatible twig has security advisories, --no-blocking needed to install them
+            composer_args: "--prefer-lowest --no-blocking"
+            # the newest supported config
+          - symfony_version: "8.*"
+            php_version: "8.5"
     runs-on: ubuntu-latest
     steps:
       - name: checkout source
@@ -40,11 +43,12 @@ jobs:
           SYMFONY_REQUIRE: ${{ matrix.symfony_version }}
 
       - name: Run tests
-        uses: php-actions/phpunit@v3
+        uses: php-actions/phpunit@v4
         with:
-          version: "9.5"
+          version: "9.6"
           php_version: ${{ matrix.php_version }}
           memory_limit: 512M
+          configuration: phpunit.xml.dist
         env:
           APP_ENV: test
 

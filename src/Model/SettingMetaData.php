@@ -4,8 +4,6 @@
 namespace Tzunghaor\SettingsBundle\Model;
 
 
-use Symfony\Component\PropertyInfo\Type;
-
 /**
  * metadata about a single setting
  */

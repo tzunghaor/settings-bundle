@@ -28,7 +28,7 @@ class DoctrineListener
         $entity = $args->getObject();
 
         if ($entity instanceof OtherPersistedSetting) {
-            $entity->setExtra($this->requestStack->getCurrentRequest()->get('extra', ''));
+            $entity->setExtra($this->requestStack->getCurrentRequest()->query->get('extra', ''));
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Integration;
+namespace Tzunghaor\SettingsBundle\Test\Integration;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -9,7 +9,6 @@ use TestApp\OtherSettings\FunSettings;
 use TestApp\Service\MinimalTestService;
 use TestApp\Service\TestService;
 use TestApp\Settings\Ui\BoxSettings;
-use TestApp\TestKernel;
 
 class AutowiringTest extends KernelTestCase
 {

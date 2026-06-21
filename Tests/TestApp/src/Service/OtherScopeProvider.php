@@ -101,7 +101,7 @@ class OtherScopeProvider implements ScopeProviderInterface
         if ($currentRequest === null) {
             $scopeName = $defaultScopeName;
         } else {
-            $scopeName = $currentRequest->get('scopeSubject', $defaultScopeName);
+            $scopeName = $currentRequest->query->get('scopeSubject', $defaultScopeName);
         }
 
         return new Item($scopeName);

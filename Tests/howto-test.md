@@ -1,22 +1,14 @@
 # HOWTO run tests locally
 
-## Download composer
+## Build custom php docker container
 
-1. Create var directory (it is gitignored)
-2. Download https://getcomposer.org/installer to var/composer_installer
-3. run composer installer `./var/composer_installer --install-dir=./var`
+This container includes composer and its dependencies and it has xdebug. To build for e.g. PHP 8.5:
 
-## Build custom docker images for testing
- 
-* `docker build -t tzunghaor:php8.0-cli Tests/Resources/docker/php8.0-cli`
-* `docker build -t tzunghaor:php8.1-cli Tests/Resources/docker/php8.1-cli`
-* `docker build -t tzunghaor:php8.2-cli Tests/Resources/docker/php8.2-cli`
+`PHP_VERSION=8.5 && docker build -t tzunghaor:php${PHP_VERSION} Tests/docker/php-cli --build-arg PHP_VERSION=${PHP_VERSION}`
 
 ## Run tests in different environments
 
 Install composer requirements with lowest and highest versions for the selected PHP version and run tests.
 
-* `docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli var/composer.phar update --prefer-lowest && 
-   docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli vendor/bin/phpunit`
-* `docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli var/composer.phar update && 
-   docker run --rm -it -v "$PWD":/app -w /app  tzunghaor:php<version>-cli vendor/bin/phpunit`
+* `PHP_VERSION=8.0 COMPOSER_ARGS=--prefer-lowest dev/test.sh`
+* `PHP_VERSION=8.5 dev/test.sh`

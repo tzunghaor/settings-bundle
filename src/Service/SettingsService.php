@@ -4,6 +4,8 @@
 namespace Tzunghaor\SettingsBundle\Service;
 
 
+use Symfony\Component\TypeInfo\Type as TypeInfoType;
+use Symfony\Component\PropertyInfo\Type as PropertyInfoType;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
@@ -257,8 +259,25 @@ class SettingsService
 
             $type = $settingMetaArray[$settingName]->getDataType();
             foreach ($this->dataConverters as $dataConverter) {
-                if ($dataConverter->supports($type)) {
-                    $convertedValues[$settingName] = $dataConverter->convertFromString($type, $persistedValue);
+                if (
+                    class_exists(TypeInfoType::class) &&
+                    class_implements($dataConverter,  SettingValueConverterInterface::class)
+                ) {
+                    $origType = $type->getTypeInfoType();
+                } elseif (
+                    class_exists(PropertyInfoType::class) &&
+                    class_implements($dataConverter,  SettingConverterInterface::class)
+                ) {
+                    $origType = $type->getPropertyInfoType();
+                } else {
+                    throw new SettingsException(sprintf(
+                        '%s cannot be used as converter for tzunghaor/settings-bundle, because the Type class it uses does not exist',
+                        get_class($dataConverter)
+                    ));
+                }
+
+                if ($dataConverter->supports($origType)) {
+                    $convertedValues[$settingName] = $dataConverter->convertFromString($origType, $persistedValue);
 
                     break;
                 }
@@ -287,8 +306,24 @@ class SettingsService
         foreach ($values as $settingName => $value) {
             $type = $settingMetaArray[$settingName]->getDataType();
             foreach ($this->dataConverters as $dataConverter) {
-                if ($dataConverter->supports($type)) {
-                    $convertedValues[$settingName] = $dataConverter->convertToString($type, $value);
+                if (
+                    class_exists(TypeInfoType::class) &&
+                    class_implements($dataConverter,  SettingValueConverterInterface::class)
+                ) {
+                    $origType = $type->getTypeInfoType();
+                } elseif (
+                    class_exists(PropertyInfoType::class) &&
+                    class_implements($dataConverter,  SettingConverterInterface::class)
+                ) {
+                    $origType = $type->getPropertyInfoType();
+                } else {
+                    throw new SettingsException(sprintf(
+                        '%s cannot be used as converter for tzunghaor/settings-bundle, because the Type class it uses does not exist',
+                        get_class($dataConverter)
+                    ));
+                }
+                if ($dataConverter->supports($origType)) {
+                    $convertedValues[$settingName] = $dataConverter->convertToString($origType, $value);
 
                     break;
                 }

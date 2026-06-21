@@ -4,16 +4,14 @@
 namespace Tzunghaor\SettingsBundle\Service;
 
 
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\Type;
 
 /**
  * Converts php values to/from string that can be stored in DB.
  *
  * Implement this interface, and tag the service with "tzunghaor_settings.setting_converter"
- *
- * @deprecated starting with Symfony 7.1 use rather SettingValueConverterInterface which uses symfony/type-info Type
  */
-interface SettingConverterInterface
+interface SettingValueConverterInterface
 {
     /**
      * @param Type $type

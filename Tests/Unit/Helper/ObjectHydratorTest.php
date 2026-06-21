@@ -1,6 +1,6 @@
 <?php
 
-namespace Unit\Helper;
+namespace Tzunghaor\SettingsBundle\Test\Unit\Helper;
 
 use PHPUnit\Framework\TestCase;
 use TestApp\UnitSettings\HydratorSetting;

@@ -1,8 +1,8 @@
 <?php
-namespace Unit\Service;
+namespace Tzunghaor\SettingsBundle\Test\Unit\Service;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\PropertyInfo\Type;
+use Tzunghaor\SettingsBundle\Model\Type;
 use Tzunghaor\SettingsBundle\Service\BuiltinSettingConverter;
 
 class BuiltinSettingConverterTest extends TestCase
@@ -25,7 +25,7 @@ class BuiltinSettingConverterTest extends TestCase
                 [12, 13],
                 '[12,13]'
             ],
-            'strin array' => [
+            'string array' => [
                 new Type('string', false, null, true),
                 ['foo', 'bar'],
                 '["foo","bar"]'
@@ -46,9 +46,15 @@ class BuiltinSettingConverterTest extends TestCase
     public function testConvertFromString(Type $type, $dataValue, string $storedValue)
     {
         $converter = new BuiltinSettingConverter();
+        if (class_exists(\Symfony\Component\TypeInfo\Type::class)) {
+            self::assertTrue($converter->supports($type->getTypeInfoType()));
+            self::assertEquals($dataValue, $converter->convertFromString($type->getTypeInfoType(), $storedValue));
+        }
 
-        self::assertTrue($converter->supports($type));
-        self::assertEquals($dataValue, $converter->convertFromString($type, $storedValue));
+        if (class_exists(\Symfony\Component\PropertyInfo\Type::class)) {
+            self::assertTrue($converter->supports($type->getPropertyInfoType()));
+            self::assertEquals($dataValue, $converter->convertFromString($type->getPropertyInfoType(), $storedValue));
+        }
     }
 
 
@@ -65,15 +71,29 @@ class BuiltinSettingConverterTest extends TestCase
     {
         $converter = new BuiltinSettingConverter();
 
-        self::assertTrue($converter->supports($type));
-        self::assertEquals($storedValue, $converter->convertToString($type, $dataValue));
+        if (class_exists(\Symfony\Component\TypeInfo\Type::class)) {
+            self::assertTrue($converter->supports($type->getTypeInfoType()));
+            self::assertEquals($storedValue, $converter->convertToString($type->getTypeInfoType(), $dataValue));
+        }
+
+        if (class_exists(\Symfony\Component\PropertyInfo\Type::class)) {
+            self::assertTrue($converter->supports($type->getPropertyInfoType()));
+            self::assertEquals($storedValue, $converter->convertToString($type->getPropertyInfoType(), $dataValue));
+        }
     }
 
 
     public function testNotSupports()
     {
         $converter = new BuiltinSettingConverter();
+        $type = new Type('object', false, BuiltinSettingConverter::class);
 
-        self::assertFalse($converter->supports(new Type('object', false, BuiltinSettingConverter::class)));
+        if (class_exists(\Symfony\Component\TypeInfo\Type::class)) {
+            self::assertFalse($converter->supports($type->getTypeInfoType()));
+        }
+
+        if (class_exists(\Symfony\Component\PropertyInfo\Type::class)) {
+            self::assertFalse($converter->supports($type->getPropertyInfoType()));
+        }
     }
 }
