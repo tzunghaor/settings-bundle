@@ -45,13 +45,11 @@
     },
     "require-dev": {
         "phpdocumentor/reflection-docblock": "^5.3",
-        "phpstan/phpstan": "^1.8",
-        "rector/rector": "^0.14.0",
+        "phpstan/phpstan": "^2",
         "symfony/browser-kit": "^6.0 || ^7.0 || ^8.0",
         "symfony/framework-bundle": "^5.4 || ^6.0 || ^7.0 || ^8.0",
         "symfony/security-core": "^5.4 || ^6.0 || ^7.0 || ^8.0",
-        "symfony/yaml": "^5.4 || ^6.0 || ^7.0 || ^8.0",
-        "symfony/flex": "*"
+        "symfony/yaml": "^5.4 || ^6.0 || ^7.0 || ^8.0"
     },
     "config": {
         "allow-plugins": {

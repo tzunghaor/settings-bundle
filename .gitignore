@@ -11,3 +11,6 @@ composer.lock
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+/.phpunit.result.cache
+/Tests/TestApp/config/reference.php

@@ -116,6 +116,8 @@ class TzunghaorSettingsExtension extends Extension
             $mappings = $config[Configuration::MAPPINGS];
         } elseif (!empty($config[Configuration::MAPPING])) {
             $mappings = [$defaultMappingName => $config[Configuration::MAPPING]];
+        } else {
+            $mappings = [];
         }
 
         $settingsMetaServiceDefinition->replaceArgument('$collectionName', $name);

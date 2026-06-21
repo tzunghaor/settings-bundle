@@ -169,7 +169,7 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
     {
         $values = [];
 
-        /** @var FormInterface[] $forms */
+        /** @var \Traversable<FormInterface> $forms */
         foreach ($forms as $settingName => $form) {
             $values[$settingName] = $form->getData();
         }

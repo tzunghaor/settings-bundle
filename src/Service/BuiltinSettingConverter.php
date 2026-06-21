@@ -51,7 +51,6 @@ class BuiltinSettingConverter implements SettingConverterInterface, SettingValue
     }
 
     /**
-     * @param Type $type
      * @param string $value value persisted in DB
      *
      * @return mixed value used in setting section object
