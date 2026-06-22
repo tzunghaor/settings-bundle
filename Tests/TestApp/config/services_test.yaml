@@ -53,3 +53,7 @@ services:
     tags:
       - { name: 'property_info.description_extractor', priority: -1000 }
       - { name: 'property_info.type_extractor', priority: -1001 }
+
+  TestApp\Service\CustomSettingConverter:
+    tags:
+      - { name : 'tzunghaor_settings.setting_converter', priority: 10 }

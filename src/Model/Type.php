@@ -53,8 +53,6 @@ class Type
 
     public static function createFromTypeInfo(TypeInfoType $typeInfoType): self
     {
-        $typeIdentifier = method_exists($typeInfoType, 'getTypeIdentifier') ?
-            $typeInfoType->getTypeIdentifier()->value : '';
         $nullable = $typeInfoType->isNullable();
         $isCollection = $typeInfoType instanceof TypeInfoType\CollectionType;
         if ($typeInfoType instanceof TypeInfoType\CollectionType) {
@@ -62,6 +60,8 @@ class Type
         } else {
             $itemType = $typeInfoType;
         }
+        $typeIdentifier = method_exists($itemType, 'getTypeIdentifier') ?
+            $itemType->getTypeIdentifier()->value : '';
         $className = $itemType instanceof TypeInfoType\ObjectType ? $itemType->getClassName() : null;
 
         $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
@@ -136,5 +136,27 @@ class Type
 
         return $this->propertyInfoType;
 
+    }
+
+    public function equals(Type $other): bool
+    {
+        return
+            $this->typeIdentifier === $other->typeIdentifier &&
+            $this->className === $other->className &&
+            $this->collection === $other->collection &&
+            $this->nullable === $other->nullable
+        ;
+    }
+
+    public function __toString(): string
+    {
+        $array = [
+            'typeIdentifier' => $this->typeIdentifier,
+            'className' => $this->className,
+            'collection' => $this->collection,
+            'nullable' => $this->nullable,
+        ];
+
+        return json_encode($array);
     }
 }

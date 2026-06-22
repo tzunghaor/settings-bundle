@@ -14,7 +14,7 @@ if (class_exists(PharComparatorFactory::class)) {
         'SebastianBergmann\Comparator\Comparator'
     );
     class_alias(
-        PHPUnitPhar\SebastianBergmann\Comparator\ComparisonFailure::class,
+        PHPUnitPHAR\SebastianBergmann\Comparator\ComparisonFailure::class,
         'SebastianBergmann\Comparator\ComparisonFailure'
     );
 } else {

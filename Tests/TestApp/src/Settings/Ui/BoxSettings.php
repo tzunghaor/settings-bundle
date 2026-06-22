@@ -3,6 +3,7 @@
 namespace TestApp\Settings\Ui;
 
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use TestApp\Model\Message;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 
 /**
@@ -32,6 +33,11 @@ class BoxSettings
     #[Setting(formType: CheckboxType::class, formOptions: ["required" => false])]
     private $nightMode;
 
+    /**
+     * @var Message[]
+     */
+    private $messages = [];
+
     public function getPadding(): int
     {
         return $this->padding;
@@ -53,6 +59,16 @@ class BoxSettings
     public function getNightMode(): bool
     {
         return $this->nightMode;
+    }
+
+    public function getMessages(): array
+    {
+        return $this->messages;
+    }
+
+    public function setMessages(array $messages): void
+    {
+        $this->messages = $messages;
     }
 
     public function __construct($padding = 0, $margin = 0, $borders = ['bottom'], $nightMode = true)
