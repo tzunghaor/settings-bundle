@@ -81,6 +81,8 @@ Additional recommended packages
 * **symfony/asset** - the setting editor twig template uses asset() - if you
     don't have it installed, then you have to override __editor_page.html.twig__: 
     see [twig customization](docs/twig.md)
+* **symfony/serializer** - if serializer is installed and enabled then your setting
+    class properties can be any serializable class or array of objects of a class
 * **symfony/validator** - with this you can define validation rules on your
     setting classes that will be used in the setting editor. 
     See [symfony validation](https://symfony.com/doc/current/validation.html).

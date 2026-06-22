@@ -4,7 +4,9 @@
 namespace Tzunghaor\SettingsBundle;
 
 
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Tzunghaor\SettingsBundle\DependencyInjection\TzunghaorSettingsCompilerPass;
 
 class TzunghaorSettingsBundle extends Bundle
 {
@@ -22,4 +24,10 @@ class TzunghaorSettingsBundle extends Bundle
         return $this->path;
     }
 
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new TzunghaorSettingsCompilerPass());
+    }
 }

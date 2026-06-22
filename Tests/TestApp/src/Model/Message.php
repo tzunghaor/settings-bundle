@@ -22,4 +22,15 @@ class Message
     {
         return $this->text;
     }
+
+    public function setType(string $type): void
+    {
+        $this->type = $type;
+    }
+
+    public function setText(string $text): void
+    {
+        $this->text = $text;
+    }
+
 }

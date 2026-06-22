@@ -141,15 +141,19 @@ Since all settings are stored in database in a VARCHAR column, the bundle
 needs to know the data type of the settings to correctly hydrate the
 setting section object.
 
+The built-in converter supports simple types, arrays of simple types and the DateTime class.
+If you have symfony/serializer installed and enabled, then it will be used to convert objects
+and array of objects (except DateTime, which will be converted with the built-in converter).
+
 The converting from/to database values are done by classes implementing
-**Tzunghaor\SettingsBundle\Service\SettingValueConverterInterface** (For Symfony versions 
+**Tzunghaor\SettingsBundle\Service\SettingValueConverterInterface** (For Symfony versions
 older than 7.1 you can still use the deprecated symfony/property-info Type based
-**Tzunghaor\SettingsBundle\Service\SettingConverterInterface**). The built-in
-converter supports simple types, arrays of simple types and the DateTime class. 
-If you need support for other types, you will need to create a service implementing
+**Tzunghaor\SettingsBundle\Service\SettingConverterInterface**).
+You can create your own service implementing
 the above interface, and tag it with **tzunghaor_settings.setting_converter**. You
 can use multiple converters supporting different types, the tag priority will
-determine in which order they are tried, the built-in converter has -1000 priority. 
+determine in which order they are tried: the built-in converter has -1000 priority, 
+the serializer converter -1100. 
 
 **!! Currently only simple types, classes and one dimensional indexed arrays of those are supported. Even if 
 you create your own converter, improper type info might reach it in case of more complex types !!**

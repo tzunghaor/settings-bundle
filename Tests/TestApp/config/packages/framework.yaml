@@ -4,3 +4,5 @@ framework:
   secret: not_that_secret
   session:
     handler_id: null
+  serializer:
+    enabled: true
