@@ -95,9 +95,7 @@ class SettingsEditorService
         // if section name is not given, but there is only one section, then use it as default.
         if ($sectionName === null) {
             $sectionMetaDataArray = $settingsMetaService->getSectionMetaDataArray();
-            if (count($sectionMetaDataArray) === 1) {
-                $sectionName = reset($sectionMetaDataArray)->getName();
-            }
+            $sectionName = reset($sectionMetaDataArray)->getName();
         }
 
         return new SettingSectionAddress($collectionName, $scopeName, $sectionName);
