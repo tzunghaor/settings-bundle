@@ -43,7 +43,7 @@ class Type
         $nullable = $propertyInfoType->isNullable();
         $isCollection = $propertyInfoType->isCollection();
         if ($isCollection) {
-            $itemType = $propertyInfoType->getCollectionValueTypes()[0];
+            $itemType = $propertyInfoType->getCollectionValueTypes()[0] ?? $propertyInfoType;
         } else {
             $itemType = $propertyInfoType;
         }
@@ -135,8 +135,14 @@ class Type
     public function getPropertyInfoType(): PropertyInfoType
     {
         if ($this->propertyInfoType === null) {
-            $this->propertyInfoType = new PropertyInfoType(
-                $this->typeIdentifier, $this->nullable, $this->className, $this->collection);
+            if ($this->collection) {
+                $itemType = new PropertyInfoType(
+                    $this->typeIdentifier, false, $this->className, false);
+                $this->propertyInfoType = new PropertyInfoType('array', $this->nullable, null, true, null, [$itemType]);
+            } else {
+                $this->propertyInfoType = new PropertyInfoType(
+                    $this->typeIdentifier, $this->nullable, $this->className, $this->collection);
+            }
         }
 
         return $this->propertyInfoType;
