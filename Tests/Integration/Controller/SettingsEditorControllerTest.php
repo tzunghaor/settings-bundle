@@ -12,6 +12,8 @@ use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Cache\CacheInterface;
 use TestApp\Entity\User;
+use TestApp\Model\Message;
+use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 use TestApp\Entity\OtherPersistedSetting;
 use TestApp\Entity\OtherSubject;
@@ -24,17 +26,30 @@ class SettingsEditorControllerTest extends WebTestCase
     {
         $defaultBoxSettings = new BoxSettings();
         $expectedDayBoxSettings = new BoxSettings(0, 14, [], false);
+        $expectedDayBoxSettings->setMessages([
+            new Message('info', 'Hello'),
+            new Message('error', 'Ugh'),
+        ]);
 
         // simple case: edit only in one scope
         $cases['day'] = [
+            // prepare two messages for edit, because dom-crawler cannot use the javascript based "Add message" functionality
+            'preparations' => [[
+                'address' => ['scope' => 'day', 'class' => BoxSettings::class],
+                'settings' => ['messages' => [['type' => '', 'text' => ''], ['type' => '', 'text' => '']],]
+            ]],
             'edits' => [
                 [
                     'uri' => '/settings/edit/default/day/Ui.BoxSettings',
                     'formEdits' => [
-                        // set value for "margin" but not the "in_scope" radio button => it should not be saved
                         'settings_editor' => [
-                            'settings' => ['padding' => 12, 'margin' => 14, 'nightMode' => false],
-                            'in_scope' => ['padding' => 0, 'margin' => 1, 'borders' => 1, 'nightMode' => 1],
+                            'settings' => [
+                                'padding' => 12,
+                                'margin' => 14,
+                                'nightMode' => false,
+                                'messages' => [['type' => 'info', 'text' => 'Hello'], ['type' => 'error', 'text' => 'Ugh']],
+                            ],
+                            'in_scope' => ['padding' => 0, 'margin' => 1, 'borders' => 1, 'nightMode' => 1, 'messages' => 1],
                         ],
                         // multi-select must be set separately
                         'settings_editor[settings][borders]' => [],
@@ -61,6 +76,7 @@ class SettingsEditorControllerTest extends WebTestCase
 
         // complex case: edit in one scope twice and in a lower level scope once
         $cases['complex'] = [
+            'preparations' => [],
             'edits' => [
                 // first set margin and borders in root
                 [
@@ -125,21 +141,37 @@ class SettingsEditorControllerTest extends WebTestCase
     /**
      * @dataProvider editDataProvider
      *
-     * @param array $edits
+     * @param array $preparations - set setting values before visiting edit page
+     * @param array $edits - do these edits on the page
      * @param array $expectedSections
      *
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
      */
-    public function testEdit(array $edits, array $expectedSections)
+    public function testEdit(array $preparations, array $edits, array $expectedSections)
     {
         $browser = static::createClient();
         self::bootKernel(['environment' => 'test', 'debug' => false]);
         $this->setUpDatabase();
-        $this->doEdits($browser, $edits);
-
         /** @var SettingsService $settingsService */
         $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service');
+
+        if ($preparations) {
+            foreach ($preparations as $preparation) {
+                /** @var SettingSectionAddress $address */
+                $address = $preparation['address'];
+                $settings = $preparation['settings'];
+                $settingsService->save($address['class'], $address['scope'], $settings);
+            }
+
+            // boot kernel again after preparations to ensure that all caches are cleared before doing edits
+            self::bootKernel(['environment' => 'test', 'debug' => false]);
+        }
+
+        $this->doEdits($browser, $edits);
+
+        // boot kernel again after edits, to ensure that all caches are cleared before checking settings
+        self::bootKernel(['environment' => 'test', 'debug' => false]);
 
         foreach ($expectedSections as $sectionClass => $expectedScopedSections) {
             foreach ($expectedScopedSections as $scope => $expectedSection) {
@@ -416,10 +448,7 @@ class SettingsEditorControllerTest extends WebTestCase
         foreach ($edits as $edit) {
             $crawler = $browser->request('get', $edit['uri']);
             $form = $crawler->selectButton('Save')->form();
-
-            foreach ($edit['formEdits'] as $field => $value) {
-                $form[$field] = $value;
-            }
+            $form->setValues($edit['formEdits']);
 
             $browser->submit($form);
         }

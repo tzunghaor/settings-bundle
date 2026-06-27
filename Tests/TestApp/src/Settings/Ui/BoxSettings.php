@@ -3,6 +3,7 @@
 namespace TestApp\Settings\Ui;
 
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use TestApp\Form\MessageType;
 use TestApp\Model\Message;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 
@@ -33,9 +34,7 @@ class BoxSettings
     #[Setting(formType: CheckboxType::class, formOptions: ["required" => false])]
     private $nightMode;
 
-    /**
-     * @var Message[]
-     */
+    #[Setting(dataType: Message::class . '[]', formEntryType: MessageType::class)]
     private $messages = [];
 
     public function getPadding(): int
