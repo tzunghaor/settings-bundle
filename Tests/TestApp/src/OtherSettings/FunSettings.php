@@ -2,6 +2,8 @@
 
 namespace TestApp\OtherSettings;
 
+use Tzunghaor\SettingsBundle\Attribute\Setting;
+
 /**
  * FunYeah
  *
@@ -14,6 +16,7 @@ class FunSettings extends AbstractBaseSettings
 
     public string $bar = 'bbb';
 
+    #[Setting(label: 'Fun minimum', help: 'Higher than normal minimum')]
     protected int $minimum = 100;
 
     /**
