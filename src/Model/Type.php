@@ -23,7 +23,7 @@ class Type
 
 
     /**
-     * For arrays $typeIdentifier / $className should be the array item type / class and $collection should be set to true
+     * For arrays $collection should be set to true and $typeIdentifier / $className should be the array item type / class
      */
     public function __construct(
         string  $typeIdentifier,
@@ -40,10 +40,15 @@ class Type
 
     public static function createFromPropertyInfo(PropertyInfoType $propertyInfoType): self
     {
-        $typeIdentifier = $propertyInfoType->getBuiltinType();;
         $nullable = $propertyInfoType->isNullable();
-        $className = $propertyInfoType->getClassName();
         $isCollection = $propertyInfoType->isCollection();
+        if ($isCollection) {
+            $itemType = $propertyInfoType->getCollectionValueTypes()[0];
+        } else {
+            $itemType = $propertyInfoType;
+        }
+        $typeIdentifier = $itemType->getBuiltinType();;
+        $className = $itemType->getClassName();
 
         $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
         $instance->propertyInfoType = $propertyInfoType;
