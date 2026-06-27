@@ -25,32 +25,9 @@ class TzunghaorObjectComparator extends Comparator
         $ignoreCase = false,
         array &$processed = []
     ): void {
-
-        // compare only the interesting properties
-        $expectedArray = [
-            'typeIdentifier' => $expected->getTypeIdentifier(),
-            'className' => $expected->getClassName(),
-            'collection' => $expected->isCollection(),
-            'nullable' => $expected->isNullable(),
-        ];
-        $actualArray = [
-            'typeIdentifier' => $actual->getTypeIdentifier(),
-            'className' => $actual->getClassName(),
-            'collection' => $actual->isCollection(),
-            'nullable' => $actual->isNullable(),
-        ];
-
-        if (
-            $expected->getTypeIdentifier() !== $actual->getTypeIdentifier() ||
-            $expected->getClassName() !== $actual->getClassName() ||
-            $expected->isCollection() !== $actual->isCollection() ||
-            $expected->isNullable() !== $actual->isNullable()
-        ) {
+        if (!$expected->equals($actual)) {
             throw new ComparisonFailure(
-                $expected,
-                $actual,
-                json_encode($expectedArray, JSON_PRETTY_PRINT),
-                json_encode($actualArray, JSON_PRETTY_PRINT),
+                $expected, $actual, (string) $expected, (string) $actual,
                 'Type objects do not match',
             );
         }

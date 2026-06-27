@@ -23,7 +23,7 @@ class Type
 
 
     /**
-     * For arrays $typeIdentifier / $className should be the array item type / class and $collection should be set to true
+     * For arrays $collection should be set to true and $typeIdentifier / $className should be the array item type / class
      */
     public function __construct(
         string  $typeIdentifier,
@@ -40,10 +40,15 @@ class Type
 
     public static function createFromPropertyInfo(PropertyInfoType $propertyInfoType): self
     {
-        $typeIdentifier = $propertyInfoType->getBuiltinType();;
         $nullable = $propertyInfoType->isNullable();
-        $className = $propertyInfoType->getClassName();
         $isCollection = $propertyInfoType->isCollection();
+        if ($isCollection) {
+            $itemType = $propertyInfoType->getCollectionValueTypes()[0] ?? $propertyInfoType;
+        } else {
+            $itemType = $propertyInfoType;
+        }
+        $typeIdentifier = $itemType->getBuiltinType();;
+        $className = $itemType->getClassName();
 
         $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
         $instance->propertyInfoType = $propertyInfoType;
@@ -53,8 +58,6 @@ class Type
 
     public static function createFromTypeInfo(TypeInfoType $typeInfoType): self
     {
-        $typeIdentifier = method_exists($typeInfoType, 'getTypeIdentifier') ?
-            $typeInfoType->getTypeIdentifier()->value : '';
         $nullable = $typeInfoType->isNullable();
         $isCollection = $typeInfoType instanceof TypeInfoType\CollectionType;
         if ($typeInfoType instanceof TypeInfoType\CollectionType) {
@@ -62,6 +65,8 @@ class Type
         } else {
             $itemType = $typeInfoType;
         }
+        $typeIdentifier = method_exists($itemType, 'getTypeIdentifier') ?
+            $itemType->getTypeIdentifier()->value : '';
         $className = $itemType instanceof TypeInfoType\ObjectType ? $itemType->getClassName() : null;
 
         $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
@@ -130,11 +135,39 @@ class Type
     public function getPropertyInfoType(): PropertyInfoType
     {
         if ($this->propertyInfoType === null) {
-            $this->propertyInfoType = new PropertyInfoType(
-                $this->typeIdentifier, $this->nullable, $this->className, $this->collection);
+            if ($this->collection) {
+                $itemType = new PropertyInfoType(
+                    $this->typeIdentifier, false, $this->className, false);
+                $this->propertyInfoType = new PropertyInfoType('array', $this->nullable, null, true, null, [$itemType]);
+            } else {
+                $this->propertyInfoType = new PropertyInfoType(
+                    $this->typeIdentifier, $this->nullable, $this->className, $this->collection);
+            }
         }
 
         return $this->propertyInfoType;
 
+    }
+
+    public function equals(Type $other): bool
+    {
+        return
+            $this->typeIdentifier === $other->typeIdentifier &&
+            $this->className === $other->className &&
+            $this->collection === $other->collection &&
+            $this->nullable === $other->nullable
+        ;
+    }
+
+    public function __toString(): string
+    {
+        $array = [
+            'typeIdentifier' => $this->typeIdentifier,
+            'className' => $this->className,
+            'collection' => $this->collection,
+            'nullable' => $this->nullable,
+        ];
+
+        return json_encode($array);
     }
 }
