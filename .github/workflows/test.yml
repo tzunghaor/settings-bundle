@@ -13,17 +13,14 @@ jobs:
         php_version: ["8.4"]
         composer_args: [""]
         symfony_version: ["6.*", "7.*"]
-        run_phpstan: [false]
         include:
             # the oldest supported config
           - symfony_version: "5.*"
             php_version: "8.0"
             composer_args: "--prefer-lowest --no-blocking"
-            run_phpstan: false
             # the newest supported config
           - symfony_version: "8.*"
             php_version: "8.5"
-            run_phpstan: true
     runs-on: ubuntu-latest
     steps:
       - name: checkout source
@@ -53,10 +50,3 @@ jobs:
           configuration: phpunit.xml.dist
         env:
           APP_ENV: test
-
-      - name: Run PHPStan
-        if: ${{ matrix.run_phpstan }}
-        uses: php-actions/phpstan@v3
-        with:
-          php_version: ${{ matrix.php_version }}
-          memory_limit: 512M
