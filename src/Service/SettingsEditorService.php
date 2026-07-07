@@ -74,12 +74,6 @@ class SettingsEditorService
     /**
      * Factory method to create a SettingSectionAddress, fills in null values with default values if possible
      *
-     * @param string|null $sectionName
-     * @param string|null $scopeName
-     * @param string|null $collectionName
-     *
-     * @return SettingSectionAddress
-     *
      * @throws Throwable
      */
     public function createSectionAddress(
@@ -94,8 +88,15 @@ class SettingsEditorService
         $scopeName = $scopeName ?? $settingsMetaService->getScope(null)->getName();
 
         if ($sectionName === null) {
+            // if section is not given, find first available section
             $sectionMetaDataArray = $settingsMetaService->getSectionMetaDataArray();
-            $sectionName = reset($sectionMetaDataArray)->getName();
+
+            foreach ($sectionMetaDataArray as $sectionMetaData) {
+                $address = new SettingSectionAddress($collectionName, $scopeName, $sectionMetaData->getName());
+                if ($this->isEditGranted($address)) {
+                    return $address;
+                }
+            }
         }
 
         return new SettingSectionAddress($collectionName, $scopeName, $sectionName);
@@ -104,7 +105,6 @@ class SettingsEditorService
     /**
      * Creates a form to edit the given setting section in given scope - pre-fills with current settings
      *
-     * @param SettingSectionAddress $sectionAddress
      * @return FormInterface|null returns null if $sectionAddress is not sufficient to identify a setting section
      *
      * @throws SettingsException
@@ -151,6 +151,7 @@ class SettingsEditorService
             'help' => $sectionMeta->getDescription(),
         ]);
     }
+
 
     public function handleRequest(Request $request): FormEditorHelper
     {

@@ -46,7 +46,7 @@
     border-bottom: 1px dashed #AAAAAA;
 }
 
-.tzunghaor_settings_collection_row:last-child {
+.tzunghaor_settings_collection_row:last-of-type {
     border-bottom-width: 0;
 }
 
