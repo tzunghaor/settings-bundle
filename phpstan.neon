@@ -9,7 +9,7 @@ parameters:
 #      - 'src/Resources/skeleton'
 #      - */cache/*
        analyse:
-                  - ./vendor
+           - ./vendor
 
     ignoreErrors:
         # It's expected that one of the two Type classes referenced is missing
@@ -17,4 +17,5 @@ parameters:
           paths:
               - src/Model/Type.php
               - src/Service/BuiltinSettingConverter.php
+              - src/Service/SerializerSettingConverter.php
               - src/Service/SettingConverterInterface.php

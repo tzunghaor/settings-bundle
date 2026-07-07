@@ -35,7 +35,7 @@
     flex-direction: column;
 }
 
-.tzunghaor_setting_labeled_widget > label {
+.tzunghaor_setting_labeled_widget label {
     padding-right: 1rem;
     font-weight: bold;
 }
@@ -43,6 +43,11 @@
 .tzunghaor_settings_collection_row {
     display: flex;
     align-items: baseline;
+    border-bottom: 1px dashed #AAAAAA;
+}
+
+.tzunghaor_settings_collection_row:last-of-type {
+    border-bottom-width: 0;
 }
 
 .tzunghaor_settings_collection_row > * {
@@ -119,12 +124,14 @@
     min-width: 30rem;
 }
 
-.tzunghaor_settings_error {
-    color: #880000;
+.tzunghaor_setting_labeled_widget.has-error,
+.tzunghaor_setting_labeled_widget .has-error {
+    color: #BB0000;
 }
 
-.tzunghaor_settings_error ul {
-    margin: 0.2rem 0 0 0;
+.tzunghaor_setting_labeled_widget.has-error ul,
+.tzunghaor_setting_labeled_widget .has-error ul {
+    margin: 0;
 }
 
 .tzunghaor_settings_messages {

@@ -84,6 +84,10 @@ class SettingsMetaService implements CacheWarmerInterface
                             ->createSectionMetaData($sectionName, $sectionClass);
                     }
 
+                    uasort($sections, static function(SectionMetaData $a, SectionMetaData $b) {
+                        return strcasecmp($a->getTitle(), $b->getTitle());
+                    });
+
                     return $sections;
                 }
             );

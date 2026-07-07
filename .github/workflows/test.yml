@@ -17,7 +17,6 @@ jobs:
             # the oldest supported config
           - symfony_version: "5.*"
             php_version: "8.0"
-            # php 8.0 compatible twig has security advisories, --no-blocking needed to install them
             composer_args: "--prefer-lowest --no-blocking"
             # the newest supported config
           - symfony_version: "8.*"
@@ -51,4 +50,3 @@ jobs:
           configuration: phpunit.xml.dist
         env:
           APP_ENV: test
-

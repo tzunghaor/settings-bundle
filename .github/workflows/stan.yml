@@ -1,0 +1,38 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  php_version: "8.5"
+  symfony_version: "8.*"
+
+jobs:
+  stan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout source
+        uses: actions/checkout@v3
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.json') }}
+
+      - name: Install dependencies
+        uses: php-actions/composer@v6
+        with:
+          command: update
+          php_version: ${{ env.php_version }}
+        env:
+          SYMFONY_REQUIRE: ${{ env.symfony_version }}
+
+      - name: Run PHPStan
+        uses: php-actions/phpstan@v3
+        with:
+          php_version: ${{ env.php_version }}
+          memory_limit: 512M

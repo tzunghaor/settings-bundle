@@ -6,6 +6,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -73,12 +74,6 @@ class SettingsEditorService
     /**
      * Factory method to create a SettingSectionAddress, fills in null values with default values if possible
      *
-     * @param string|null $sectionName
-     * @param string|null $scopeName
-     * @param string|null $collectionName
-     *
-     * @return SettingSectionAddress
-     *
      * @throws Throwable
      */
     public function createSectionAddress(
@@ -92,11 +87,15 @@ class SettingsEditorService
         $settingsMetaService = $this->settingsMetaServiceLocator->get($collectionName);
         $scopeName = $scopeName ?? $settingsMetaService->getScope(null)->getName();
 
-        // if section name is not given, but there is only one section, then use it as default.
         if ($sectionName === null) {
+            // if section is not given, find first available section
             $sectionMetaDataArray = $settingsMetaService->getSectionMetaDataArray();
-            if (count($sectionMetaDataArray) === 1) {
-                $sectionName = reset($sectionMetaDataArray)->getName();
+
+            foreach ($sectionMetaDataArray as $sectionMetaData) {
+                $address = new SettingSectionAddress($collectionName, $scopeName, $sectionMetaData->getName());
+                if ($this->isEditGranted($address)) {
+                    return $address;
+                }
             }
         }
 
@@ -106,7 +105,6 @@ class SettingsEditorService
     /**
      * Creates a form to edit the given setting section in given scope - pre-fills with current settings
      *
-     * @param SettingSectionAddress $sectionAddress
      * @return FormInterface|null returns null if $sectionAddress is not sufficient to identify a setting section
      *
      * @throws SettingsException
@@ -153,6 +151,7 @@ class SettingsEditorService
             'help' => $sectionMeta->getDescription(),
         ]);
     }
+
 
     public function handleRequest(Request $request): FormEditorHelper
     {
@@ -240,6 +239,11 @@ class SettingsEditorService
             $scopes = $this->prepareTwigScopes($scopes, $sectionAddress, $editorUrlParameters);
         }
 
+        $formView = $form === null ? null : $form->createView();
+        if ($formView !== null) {
+            $this->addFormViewAttrs($formView);
+        }
+
         return [
             'collections' => $collections,
             'currentCollection' => $currentCollection,
@@ -247,10 +251,31 @@ class SettingsEditorService
             'currentScope' => $currentScope,
             'sections' => $sections,
             'currentSection' => $currentSection,
-            'form' => $form === null ? null : $form->createView(),
+            'form' => $formView,
             'linkRoute' => $editorUrlParameters->getRoute(),
             'searchUrl' => $searchUrl,
         ];
+    }
+
+    /**
+     * Add HTML attributes to form view
+     */
+    private function addFormViewAttrs(FormView $form): void
+    {
+        $rowClass = 'tzunghaor_setting_labeled_widget';
+        $errorClass = 'has-error';
+        // top-level form elements already have appropriate row class set, set here for nested forms
+        if (!isset($form->vars['row_attr']['class'])) {
+            $form->vars['row_attr']['class'] = $rowClass;
+        }
+
+        if (count($form->vars['errors']) > 0) {
+            $form->vars['row_attr']['class'] .= ' ' . $errorClass;
+        }
+
+        foreach ($form->children as $child) {
+            $this->addFormViewAttrs($child);
+        }
     }
 
     /**

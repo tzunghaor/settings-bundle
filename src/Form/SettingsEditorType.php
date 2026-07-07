@@ -74,12 +74,14 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
                 'help' => !empty($description) ? $description : null,
                 // make sure that property accessor handles it as class attribute and not as array index
                 'property_path' => $settingName,
-                'row_attr' => ['class' => 'tzunghaor_setting_value'],
+                'row_attr' => ['class' => 'tzunghaor_setting_labeled_widget'],
             ];
-            $valueOptions = array_merge($generatedValueOptions, $settingMeta->getFormOptions());
+            $currentValueOptions = $parentValueOptions = array_merge($generatedValueOptions, $settingMeta->getFormOptions());
+            $currentValueOptions['row_attr']['class'] .= ' tzunghaor_current_scope';
+            $parentValueOptions['row_attr']['class'] .= ' tzunghaor_parent_scope';
 
-            $settingsForm->add($settingName, $settingMeta->getFormType(), $valueOptions);
-            $parentSettingsForm->add($settingName, $settingMeta->getFormType(), $valueOptions);
+            $settingsForm->add($settingName, $settingMeta->getFormType(), $currentValueOptions);
+            $parentSettingsForm->add($settingName, $settingMeta->getFormType(), $parentValueOptions);
 
             $overrideOptions = [
                 'required' => true,

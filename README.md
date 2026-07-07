@@ -25,18 +25,17 @@ You have to do at least the following things to be able to use this settings edi
    suggested packages which you might already have installed.
 2. [Database Setup](#database-setup) - You will need a table where the settings are stored.
 3. [Defining Settings](#defining-setting-classes) - Define your editable settings as PHP classes, and
-   tell this bundle about them in its configuration file
+   tell this bundle about them in its configuration file.
 4. [Setting up the editor](#setting-up-the-editor) - Add the editor controller to your router. 
 
-Furthermore, there are links to more advanced use cases in the above listed sections and 
+Furthermore, there are links to more advanced use cases in the sections below and 
 [at the end of this readme](#advanced-usage).
 
 Installation
 ============
 
 Make sure Composer is installed globally, as explained in the
-[installation chapter](https://getcomposer.org/doc/00-intro.md)
-of the Composer documentation.
+[installation chapter](https://getcomposer.org/doc/00-intro.md) of the Composer documentation.
 
 Applications that use Symfony Flex
 ----------------------------------
@@ -76,18 +75,21 @@ return [
 Additional recommended packages
 -------------------------------
 
-* **phpdocumentor/reflection-docblock** - with this installed, you have more
-    possibilities to define your settings  
-* **symfony/asset** - the setting editor twig template uses asset() - if you
-    don't have it installed, then you have to override __editor_page.html.twig__: 
+* **phpdocumentor/reflection-docblock** - With this installed, you have more
+    possibilities to define your settings in docblocks. (Without this you still
+    can configure everything using PHP attributes.)
+* **symfony/asset** - Whe setting editor twig template uses asset() - if you
+    don't have symfony/asset installed, then you have to override __editor_page.html.twig__: 
     see [twig customization](docs/twig.md)
-* **symfony/serializer** - if serializer is installed and enabled then your setting
-    class properties can be any serializable class or array of objects of a class
-* **symfony/validator** - with this you can define validation rules on your
+* **symfony/serializer** - If serializer is installed and enabled then your setting
+    class properties can be any serializable class or array of objects of a class. 
+    (Without this you have to write your own setting converter code if you want to use
+    classes as setting properties.)
+* **symfony/validator** - With this you can define validation rules on your
     setting classes that will be used in the setting editor. 
     See [symfony validation](https://symfony.com/doc/current/validation.html).
 * **symfony/security-bundle** or only **symfony/security-core** - 
-    with this you can create security voters to manage
+    With this you can create security voters to manage
     who can edit which settings. See [security voters](docs/voter.md)
     
 
@@ -99,7 +101,7 @@ Database Setup
 
 You need a database table to store your settings - the easiest way is to
 use the entity definition provided by this bundle. If you have auto mapping
-enabled in doctrine, then you can skip this configuration step.
+enabled in doctrine, then you can skip to **Create Table**.
 
 ```yaml
 #config/packages/doctrine.yaml
@@ -109,8 +111,8 @@ doctrine:
     mappings:
       Tzunghaor\SettingsBundle:
         type: attribute
-          dir: '%kernel.project_dir%/vendor/tzunghaor/settings-bundle/src/Entity'
-          prefix: 'Tzunghaor\SettingsBundle\Entity'
+        dir: '%kernel.project_dir%/vendor/tzunghaor/settings-bundle/src/Entity'
+        prefix: 'Tzunghaor\SettingsBundle\Entity'
 ``` 
 
 Create Table
@@ -131,11 +133,11 @@ $ bin/console doctrine:schema:update --force
 
 [More about the database table](docs/database.md)
 
-Defining Setting Classes
-------------------------
+Defining Setting Section Classes
+--------------------------------
 
-You can define your settings in php classes (I will call such classes as 
-setting sections, or simply sections), for example create a directory
+You can define your settings in php classes (I will call these classes 
+"setting sections", or simply "sections"), for example create a directory
 for your settings (e.g. src/Settings), and create a BoxSettings.php in it:
 
 ```php
@@ -145,10 +147,7 @@ use Tzunghaor\SettingsBundle\Attribute\Setting;
 
 class BoxSettings
 {
-    /**
-     * @var int
-     */
-    public $padding = 0;
+    public int $padding = 0;
 
     /**
      * @var string[]
@@ -159,11 +158,11 @@ class BoxSettings
 ```
 
 Since at the beginning no settings are stored in the database, it is best to set
-sensible default values in your class.
+sensible default values for every class property as seen above.
 
 [More about setting classes](docs/define_section.md)
 
-Then tell the bundle where your settings classes are in the config:
+Then tell specify in the bundle config where your setting classes are:
 
 ```yaml
 # config/packages/tzunghaor_settings.yaml
@@ -207,11 +206,11 @@ Setting up the editor
 ---------------------
 
 > If you have **symfony/asset** installed then you can skip to setting up the route.
-Otherwise you first have to 
+Otherwise, you first have to 
 overwrite a twig template: create a new directory in your application 
 **templates/bundles/TzunghaorSettingsBundle**,
-copy **Resources/views/editor_page.html.twig** to there, remove the "ts_stylesheets"
-and "ts_javascripts" blocks, and use your method to load the .js and .css of the bundle.
+copy **Resources/views/editor_page.html.twig** there, remove the "ts_stylesheets"
+and "ts_javascripts" blocks, and load the .js and .css of the bundle without `asset()`.
 
 Add the route defined by the bundle to your routes:
 
@@ -237,7 +236,11 @@ Advanced Usage
 Setting up cache
 ----------------
 
-It is advised to use a cache with this bundle, e.g. use the default Symfony application cache:
+It is advised to use a cache with this bundle - if you don't configure one, then the bundle will
+create its own in-memory cache which is cleared on each request (this is good for development, but
+not that performant on production).
+
+E.g. to use the default Symfony application cache:
 
 ```yaml
 # config/packages/tzunghaor_settings.yaml
@@ -248,12 +251,22 @@ tzunghaor_settings:
       cache: 'cache.app'
 ```
 
-If you don't specify one, then the application's default cache will be used.
-
-Currently, you need to clear the cache every time you make changes in your 
+Keep in mind that you need to clear the cache every time you make changes in your 
 setting section PHP files.
 
-Collections with nested scopes need a cache implementing TagAwareCacheInterface.
+Collections with nested scopes need a cache implementing TagAwareCacheInterface. You can easily set up
+one in your Symfony framework config:
+
+```yaml
+# config/packages/frameword.yaml
+
+framework:
+  cache:
+    pools:
+      cache.tagged:
+        adapter: cache.adapter.filesystem
+        tags: true
+```
 
 Using scopes
 ------------
@@ -286,7 +299,7 @@ you will need a tag aware cache,
 see **Symfony\Contracts\Cache\TagAwareCacheInterface**.
 
 The SettingsService::getSection() will use **default_scope** when called 
-without subject. Otherwise you need to pass it the scope name as subject. 
+without subject. Otherwise, you need to pass it the scope name as subject. 
 
 It can be useful to have your webserver set an 
 environment variable based on the request, and use that in your config:

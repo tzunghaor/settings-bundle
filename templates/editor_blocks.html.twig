@@ -76,6 +76,10 @@
                 </div>
             {% endif %}
 
+            {% if sections | length == 0 %}
+                There are no editable settings.
+            {% endif %}
+
             {% block ts_setting_form %}
                 {% if form is not null %}
                     {{ include('@TzunghaorSettings/setting_form.html.twig') }}
