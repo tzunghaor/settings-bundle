@@ -6,6 +6,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -92,7 +93,6 @@ class SettingsEditorService
         $settingsMetaService = $this->settingsMetaServiceLocator->get($collectionName);
         $scopeName = $scopeName ?? $settingsMetaService->getScope(null)->getName();
 
-        // if section name is not given, but there is only one section, then use it as default.
         if ($sectionName === null) {
             $sectionMetaDataArray = $settingsMetaService->getSectionMetaDataArray();
             $sectionName = reset($sectionMetaDataArray)->getName();
@@ -238,6 +238,11 @@ class SettingsEditorService
             $scopes = $this->prepareTwigScopes($scopes, $sectionAddress, $editorUrlParameters);
         }
 
+        $formView = $form === null ? null : $form->createView();
+        if ($formView !== null) {
+            $this->addFormViewAttrs($formView);
+        }
+
         return [
             'collections' => $collections,
             'currentCollection' => $currentCollection,
@@ -245,10 +250,31 @@ class SettingsEditorService
             'currentScope' => $currentScope,
             'sections' => $sections,
             'currentSection' => $currentSection,
-            'form' => $form === null ? null : $form->createView(),
+            'form' => $formView,
             'linkRoute' => $editorUrlParameters->getRoute(),
             'searchUrl' => $searchUrl,
         ];
+    }
+
+    /**
+     * Add HTML attributes to form view
+     */
+    private function addFormViewAttrs(FormView $form): void
+    {
+        $rowClass = 'tzunghaor_setting_labeled_widget';
+        $errorClass = 'has-error';
+        // top-level form elements already have appropriate row class set, set here for nested forms
+        if (!isset($form->vars['row_attr']['class'])) {
+            $form->vars['row_attr']['class'] = $rowClass;
+        }
+
+        if (count($form->vars['errors']) > 0) {
+            $form->vars['row_attr']['class'] .= ' ' . $errorClass;
+        }
+
+        foreach ($form->children as $child) {
+            $this->addFormViewAttrs($child);
+        }
     }
 
     /**
