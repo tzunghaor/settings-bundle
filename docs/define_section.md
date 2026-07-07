@@ -153,7 +153,7 @@ You can create your own service implementing
 the above interface, and tag it with **tzunghaor_settings.setting_converter**. You
 can use multiple converters supporting different types, the tag priority will
 determine in which order they are tried: the built-in converter has -1000 priority, 
-the serializer converter -1100. 
+the serializer converter -2000. 
 
 **!! Currently only simple types, classes and one dimensional indexed arrays of those are supported. Even if 
 you create your own converter, improper type info might reach it in case of more complex types !!**
