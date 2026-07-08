@@ -77,7 +77,7 @@
             {% endif %}
 
             {% if sections | length == 0 %}
-                There are no editable settings.
+                {% block ts_no_sections_message %}There are no editable settings.{% endblock %}
             {% endif %}
 
             {% block ts_setting_form %}

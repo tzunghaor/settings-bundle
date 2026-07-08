@@ -60,7 +60,12 @@
 
 .tzunghaor_settings_page {
     display: flex;
-    flex-wrap: wrap;
+}
+
+@media (max-width: 40em) {
+    .tzunghaor_settings_page {
+        flex-wrap: wrap;
+    }
 }
 
 .tzunghaor_settings_sidebar {

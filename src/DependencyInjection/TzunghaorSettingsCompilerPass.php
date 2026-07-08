@@ -22,7 +22,7 @@ class TzunghaorSettingsCompilerPass implements CompilerPassInterface
             ]);
             $definition->setPublic(false);
             // put it behind the builtin converter
-            $definition->addTag('tzunghaor_settings.setting_converter', ['priority' => -1100]);
+            $definition->addTag('tzunghaor_settings.setting_converter', ['priority' => -2000]);
 
             $container->setDefinition('tzunghaor_settings.serializer_setting_converter', $definition);
 
