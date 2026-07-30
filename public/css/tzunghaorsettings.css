@@ -22,7 +22,7 @@
 }
 
 .tzunghaor_setting_value {
-    flex-grow: 2;
+    flex: 2;
 }
 
 .tzunghaor_setting_changed {
@@ -118,8 +118,9 @@
 }
 
 .tzunghaor_settings_editor .help-text {
-    margin: 0.2rem 0 0 0;
+    margin: 0.6rem 0 0 0;
     font-size: 90%;
+    line-height: 100%;
 }
 
 .tzunghaor_settings_editor textarea {

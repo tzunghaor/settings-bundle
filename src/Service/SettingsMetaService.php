@@ -7,6 +7,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\Item;
@@ -20,42 +21,53 @@ use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
  */
 class SettingsMetaService implements CacheWarmerInterface
 {
-    private CacheInterface $cache;
-
-    private MetaDataExtractor $metaDataExtractor;
-
-    private ScopeProviderInterface $scopeProvider;
-
-    private string $collectionName;
+    private const SECTIONS_CACHE_PREFIX = 'tzunghaor_settings_sections_metadata';
 
     private Item $collectionItem;
-
-    /**
-     * @var array [$sectionName => $sectionClass, ...]
-     */
-    private array $sectionClasses;
 
     /**
      * @var SectionMetaData[] [$sectionClass => $metaData, ...]
      */
     private ?array $sectionMetaDataArray = null;
 
+    private ?TranslatorInterface $translator = null;
+
+    /**
+     * false means no translation - in that case $this->translator should not be set
+     * null means use default domain
+     */
+    private string|null|false $translationDomain = false;
+
+    /**
+     * @param array $sectionClasses [$sectionName => $sectionClass, ...]
+     */
     public function __construct(
-        CacheInterface $cache,
-        MetaDataExtractor $metaDataExtractor,
-        ScopeProviderInterface $scopeProvider,
-        string $collectionName,
-        array $sectionClasses,
+        private CacheInterface $cache,
+        private MetaDataExtractor $metaDataExtractor,
+        private ScopeProviderInterface $scopeProvider,
+        private string $collectionName,
+        private array $sectionClasses,
         // I would like to pass simply an Item instead three arguments, but DependencyInjection cannot do that
         ?string $collectionTitle = null,
         array $collectionExtra = []
     ) {
-        $this->sectionClasses = $sectionClasses;
-        $this->cache = $cache;
-        $this->metaDataExtractor = $metaDataExtractor;
-        $this->scopeProvider = $scopeProvider;
         $this->collectionItem = new Item($collectionName, $collectionTitle, [], $collectionExtra);
-        $this->collectionName = $collectionName;
+    }
+
+    /**
+     * If translation is configured for a setting collection, then Dependency Injection will call this method.
+     */
+    public function setUpTranslation(TranslatorInterface $translator, string|null $domain): void
+    {
+        $this->translator = $translator;
+        $this->translationDomain = $domain;
+
+        $this->collectionItem = new Item(
+            $this->collectionItem->getName(),
+            $translator->trans($this->collectionItem->getTitle(), domain: $domain),
+            $this->collectionItem->getChildren(),
+            $this->collectionItem->getExtra(),
+        );
     }
 
 
@@ -65,6 +77,8 @@ class SettingsMetaService implements CacheWarmerInterface
     }
 
     /**
+     * Returns metadata about all the setting sections in the current collection.
+     *
      * @return SectionMetaData[] [$sectionClass => $metaData, ...]
      *
      * @throws Throwable
@@ -72,29 +86,88 @@ class SettingsMetaService implements CacheWarmerInterface
     public function getSectionMetaDataArray(): array
     {
         if ($this->sectionMetaDataArray === null) {
-            $cacheKey = 'tzunghaor_settings_sections_metadata.' . $this->collectionName;
-            $sectionClasses = $this->sectionClasses;
 
-            $this->sectionMetaDataArray = $this->cache->get(
-                $cacheKey,
-                function (ItemInterface $item) use ($sectionClasses) {
-                    $sections = [];
-                    foreach ($sectionClasses as $sectionName => $sectionClass) {
-                        $sections[$sectionClass] = $this->metaDataExtractor
-                            ->createSectionMetaData($sectionName, $sectionClass);
+            if ($this->translationDomain === false) {
+                $this->sectionMetaDataArray = $this->getUntranslatedSectionMetaDataArray();
+            } else {
+                $locale = $this->translator?->getLocale();
+                $translatedCacheKey = self::SECTIONS_CACHE_PREFIX . '.' . $locale . '.' . $this->collectionName;
+                $this->sectionMetaDataArray = $this->cache->get(
+                    $translatedCacheKey,
+                    function (ItemInterface $item) {
+                        $untranslatedSections = $this->getUntranslatedSectionMetaDataArray();
+                        $sections = $this->translateSectionMetaDataArray($untranslatedSections);
+
+                        uasort($sections, static function(SectionMetaData $a, SectionMetaData $b) {
+                            return strcasecmp($a->getTitle(), $b->getTitle());
+                        });
+
+                        return $sections;
                     }
-
-                    uasort($sections, static function(SectionMetaData $a, SectionMetaData $b) {
-                        return strcasecmp($a->getTitle(), $b->getTitle());
-                    });
-
-                    return $sections;
-                }
-            );
-
+                );
+            }
         }
 
         return $this->sectionMetaDataArray;
+    }
+
+    public function getTranslationDomain(): bool|string|null
+    {
+        return $this->translationDomain;
+    }
+
+    /**
+     * @see self::getSectionMetaDataArray() this method is similar, but returns everything untranslated even if
+     * translation is set up for this collection
+     *
+     * @return SectionMetaData[] [$sectionClass => $metaData, ...]
+     *
+     * @throws Throwable
+     */
+    private function getUntranslatedSectionMetaDataArray(): array
+    {
+        $cacheKey = self::SECTIONS_CACHE_PREFIX . '.' . $this->collectionName;
+
+        return $this->cache->get(
+            $cacheKey,
+            function (ItemInterface $item) {
+                $sections = [];
+                foreach ($this->sectionClasses as $sectionName => $sectionClass) {
+                    $sections[$sectionClass] = $this->metaDataExtractor
+                        ->createSectionMetaData($sectionName, $sectionClass);
+                }
+
+                uasort($sections, static function(SectionMetaData $a, SectionMetaData $b) {
+                    return strcasecmp($a->getTitle(), $b->getTitle());
+                });
+
+                return $sections;
+            }
+        );
+    }
+
+    /**
+     * Returns a copy of $sections with translatable elements translated
+     *
+     * @param SectionMetaData[] $sections
+     *
+     * @return SectionMetaData[]
+     */
+    private function translateSectionMetaDataArray(array $sections): array
+    {
+        $translatedSections = [];
+        foreach ($sections as $sectionName => $sectionMetaData) {
+            $translatedSections[$sectionName] = new SectionMetaData(
+                $sectionMetaData->getName(),
+                $this->translator->trans($sectionMetaData->getTitle(), domain: $this->translationDomain),
+                $sectionMetaData->getDataClass(),
+                $sectionMetaData->getDescription(),
+                $sectionMetaData->getSettingMetaDataArray(),
+                $sectionMetaData->getExtra(),
+            );
+        }
+
+        return $translatedSections;
     }
 
     /**

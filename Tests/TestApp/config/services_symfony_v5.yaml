@@ -1,3 +1,4 @@
+when@test: &test_auth_checker
 services:
   security.authorization_checker:
     class: Symfony\Component\Security\Core\Authorization\AuthorizationChecker
@@ -6,3 +7,5 @@ services:
       $accessDecisionManager: '@security.access_decision_manager'
       $alwaysAuthenticate: false
       $exceptionOnNoToken: false
+
+when@translated: *test_auth_checker

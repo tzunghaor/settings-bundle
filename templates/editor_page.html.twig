@@ -1,15 +1,13 @@
 {# The built-in editor page #}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app.request.locale | replace({'_': '-'}) | default('en') }}">
 <head>
     {% use "@TzunghaorSettings/editor_blocks.html.twig" %}
     <meta charset="UTF-8">
-    <title>{% block ts_page_title %}Tzunghaor Settings{% endblock %}</title>
+    <title>{% block ts_page_title %}{% set ts_trans_text = 'Tzunghaor Settings' %}{{ block('ts_cond_trans') }}{% endblock %}</title>
     {{ block('ts_stylesheets') }}
 </head>
 <body>
-
-{% set ts_messages=app.flashes %}
 {{ block('ts_body') }}
 {{ block('ts_javascripts') }}
 </body>

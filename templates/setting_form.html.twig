@@ -1,17 +1,18 @@
 {# the form part of the settings editor #}
+{% use "@TzunghaorSettings/editor_blocks.html.twig" %}
 <div class="tzunghaor_settings_editor">
     {% block ts_section_heading %}
         <h3>
-            {% block ts_section_title %}Section "{{ form.vars.label }}" for scope "{{ currentScope.title }}"{% endblock %}
+            {% block ts_section_title %}
+                {% set ts_trans_text = 'Section "%section%" for scope "%scope%"' %}
+                {% set ts_trans_args = {'%section%': form.vars.label, '%scope%': currentScope.title } %}
+                {{ block('ts_cond_trans') }}
+            {% endblock %}
         </h3>
     {% endblock %}
 
     {% block ts_section_description %}
-        {% if form.vars.help %}
-            <div class="tzunghaor_settings_section_description">
-                {{ form.vars.help }}
-            </div>
-        {% endif %}
+        {{ form_help(form, {help_attr: {class: "tzunghaor_settings_section_description"}}) }}
     {% endblock %}
 
     {% block ts_form %}
@@ -40,12 +41,12 @@
         {% endblock %}
 
         {% block ts_save_button %}
-            <button type="submit">Save</button>
+            <button type="submit">{% set ts_trans_text = 'Save' %}{{ block('ts_cond_trans') }}</button>
         {% endblock %}
 
         {# button templates must be inside the form in order the javascript to find them #}
         {% block ts_button_templates %}
-            <template class="tzunghaor_setting_add_button"><button type="button">Add</button></template>
+            <template class="tzunghaor_setting_add_button"><button type="button">{% set ts_trans_text = 'Add' %}{{ block('ts_cond_trans') }}</button></template>
             <template class="tzunghaor_setting_remove_button"><button type="button">X</button></template>
         {% endblock %}
 

@@ -4,10 +4,14 @@ namespace Tzunghaor\SettingsBundle\Test\Unit\Service;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\CacheItem;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Contracts\Cache\CacheInterface;
+use TestApp\Service\MockTranslator;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
+use Tzunghaor\SettingsBundle\Model\SettingMetaData;
+use Tzunghaor\SettingsBundle\Model\Type;
 use Tzunghaor\SettingsBundle\Service\MetaDataExtractor;
 use Tzunghaor\SettingsBundle\Service\ScopeProviderInterface;
 use Tzunghaor\SettingsBundle\Service\SettingsMetaService;
@@ -19,6 +23,9 @@ class SettingsMetaServiceTest extends TestCase
      */
     private $settingsMetaService;
 
+    /**
+     * @var SectionMetaData[]
+     */
     private $fakeSectionMeta = [];
 
     private $classes = ['name1' => 'Class1', 'name2' => 'Class2'];
@@ -41,8 +48,10 @@ class SettingsMetaServiceTest extends TestCase
             ->willReturnCallback(function ($key, $callable) { return $callable(new CacheItem()); })
         ;
 
-        $this->fakeSectionMeta['Class1'] = new SectionMetaData('foo1', 'bar1', 'data', 'desc', []);
-        $this->fakeSectionMeta['Class2'] = new SectionMetaData('foo1', 'bar1', 'data', 'desc', []);
+        $settingMetaData = new SettingMetaData('setting1', new Type('int'), NumberType::class, [],
+            'The Setting', 'Set this');
+        $this->fakeSectionMeta['Class1'] = new SectionMetaData('foo1', 'bar1', 'data', 'desc', [$settingMetaData]);
+        $this->fakeSectionMeta['Class2'] = new SectionMetaData('foo2', 'bar2', 'data', 'desc', []);
 
         $mockExtractor = $this->createMock(MetaDataExtractor::class);
         $mockExtractor
@@ -70,6 +79,27 @@ class SettingsMetaServiceTest extends TestCase
 
         $metaData2 = $this->settingsMetaService->getSectionMetaData('Class2');
         self::assertSame($this->fakeSectionMeta['Class2'], $metaData2);
+    }
+
+    public function testTranslation()
+    {
+        $translatedSettingMetaService = clone $this->settingsMetaService;
+        $translatedSettingMetaService->setUpTranslation(
+            new MockTranslator( 'de_AT', 'messages'),
+            'tzunghaor'
+        );
+
+        $metaData = $translatedSettingMetaService->getSectionMetaData('Class1');
+
+        $expectedMetaData = new SectionMetaData(
+            'foo1',
+            'tzunghaor/de_AT/bar1',
+            'data',
+            'desc',
+            $this->fakeSectionMeta['Class1']->getSettingMetaDataArray(),
+        );
+
+        self::assertEquals($expectedMetaData, $metaData);
     }
 
     public function testGetSectionMetaDataArrayByName()

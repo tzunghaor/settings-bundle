@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\TypeInfo\Type;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Tzunghaor\SettingsBundle\Model\PersistedSettingInterface;
 use Tzunghaor\SettingsBundle\Service\DoctrineSettingsStore;
 use Tzunghaor\SettingsBundle\Service\SettingsMetaService;
@@ -55,9 +56,14 @@ class TzunghaorSettingsExtension extends Extension
         $defaultCollectionName = $container->getParameter('tzunghaor_settings.default_collection');
         $isDefaultCollectionProcessed = false;
 
+        // set up translation
+        $translationDomain = $config[Configuration::TRANSLATION_DOMAIN] ?? false;
+        $container->getDefinition('tzunghaor_settings.settings_editor_service')
+            ->setArgument('$translationDomain', $translationDomain);
+
         foreach ($config[Configuration::COLLECTIONS] as $name => $collectionConfig) {
             $isDefault = $name === $defaultCollectionName;
-            $this->configureCollection($name, $collectionConfig, $container, $isDefault);
+            $this->configureCollection($name, $collectionConfig, $container, $isDefault, $translationDomain);
             $isDefaultCollectionProcessed = $isDefaultCollectionProcessed || $isDefault;
         }
 
@@ -75,8 +81,13 @@ class TzunghaorSettingsExtension extends Extension
         }
     }
 
-    private function configureCollection(string $name, array $config, ContainerBuilder $container, bool $isDefault): void
-    {
+    private function configureCollection(
+        string            $name,
+        array             $config,
+        ContainerBuilder  $container,
+        bool              $isDefault,
+        string|null|false $defaultTranslationDomain
+    ): void {
         $config[Configuration::NAME] = $config[Configuration::NAME] ?? $name;
         $defaultSettingsMetaServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_meta_service');
         $defaultSettingsServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_service');
@@ -164,6 +175,28 @@ class TzunghaorSettingsExtension extends Extension
                 '$entityClass' => $entityClass,
             ]);
             $settingsServiceDefinition->replaceArgument('$store', $settingsStoreDefinition);
+        }
+
+        // by default there is no translation
+        $translationDomain = $config[Configuration::TRANSLATION_DOMAIN] ?? $defaultTranslationDomain;
+        if ($translationDomain !== false) {
+            if (!interface_exists(TranslatorInterface::class)) {
+                throw new InvalidConfigurationException(
+                    Configuration::TRANSLATION_DOMAIN . ' requires symfony/translation'
+                );
+            }
+            if (!method_exists(TranslatorInterface::class, 'getLocale')) {
+                throw new InvalidConfigurationException(
+                    Configuration::TRANSLATION_DOMAIN . ' requires symfony/translation >=6.0'
+                );
+            }
+
+            $settingsMetaServiceDefinition->addMethodCall('setUpTranslation',
+                [new Reference(TranslatorInterface::class), $translationDomain]);
+            if (isset($scopeProviderDefinition) && $scopeProviderDefinition->getClass() === StaticScopeProvider::class) {
+                $scopeProviderDefinition->addMethodCall('setUpTranslation',
+                    [new Reference(TranslatorInterface::class), $translationDomain]);
+            }
         }
 
         $settingsMetaServiceDefinition->replaceArgument('$collectionTitle', $config[Configuration::TITLE] ?? null);

@@ -1,4 +1,13 @@
 {# Contains all the built-in blocks of the editor page #}
+{%- block ts_cond_trans -%}
+    {%- set ts_trans_args = ts_trans_args | default({}) -%}
+    {%- if translationDomain is same as (false) -%}
+        {{- ts_trans_text | replace(ts_trans_args) -}}
+    {%- else -%}
+        {{- ts_trans_text | trans(arguments: ts_trans_args, domain:translationDomain) -}}
+    {%- endif -%}
+{%- endblock -%}
+
 {% block ts_body %}
     <div class="tzunghaor_settings_page">
         {% block ts_sidebar %}
@@ -7,7 +16,7 @@
                 {% if collections | length > 1 %}
                     <div class="tzunghaor_settings_collection_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
                         {% block ts_collections_heading %}
-                            <h3>{% block ts_collections_title %}Collections{% endblock %}</h3>
+                            <h3>{% block ts_collections_title %}{% set ts_trans_text = 'Collections' %}{{ block('ts_cond_trans') }}{% endblock %}</h3>
                         {% endblock %}
 
                         {% block ts_collections_list %}
@@ -30,12 +39,12 @@
                             } | json_encode | raw }}</script>
 
                         {% block ts_scopes_heading %}
-                            <h3>{% block ts_scopes_title %}Scopes{% endblock %}</h3>
+                            <h3>{% block ts_scopes_title %}{% set ts_trans_text = 'Scopes' %}{{ block('ts_cond_trans') }}{% endblock %}</h3>
                         {% endblock %}
 
                         {% if searchUrl is defined and searchUrl is not null %}
                             <input class="tzunghaor_settings_scope_search" type="text"
-                                   placeholder="{% block ts_scope_search_placeholder %}Search scopes{% endblock %}" />
+                                   placeholder="{% block ts_scope_search_placeholder %}{% set ts_trans_text = 'Search scopes' %}{{ block('ts_cond_trans') }}{% endblock %}" />
                         {% endif %}
                         <div class="tzunghaor_settings_scopes_list tzunghaor_settings_list_container">
                             {% block ts_scopes_list %}
@@ -50,7 +59,7 @@
                 {% if sections | length > 1 %}
                     <div class="tzunghaor_settings_section_selector tzunghaor_settings_selector tzunghaor_settings_list_container">
                         {% block ts_sections_heading %}
-                            <h3>{% block ts_sections_title %}Sections{% endblock %}</h3>
+                            <h3>{% block ts_sections_title %}{% set ts_trans_text = 'Sections' %}{{ block('ts_cond_trans') }}{% endblock %}</h3>
                         {% endblock %}
 
                         {% block ts_sections_list %}
@@ -64,20 +73,27 @@
 
 
         <div class="tzunghaor_settings_main">
-            {% if ts_messages %}
-                <div class="tzunghaor_settings_messages">
-                {% for label, messages in ts_messages %}
-                    {% for message in messages %}
-                        <div class="tzunghaor_settings_message flash-{{ label }}">
-                            {{ message }}
-                        </div>
+            {% block ts_messages %}
+                {%- if ts_messages is defined %}
+                    {% set messages = ts_messages %}
+                {% elseif app.flashes is defined %}
+                    {% set messages = app.flashes %}
+                {% endif -%}
+                {% if messages is defined and messages %}
+                    <div class="tzunghaor_settings_messages">
+                    {% for type, typedMessages in messages %}
+                        {% for message in typedMessages %}
+                            <div class="tzunghaor_settings_message flash-{{ type }}">
+                                {% set ts_trans_text = message %}{{ block('ts_cond_trans') }}
+                            </div>
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
-                </div>
-            {% endif %}
+                    </div>
+                {% endif %}
+            {% endblock %}
 
             {% if sections | length == 0 %}
-                {% block ts_no_sections_message %}There are no editable settings.{% endblock %}
+                {% block ts_no_sections_message %}{% set ts_trans_text = 'There are no editable settings.' %}{{ block('ts_cond_trans') }}{% endblock %}
             {% endif %}
 
             {% block ts_setting_form %}

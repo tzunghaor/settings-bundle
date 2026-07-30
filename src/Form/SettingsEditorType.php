@@ -40,6 +40,11 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
     public const OPTION_SECTION_META = 'section_meta';
 
     /**
+     * Translation domain of collection independent editor elements (set / inherit choice)
+     */
+    public const OPTION_EDITOR_TRANSLATION_DOMAIN = 'editor_translation_domain';
+
+    /**
      * {@inheritdoc}
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -89,9 +94,10 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
                 'expanded' => true,
                 'choices' => ['set' => true, 'inherit' => false],
                 'row_attr' => [
-                    'title' => 'set value in this scope',
+                    'title' => 'Set value in this scope or inherit from parent scope / default value',
                     'class' => 'tzunghaor_setting_override',
                 ],
+                'translation_domain' => $options[self::OPTION_EDITOR_TRANSLATION_DOMAIN],
             ];
 
             $overrideForm->add($settingName, BoolType::class, $overrideOptions);
@@ -144,8 +150,9 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired([self::OPTION_SECTION_META]);
+        $resolver->setRequired([self::OPTION_SECTION_META, self::OPTION_EDITOR_TRANSLATION_DOMAIN]);
         $resolver->setAllowedTypes(self::OPTION_SECTION_META, SectionMetaData::class);
+        $resolver->setAllowedTypes(self::OPTION_EDITOR_TRANSLATION_DOMAIN, ['string', 'null', 'bool']);
         // use PATCH so that non-submitted values are not cleared, but remain the current inherited values
         $resolver->setDefault('method', Request::METHOD_PATCH);
     }

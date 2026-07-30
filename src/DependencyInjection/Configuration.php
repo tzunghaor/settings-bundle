@@ -23,6 +23,7 @@ class Configuration implements ConfigurationInterface
     public const EXTRA = 'extra';
     public const ENTITY = 'entity';
     public const SECURITY = 'security';
+    public const TRANSLATION_DOMAIN = 'translation_domain';
 
     /**
      * Generates the configuration tree builder.
@@ -37,6 +38,10 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->booleanNode(self::SECURITY)
                     ->info('Use security voters to check editor access. Needs symfony/security-core')
+                    ->defaultFalse()
+                ->end()
+                ->scalarNode(self::TRANSLATION_DOMAIN)
+                    ->info('Translation domain to be used on editor page. (false => no translation, null => use app\'s default)')
                     ->defaultFalse()
                 ->end()
 
@@ -116,6 +121,11 @@ class Configuration implements ConfigurationInterface
                                 ->ignoreExtraKeys(false)
                                 ->info('Extra data that you can use in your templates / extensions')
                             ->end()
+
+                            ->scalarNode(self::TRANSLATION_DOMAIN)
+                                ->info('Translation domain to be used on editor page (false => no translation, null => use app\'s default)')
+                            ->end()
+
                        ->end()
                     ->end()
                 ->end()

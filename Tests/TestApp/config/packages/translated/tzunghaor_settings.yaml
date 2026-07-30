@@ -1,0 +1,24 @@
+tzunghaor_settings:
+  translation_domain: 'domain'
+  collections:
+    default:
+      title: Nice Default Collection
+      translation_domain: 'tzunghaor'
+      scopes:
+        - name: root
+          title: Root of All
+          extra:
+            class: root-class
+          children:
+            - name: day
+              title: Beautiful Day
+              extra:
+                class: beautiful class
+              children:
+                - name: morning
+                - name: afternoon
+            - name: night
+      default_scope: root
+      mapping:
+        dir: '%kernel.project_dir%/src/Settings'
+        prefix: TestApp\Settings\

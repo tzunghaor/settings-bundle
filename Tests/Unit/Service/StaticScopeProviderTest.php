@@ -4,6 +4,7 @@ namespace Tzunghaor\SettingsBundle\Test\Unit\Service;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use TestApp\Service\MockTranslator;
 use Tzunghaor\SettingsBundle\Model\Item;
 use Tzunghaor\SettingsBundle\Service\StaticScopeProvider;
 
@@ -74,22 +75,42 @@ class StaticScopeProviderTest extends TestCase
             ]),
         ];
 
+        $translatedBarExpected = [
+            new Item('all', 'tzunghaor/de_AT/all', [
+                new Item('bar', 'tzunghaor/de_AT/Great Bar', [
+                    new Item('bar1', 'tzunghaor/de_AT/bar1'),
+                    new Item('bar2', 'tzunghaor/de_AT/bar2'),
+                ], ['class' => 'lofty'])
+            ]),
+            new Item('johnny', 'tzunghaor/de_AT/johnny', [
+                new Item('babar', 'tzunghaor/de_AT/babar'),
+            ]),
+        ];
+
         return [
             // no search => return all
-            'all scopes' => [null, $defaultExpected],
+            'all scopes' => [null, null, $defaultExpected],
             // no matching scope => empty list
-            'search not found' => ['xy', []],
+            'search not found' => ['xy', null, []],
             // matching "bar"
-            'search "bar"' => ['bar', $barExpected]
+            'search "bar"' => ['bar', null, $barExpected],
+            // matching "bar"
+            'search "bar" translated' => ['bar', 'de_AT', $translatedBarExpected],
         ];
     }
 
     /**
      * @dataProvider scopeHierarchyProvider
      */
-    public function testGetScopeHierarchy($searchString, $expected): void
+    public function testGetScopeHierarchy(?string $searchString, ?string $translationLocale, array $expected): void
     {
         $provider = new StaticScopeProvider($this->scopeHierarchy, 'all');
+        if ($translationLocale !== null) {
+            $provider->setUpTranslation(
+                new MockTranslator( 'de_AT', 'messages'),
+                'tzunghaor'
+            );
+        }
 
         $hierarchy = $provider->getScopeDisplayHierarchy($searchString);
 
@@ -101,12 +122,13 @@ class StaticScopeProviderTest extends TestCase
     {
         self::expectException(InvalidConfigurationException::class);
 
-        new StaticScopeProvider(
+        $scopeProvider = new StaticScopeProvider(
             [['name' => 'foo', 'children' =>
                 [['name' => 'bar'], ['name' => 'foo']]
             ]],
             'default'
         );
+        $scopeProvider->getScope(null);
     }
 
 }

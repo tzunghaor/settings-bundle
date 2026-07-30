@@ -5,6 +5,7 @@ namespace Tzunghaor\SettingsBundle\Test\Integration\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\Constraint\Constraint;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
@@ -83,6 +84,7 @@ class SettingsEditorControllerTest extends WebTestCase
                     'uri' => '/settings/edit/default/root/Ui.BoxSettings',
                     'formEdits' => [
                         'settings_editor' => [
+                            // although there is a settings.padding value, but in_scope.padding=0, so it should be ignored
                             'settings' => ['padding' => 12, 'margin' => 14],
                             'in_scope' => ['padding' => 0, 'margin' => 1, 'borders' => 1],
                         ],
@@ -145,18 +147,18 @@ class SettingsEditorControllerTest extends WebTestCase
      * @param array $edits - do these edits on the page
      * @param array $expectedSections
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws InvalidArgumentException
      * @throws \Tzunghaor\SettingsBundle\Exception\SettingsException
      */
     public function testEdit(array $preparations, array $edits, array $expectedSections)
     {
-        $browser = static::createClient();
-        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $browser = static::createClient(['environment' => 'test', 'debug' => false]);
         $this->setUpDatabase();
-        /** @var SettingsService $settingsService */
-        $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service');
 
         if ($preparations) {
+            /** @var SettingsService $settingsService */
+            $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service');
+
             foreach ($preparations as $preparation) {
                 /** @var SettingSectionAddress $address */
                 $address = $preparation['address'];
@@ -164,14 +166,13 @@ class SettingsEditorControllerTest extends WebTestCase
                 $settingsService->save($address['class'], $address['scope'], $settings);
             }
 
-            // boot kernel again after preparations to ensure that all caches are cleared before doing edits
-            self::bootKernel(['environment' => 'test', 'debug' => false]);
         }
 
         $this->doEdits($browser, $edits);
 
-        // boot kernel again after edits, to ensure that all caches are cleared before checking settings
+        // boot kernel again after edits, to ensure that all cached data  is cleared before checking settings
         self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service');
 
         foreach ($expectedSections as $sectionClass => $expectedScopedSections) {
             foreach ($expectedScopedSections as $scope => $expectedSection) {
@@ -189,8 +190,7 @@ class SettingsEditorControllerTest extends WebTestCase
      */
     public function testSecurity(): void
     {
-        $browser = static::createClient();
-        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $browser = static::createClient(['environment' => 'test', 'debug' => false]);
         $this->setUpDatabase();
 
         /** @var SettingsService $settingsService */
@@ -242,8 +242,7 @@ class SettingsEditorControllerTest extends WebTestCase
 
     public function testCustomGranted(): void
     {
-        $browser = static::createClient();
-        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $browser = static::createClient(['environment' => 'test', 'debug' => false]);
         $this->setUpDatabase();
 
         /** @var SettingsService $settingsService */
@@ -317,6 +316,7 @@ class SettingsEditorControllerTest extends WebTestCase
                         'text' => self::equalTo('Tzunghaor Settings'),
                     ],
                     $collectionItemXpath => [
+                        // there are 3 configured collection, but "custom_grant" is not visible without authentication
                         'count' => self::equalTo(2),
                     ],
                     "($collectionItemXpath)[1]" => [
@@ -355,8 +355,7 @@ class SettingsEditorControllerTest extends WebTestCase
      */
     public function testTemplate(string $uri, array $assertions): void
     {
-        $browser = static::createClient();
-        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $browser = static::createClient(['environment' => 'test', 'debug' => false]);
         $crawler = $browser->request('get', $uri);
 
         foreach ($assertions as $xpath => $elementAssertions) {
@@ -372,8 +371,7 @@ class SettingsEditorControllerTest extends WebTestCase
      */
     public function testCustomRoutes(): void
     {
-        $browser = static::createClient();
-        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $browser = static::createClient(['environment' => 'test', 'debug' => false]);
         $this->setUpDatabase();
 
         /** @var AdapterInterface $cache */
@@ -443,6 +441,66 @@ class SettingsEditorControllerTest extends WebTestCase
         self::assertNotNull($this->getJoeFunCachedItem());
     }
 
+    public function translationDataProvider(): array
+    {
+        return [
+            'not_translated' => [
+                'test',
+                [
+                    '//div[contains(@class, "tzunghaor_settings_scope_selector")]/h3' => ['Scopes'],
+                    '//div[contains(@class, "tzunghaor_settings_scopes_list")]//li/a' => ['Root of All', 'Beautiful Day', 'night'],
+                    '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' => ['UI Box Settings', 'UI Font Settings'],
+                    '//div[contains(@class, "tzunghaor_setting_override")]//label' => ['set', 'inherit'],
+                    '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' => ['padding', 'margin', 'Type', 'Text']
+                ]
+            ],
+            // common strings expected to be translated with 'domain', collection specific strings with 'tzunghaor' domain
+            'translated' => [
+                'translated',
+                [
+                    '//div[contains(@class, "tzunghaor_settings_scope_selector")]/h3' =>
+                        ['domain/en_GB/Scopes'],
+                    '//div[contains(@class, "tzunghaor_settings_scopes_list")]//li/a' =>
+                        ['tzunghaor/en_GB/Root of All', 'tzunghaor/en_GB/Beautiful Day', 'tzunghaor/en_GB/night'],
+                    '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' =>
+                        ['tzunghaor/en_GB/UI Box Settings', 'tzunghaor/en_GB/UI Font Settings'],
+                    '//div[contains(@class, "tzunghaor_setting_override")]//label' =>
+                        ['domain/en_GB/set', 'domain/en_GB/inherit'],
+                    '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' =>
+                        ['tzunghaor/en_GB/padding', 'tzunghaor/en_GB/margin', 'tzunghaor/en_GB/Type', 'tzunghaor/en_GB/Text'],
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * Checks that ui elements are translated / not translated according to configuration
+     *
+     * @dataProvider translationDataProvider
+     */
+    public function testTranslation(
+        string $environment,
+        array  $expectations
+    ): void {
+        $collection = 'default';
+        $browser = static::createClient(['environment' => $environment, 'debug' => false]);
+        $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service.' . $collection);
+        // add a message so that a MessageType entry is visible
+        $settingsService->save(BoxSettings::class, 'root', ['messages' => [new Message('a', 'b')]]);
+
+        $crawler = $browser->request('get', '/settings/edit/' . $collection . '/root/Ui.BoxSettings');
+        foreach($expectations as $xpath => $texts) {
+            $actualTexts = [];
+            foreach ($crawler->filterXPath($xpath) as $element) {
+                $actualTexts[] = trim($element->textContent);
+            }
+
+            // test currently checks a subset of actual elements
+            self::assertEquals($texts, array_intersect($texts, $actualTexts),
+                'at xpath ' . $xpath . "\n found texts:" . json_encode($actualTexts) );
+        }
+    }
+
     private function doEdits(KernelBrowser $browser, array $edits): void
     {
         foreach ($edits as $edit) {
@@ -455,11 +513,9 @@ class SettingsEditorControllerTest extends WebTestCase
     }
 
     /**
-     * @return mixed null if
-     *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    private function getJoeFunCachedItem()
+    private function getJoeFunCachedItem(): mixed
     {
         /** @var CacheInterface $cache */
         $cache = self::getContainer()->get('test_other_cache');
@@ -570,8 +626,7 @@ class SettingsEditorControllerTest extends WebTestCase
      */
     public function testSearchScope(array $content, array $expected): void
     {
-        $browser = self::createClient();
-        self::bootKernel(['environment' => 'test', 'debug' => false]);
+        $browser = self::createClient(['environment' => 'test', 'debug' => false]);
 
         // though the actual response is only a partial starting with UL element, the crawler embeds it into HTML
         $crawler = $browser->xmlHttpRequest('post', '/settings/scope-search', [], [], [], json_encode($content));

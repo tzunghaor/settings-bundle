@@ -26,16 +26,6 @@ use Tzunghaor\SettingsBundle\Model\ViewItem;
  */
 class SettingsEditorService
 {
-    private ServiceLocator $settingsServiceLocator;
-
-    private ServiceLocator $settingsMetaServiceLocator;
-
-    private FormFactoryInterface $formFactory;
-
-    private RouterInterface $router;
-
-    private string $defaultCollectionName;
-
     /**
      * @var object|null
      * Optional Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface
@@ -43,17 +33,13 @@ class SettingsEditorService
     private $authorizationChecker;
 
     public function __construct(
-        ServiceLocator $settingsServiceLocator,
-        ServiceLocator $settingsMetaServiceLocator,
-        FormFactoryInterface $formFactory,
-        RouterInterface $router,
-        string $defaultCollectionName
+        private ServiceLocator $settingsServiceLocator,
+        private ServiceLocator $settingsMetaServiceLocator,
+        private FormFactoryInterface $formFactory,
+        private RouterInterface $router,
+        private string $defaultCollectionName,
+        private string|null|false $translationDomain = false,
     ) {
-        $this->settingsServiceLocator = $settingsServiceLocator;
-        $this->settingsMetaServiceLocator = $settingsMetaServiceLocator;
-        $this->formFactory = $formFactory;
-        $this->router = $router;
-        $this->defaultCollectionName = $defaultCollectionName;
     }
 
     /**
@@ -147,8 +133,10 @@ class SettingsEditorService
 
         return $this->formFactory->create(SettingsEditorType::class, $formData, [
             SettingsEditorType::OPTION_SECTION_META => $sectionMeta,
+            SettingsEditorType::OPTION_EDITOR_TRANSLATION_DOMAIN => $this->translationDomain,
             'label' => $sectionMeta->getTitle(),
             'help' => $sectionMeta->getDescription(),
+            'translation_domain' => $settingsMetaService->getTranslationDomain(),
         ]);
     }
 
@@ -211,7 +199,7 @@ class SettingsEditorService
         EditorUrlParameters   $editorUrlParameters,
         ?FormInterface        $form,
         ?string               $searchUrl,
-        array                 $fixedParameters = []
+        array                 $fixedParameters = [],
     ): array {
         $currentCollection = $sectionAddress->getCollectionName();
         $currentScopeName = $sectionAddress->getScope();
@@ -239,7 +227,7 @@ class SettingsEditorService
             $scopes = $this->prepareTwigScopes($scopes, $sectionAddress, $editorUrlParameters);
         }
 
-        $formView = $form === null ? null : $form->createView();
+        $formView = $form?->createView();
         if ($formView !== null) {
             $this->addFormViewAttrs($formView);
         }
@@ -254,6 +242,7 @@ class SettingsEditorService
             'form' => $formView,
             'linkRoute' => $editorUrlParameters->getRoute(),
             'searchUrl' => $searchUrl,
+            'translationDomain' => $this->translationDomain,
         ];
     }
 

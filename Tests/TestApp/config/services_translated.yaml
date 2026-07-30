@@ -1,0 +1,13 @@
+imports:
+  - { resource: './services_test.yaml' }
+
+services:
+  _defaults:
+    autowire: true
+
+  # mocking important part of symfony/translator component
+  translator.default:
+    class: TestApp\Service\MockTranslator
+
+  translator: '@translator.default'
+  Symfony\Contracts\Translation\TranslatorInterface: '@translator.default'
