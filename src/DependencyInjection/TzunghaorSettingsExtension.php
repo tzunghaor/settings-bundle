@@ -186,6 +186,7 @@ class TzunghaorSettingsExtension extends Extension
                     Configuration::TRANSLATION_DOMAIN . ' requires symfony/translation'
                 );
             }
+            // @phpstan-ignore function.alreadyNarrowedType (getLocale does not exist in the oldest supported version)
             if (!method_exists(TranslatorInterface::class, 'getLocale')) {
                 throw new InvalidConfigurationException(
                     Configuration::TRANSLATION_DOMAIN . ' requires symfony/translation >=6.0'
