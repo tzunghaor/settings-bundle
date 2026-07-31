@@ -236,7 +236,7 @@ Advanced Usage
 Setting up cache
 ----------------
 
-It is advised to use a cache with this bundle - if you don't configure one, then the bundle will
+This bundle uses cache - if you don't configure one, then the bundle will
 create its own in-memory cache which is cleared on each request (this is good for development, but
 not that performant on production).
 
@@ -251,8 +251,9 @@ tzunghaor_settings:
       cache: 'cache.app'
 ```
 
-Keep in mind that you need to clear the cache every time you make changes in your 
-setting section PHP files.
+Keep in mind that you need to clear this cache every time you make changes in your 
+setting section PHP files. (If you have translations configured for this bundle, then
+you have to clear this cache also when you change translations.)
 
 Collections with nested scopes need a cache implementing TagAwareCacheInterface. You can easily set up
 one in your Symfony framework config:

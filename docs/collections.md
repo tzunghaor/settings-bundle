@@ -54,6 +54,34 @@ to use.
 Alternatively you can override the **tzunghaor_settings.default_collection** config parameter
 to set a different name for the default collection. 
 
+Custom sorting
+--------------
+
+By default, the editor page lists the setting sections sorted by their displayed
+title. If you want a different sorting, you can add extra data to your setting
+classes, and specify sorting by extra data in the collection configuration. 
+E.g. using "pos" extra data:
+
+```php
+# src/Settings/BoxSettings
+use Tzunghaor\SettingsBundle\Attribute\SettingSection;
+
+#[SettingSection(extra: ['pos' => 20])]
+class BoxSettings
+{
+```
+
+(You can use any data type for this, as long it supports the spaceship operator : `<=>`.)
+
+```yaml
+# config/packages/tzunghaor_settings.yaml
+
+tzunghaor_settings:
+  collections:
+    my_sorted_collection:
+      sort_sections_by: 'extra.pos'
+```
+
 Multiple mappings
 -----------------
 
