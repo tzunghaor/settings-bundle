@@ -339,7 +339,7 @@ class SettingsMetaService implements CacheWarmerInterface
                     $aAttr = $a->getExtra()[$extraAttr] ?? null;
                     $bAttr = $b->getExtra()[$extraAttr] ?? null;
 
-                    return $aAttr < $bAttr ? -1 : ($aAttr > $bAttr ? 1 : 0);
+                    return $aAttr <=> $bAttr;
                 };
             } else {
                 throw new SettingsException(sprintf('Unsupported section sorter "%s" in collection "%s"',
