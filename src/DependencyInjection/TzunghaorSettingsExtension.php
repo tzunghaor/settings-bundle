@@ -57,7 +57,8 @@ class TzunghaorSettingsExtension extends Extension
         $isDefaultCollectionProcessed = false;
 
         // set up translation
-        $translationDomain = $config[Configuration::TRANSLATION_DOMAIN] ?? false;
+        $translationDomain = array_key_exists(Configuration::TRANSLATION_DOMAIN, $config) ?
+            $config[Configuration::TRANSLATION_DOMAIN] : false;
         $container->getDefinition('tzunghaor_settings.settings_editor_service')
             ->setArgument('$translationDomain', $translationDomain);
 

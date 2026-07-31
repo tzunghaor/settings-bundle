@@ -94,7 +94,6 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
                 'expanded' => true,
                 'choices' => ['set' => true, 'inherit' => false],
                 'row_attr' => [
-                    'title' => 'Set value in this scope or inherit from parent scope / default value',
                     'class' => 'tzunghaor_setting_override',
                 ],
                 'translation_domain' => $options[self::OPTION_EDITOR_TRANSLATION_DOMAIN],

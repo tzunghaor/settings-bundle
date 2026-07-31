@@ -316,3 +316,20 @@ tzunghaor_settings:
 
 For more advanced use (e.g. having one scope per user), you can define your
 own [scope provider](docs/scopes.md)
+
+Translation
+-----------
+
+Translations (see [Symfony Translations documentation](https://symfony.com/doc/current/translation.html)) 
+for the editor is turned off by default.
+You can enable it in the configuration with the `translation_domain` option: 
+set it to null to use the default "messages" translation domain, or set a custom domain.
+
+```yaml
+# config/packages/tzunghaor_settings.yaml
+
+tzunghaor_settings:
+  translation_domain: null
+```
+
+[More about translations](docs/translations.md)
