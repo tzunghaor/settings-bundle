@@ -2,11 +2,9 @@
 
 namespace TestApp\Settings\Ui;
 
-/**
- * UI Font Settings
- *
- * Tho main role of this class is that there are two setting classes, and the editor page shows setting section list
- */
+use Tzunghaor\SettingsBundle\Attribute\SettingSection;
+
+#[SettingSection('UI Font Settings', extra: ['pos' => 1])]
 class FontSettings
 {
     public string $weight = 'normal';

@@ -22,3 +22,9 @@ tzunghaor_settings:
       mapping:
         dir: '%kernel.project_dir%/src/Settings'
         prefix: TestApp\Settings\
+
+    extra_sort:
+      sort_sections_by: 'extra.pos'
+      mapping:
+        dir: '%kernel.project_dir%/src/Settings'
+        prefix: TestApp\Settings\

@@ -202,6 +202,13 @@ class TzunghaorSettingsExtension extends Extension
 
         $settingsMetaServiceDefinition->replaceArgument('$collectionTitle', $config[Configuration::TITLE] ?? null);
         $settingsMetaServiceDefinition->replaceArgument('$collectionExtra', $config[Configuration::EXTRA] ?? []);
+
+        $sortSectionsBy = $config[Configuration::SORT_SECTIONS_BY];
+        if ($sortSectionsBy !== 'title' && !str_starts_with($sortSectionsBy, 'extra.')) {
+            throw new InvalidConfigurationException(sprintf('Unsupported section sorter "%s" in collection "%s"',
+                $sortSectionsBy, $name));
+        }
+        $settingsMetaServiceDefinition->setArgument('$sortSectionsBy', $sortSectionsBy);
     }
 
     /**

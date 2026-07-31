@@ -24,6 +24,7 @@ class Configuration implements ConfigurationInterface
     public const ENTITY = 'entity';
     public const SECURITY = 'security';
     public const TRANSLATION_DOMAIN = 'translation_domain';
+    public const SORT_SECTIONS_BY ='sort_sections_by';
 
     /**
      * Generates the configuration tree builder.
@@ -124,6 +125,11 @@ class Configuration implements ConfigurationInterface
 
                             ->scalarNode(self::TRANSLATION_DOMAIN)
                                 ->info('Translation domain to be used on editor page (false => no translation, null => use app\'s default)')
+                            ->end()
+
+                            ->scalarNode(self::SORT_SECTIONS_BY)
+                                ->info('Sort section list by this')
+                                ->defaultValue('title')
                             ->end()
 
                        ->end()

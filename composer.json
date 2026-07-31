@@ -17,6 +17,7 @@
         "symfony/twig-bundle": "^5.4 || ^6.0 || ^7.0 || ^8.0"
     },
     "suggest": {
+        "ext-intl": "*",
         "phpdocumentor/reflection-docblock": "^5.3",
         "symfony/asset": "^5.4 || ^6.0 || ^7.0 || ^8.0",
         "symfony/security-bundle": "^5.4 || ^6.0 || ^7.0 || ^8.0",

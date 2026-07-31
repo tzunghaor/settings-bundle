@@ -38,18 +38,21 @@ class SettingsMetaService implements CacheWarmerInterface
      */
     private string|null|false $translationDomain = false;
 
+    private ?\Closure $sectionSorter = null;
+
     /**
      * @param array $sectionClasses [$sectionName => $sectionClass, ...]
      */
     public function __construct(
-        private CacheInterface $cache,
-        private MetaDataExtractor $metaDataExtractor,
+        private CacheInterface         $cache,
+        private MetaDataExtractor      $metaDataExtractor,
         private ScopeProviderInterface $scopeProvider,
-        private string $collectionName,
-        private array $sectionClasses,
+        private string                 $collectionName,
+        private array                  $sectionClasses,
         // I would like to pass simply an Item instead three arguments, but DependencyInjection cannot do that
-        ?string $collectionTitle = null,
-        array $collectionExtra = []
+        ?string                        $collectionTitle = null,
+        array                          $collectionExtra = [],
+        private string                 $sortSectionsBy = 'title',
     ) {
         $this->collectionItem = new Item($collectionName, $collectionTitle, [], $collectionExtra);
     }
@@ -98,9 +101,7 @@ class SettingsMetaService implements CacheWarmerInterface
                         $untranslatedSections = $this->getUntranslatedSectionMetaDataArray();
                         $sections = $this->translateSectionMetaDataArray($untranslatedSections);
 
-                        uasort($sections, static function(SectionMetaData $a, SectionMetaData $b) {
-                            return strcasecmp($a->getTitle(), $b->getTitle());
-                        });
+                        uasort($sections, $this->getSectionSorter());
 
                         return $sections;
                     }
@@ -137,9 +138,7 @@ class SettingsMetaService implements CacheWarmerInterface
                         ->createSectionMetaData($sectionName, $sectionClass);
                 }
 
-                uasort($sections, static function(SectionMetaData $a, SectionMetaData $b) {
-                    return strcasecmp($a->getTitle(), $b->getTitle());
-                });
+                uasort($sections, $this->getSectionSorter());
 
                 return $sections;
             }
@@ -311,5 +310,43 @@ class SettingsMetaService implements CacheWarmerInterface
         }
 
         return [$attribute, $subject];
+    }
+
+    /**
+     * Returns a comparator function for sorting setting sections
+     *
+     * This is an on-demand method because it uses $translator if it is set,
+     * and it is never set in constructor.
+     */
+    private function getSectionSorter(): \Closure
+    {
+        if ($this->sectionSorter === null) {
+            if ($this->sortSectionsBy === 'title') {
+                if ($this->translator && class_exists(\Collator::class) && extension_loaded('intl')) {
+                    $collator = new \Collator($this->translator->getLocale());
+
+                    $this->sectionSorter = static function(SectionMetaData $a, SectionMetaData $b) use ($collator) {
+                        return $collator->compare($a->getTitle(), $b->getTitle());
+                    };
+                } else {
+                    $this->sectionSorter = static function(SectionMetaData $a, SectionMetaData $b) {
+                        return strcasecmp($a->getTitle(), $b->getTitle());
+                    };
+                }
+            } elseif (str_starts_with($this->sortSectionsBy, 'extra.')) {
+                [$foo, $extraAttr] = explode('.', $this->sortSectionsBy, 2);
+                $this->sectionSorter = static function(SectionMetaData $a, SectionMetaData $b) use ($extraAttr) {
+                    $aAttr = $a->getExtra()[$extraAttr] ?? null;
+                    $bAttr = $b->getExtra()[$extraAttr] ?? null;
+
+                    return $aAttr < $bAttr ? -1 : ($aAttr > $bAttr ? 1 : 0);
+                };
+            } else {
+                throw new SettingsException(sprintf('Unsupported section sorter "%s" in collection "%s"',
+                    $this->sortSectionsBy, $this->collectionName));
+            }
+        }
+
+        return $this->sectionSorter;
     }
 }

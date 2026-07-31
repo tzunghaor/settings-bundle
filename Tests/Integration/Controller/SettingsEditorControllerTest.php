@@ -446,6 +446,7 @@ class SettingsEditorControllerTest extends WebTestCase
         return [
             'not_translated' => [
                 'test',
+                'default',
                 [
                     '//div[contains(@class, "tzunghaor_settings_scope_selector")]/h3' => ['Scopes'],
                     '//div[contains(@class, "tzunghaor_settings_scopes_list")]//li/a' => ['Root of All', 'Beautiful Day', 'night'],
@@ -457,19 +458,30 @@ class SettingsEditorControllerTest extends WebTestCase
             // common strings expected to be translated with 'domain', collection specific strings with 'tzunghaor' domain
             'translated' => [
                 'translated',
+                'default',
                 [
                     '//div[contains(@class, "tzunghaor_settings_scope_selector")]/h3' =>
                         ['domain/en_GB/Scopes'],
                     '//div[contains(@class, "tzunghaor_settings_scopes_list")]//li/a' =>
                         ['tzunghaor/en_GB/Root of All', 'tzunghaor/en_GB/Beautiful Day', 'tzunghaor/en_GB/night'],
+                    // by default, sections are sorted by title
                     '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' =>
-                        ['tzunghaor/en_GB/UI Box Settings', 'tzunghaor/en_GB/UI Font Settings'],
+                        ['tzunghaor/en_GB/UI Box Settings', 'tzunghaor/en_GB/UI Font Settings', 'tzunghaor/en_GB/Ui.FooSettings'],
                     '//div[contains(@class, "tzunghaor_setting_override")]//label' =>
                         ['domain/en_GB/set', 'domain/en_GB/inherit'],
                     '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' =>
                         ['tzunghaor/en_GB/padding', 'tzunghaor/en_GB/margin', 'tzunghaor/en_GB/Type', 'tzunghaor/en_GB/Text'],
                 ]
-            ]
+            ],
+            'extra sort' => [
+                'translated',
+                'extra_sort',
+                [
+                    // sections are configured to be sorted by extra.pos
+                    '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' =>
+                        ['domain/en_GB/UI Font Settings', 'domain/en_GB/Ui.FooSettings', 'domain/en_GB/UI Box Settings'],
+                ],
+            ],
         ];
     }
 
@@ -480,9 +492,9 @@ class SettingsEditorControllerTest extends WebTestCase
      */
     public function testTranslation(
         string $environment,
-        array  $expectations
+        string $collection,
+        array  $expectations,
     ): void {
-        $collection = 'default';
         $browser = static::createClient(['environment' => $environment, 'debug' => false]);
         $settingsService = self::getContainer()->get('tzunghaor_settings.settings_service.' . $collection);
         // add a message so that a MessageType entry is visible

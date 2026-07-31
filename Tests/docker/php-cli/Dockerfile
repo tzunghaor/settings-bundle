@@ -5,8 +5,8 @@ ARG PHP_VERSION=8.0
 FROM php:${PHP_VERSION}-cli
 
 RUN apt-get update && \
-    apt-get install -y unzip libzip-dev && \
-    docker-php-ext-install zip
+    apt-get install -y unzip libzip-dev libicu-dev && \
+    docker-php-ext-install zip intl
 
 RUN pecl install xdebug && \
     docker-php-ext-enable xdebug
