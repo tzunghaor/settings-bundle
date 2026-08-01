@@ -1,5 +1,6 @@
 {# The built-in editor page #}
 <!DOCTYPE html>
+{# This locale to lang transformation is not correct in all cases, but works for the usual xx and xx_XX format locales #}
 <html lang="{{ app.request.locale | replace({'_': '-'}) | default('en') }}">
 <head>
     {% use "@TzunghaorSettings/editor_blocks.html.twig" %}

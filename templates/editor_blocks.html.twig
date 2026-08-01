@@ -4,7 +4,7 @@
     {%- if translationDomain is same as (false) -%}
         {{- ts_trans_text | replace(ts_trans_args) -}}
     {%- else -%}
-        {{- ts_trans_text | trans(arguments: ts_trans_args, domain:translationDomain) -}}
+        {{- ts_trans_text | trans(ts_trans_args, translationDomain) -}}
     {%- endif -%}
 {%- endblock -%}
 

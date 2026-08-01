@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Contracts\Cache\CacheInterface;
 use TestApp\Entity\User;
 use TestApp\Model\Message;
@@ -443,7 +444,7 @@ class SettingsEditorControllerTest extends WebTestCase
 
     public function translationDataProvider(): array
     {
-        return [
+        $testCases = [
             'not_translated' => [
                 'test',
                 'default',
@@ -455,34 +456,42 @@ class SettingsEditorControllerTest extends WebTestCase
                     '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' => ['padding', 'margin', 'Type', 'Text']
                 ]
             ],
-            // common strings expected to be translated with 'domain', collection specific strings with 'tzunghaor' domain
-            'translated' => [
-                'translated',
-                'default',
-                [
-                    '//div[contains(@class, "tzunghaor_settings_scope_selector")]/h3' =>
-                        ['domain/en_GB/Scopes'],
-                    '//div[contains(@class, "tzunghaor_settings_scopes_list")]//li/a' =>
-                        ['tzunghaor/en_GB/Root of All', 'tzunghaor/en_GB/Beautiful Day', 'tzunghaor/en_GB/night'],
-                    // by default, sections are sorted by title
-                    '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' =>
-                        ['tzunghaor/en_GB/UI Box Settings', 'tzunghaor/en_GB/UI Font Settings', 'tzunghaor/en_GB/Ui.FooSettings'],
-                    '//div[contains(@class, "tzunghaor_setting_override")]//label' =>
-                        ['domain/en_GB/set', 'domain/en_GB/inherit'],
-                    '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' =>
-                        ['tzunghaor/en_GB/padding', 'tzunghaor/en_GB/margin', 'tzunghaor/en_GB/Type', 'tzunghaor/en_GB/Text'],
-                ]
-            ],
-            'extra sort' => [
-                'translated',
-                'extra_sort',
-                [
-                    // sections are configured to be sorted by extra.pos
-                    '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' =>
-                        ['domain/en_GB/UI Font Settings', 'domain/en_GB/Ui.FooSettings', 'domain/en_GB/UI Box Settings'],
-                ],
-            ],
         ];
+
+        // old Symfony doesn't have TranslatorInterface::getLocale and thus the bundle would throw an exception
+        if (Kernel::MAJOR_VERSION > 5) {
+            $testCases += [
+                // common strings expected to be translated with 'domain', collection specific strings with 'tzunghaor' domain
+                'translated' => [
+                    'translated',
+                    'default',
+                    [
+                        '//div[contains(@class, "tzunghaor_settings_scope_selector")]/h3' =>
+                            ['domain/en_GB/Scopes'],
+                        '//div[contains(@class, "tzunghaor_settings_scopes_list")]//li/a' =>
+                            ['tzunghaor/en_GB/Root of All', 'tzunghaor/en_GB/Beautiful Day', 'tzunghaor/en_GB/night'],
+                        // by default, sections are sorted by title
+                        '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' =>
+                            ['tzunghaor/en_GB/UI Box Settings', 'tzunghaor/en_GB/UI Font Settings', 'tzunghaor/en_GB/Ui.FooSettings'],
+                        '//div[contains(@class, "tzunghaor_setting_override")]//label' =>
+                            ['domain/en_GB/set', 'domain/en_GB/inherit'],
+                        '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' =>
+                            ['tzunghaor/en_GB/padding', 'tzunghaor/en_GB/margin', 'tzunghaor/en_GB/Type', 'tzunghaor/en_GB/Text'],
+                    ]
+                ],
+                'extra sort' => [
+                    'translated',
+                    'extra_sort',
+                    [
+                        // sections are configured to be sorted by extra.pos
+                        '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' =>
+                            ['domain/en_GB/UI Font Settings', 'domain/en_GB/Ui.FooSettings', 'domain/en_GB/UI Box Settings'],
+                    ],
+                ],
+            ];
+        }
+
+        return $testCases;
     }
 
     /**
