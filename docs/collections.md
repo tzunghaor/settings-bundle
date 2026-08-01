@@ -58,7 +58,10 @@ Custom sorting
 --------------
 
 By default, the editor page lists the setting sections sorted by their displayed
-title. If you want a different sorting, you can add extra data to your setting
+title. **To correctly sort titles containing non-ASCII characters, the _intl_ PHP extension
+must be installed**. 
+
+If you want a different sorting, you can add extra data to your setting
 classes, and specify sorting by extra data in the collection configuration. 
 E.g. using "pos" extra data:
 
