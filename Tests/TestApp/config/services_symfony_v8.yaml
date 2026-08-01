@@ -1,3 +1,4 @@
+when@test: &test_auth_checker
 services:
   security.authorization_checker:
     class: Symfony\Component\Security\Core\Authorization\AuthorizationChecker
@@ -5,3 +6,4 @@ services:
       $tokenStorage: '@security.token_storage'
       $accessDecisionManager: '@security.access_decision_manager'
 
+when@translated: *test_auth_checker

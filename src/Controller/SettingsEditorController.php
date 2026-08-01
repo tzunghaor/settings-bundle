@@ -18,21 +18,11 @@ use Tzunghaor\SettingsBundle\Service\SettingsEditorService;
  */
 class SettingsEditorController
 {
-    private RouterInterface $router;
-
-    private Environment $twig;
-
-    private SettingsEditorService $settingsEditorService;
-
-
     public function __construct(
-        SettingsEditorService $settingsEditorService,
-        RouterInterface $router,
-        Environment $twig
+        private SettingsEditorService $settingsEditorService,
+        private RouterInterface $router,
+        private Environment $twig
     ) {
-        $this->router = $router;
-        $this->twig = $twig;
-        $this->settingsEditorService = $settingsEditorService;
     }
 
     /**
@@ -44,12 +34,12 @@ class SettingsEditorController
     {
         $formEditorHelper = $this->settingsEditorService->handleRequest($request);
         if ($formEditorHelper->isSuccessfulSubmit()) {
-            if ($request->hasSession() && method_exists($request->getSession(), 'getFlashBag')) {
-                $request->getSession()->getFlashBag()->add('success', 'Settings saved');
-            }
-
             // For AJAX requests POST-redirect-GET is not useful, we can return the form without redirect
             if (!$request->isXmlHttpRequest()) {
+                if ($request->hasSession() && method_exists($request->getSession(), 'getFlashBag')) {
+                    $request->getSession()->getFlashBag()->add('success', 'Settings saved');
+                }
+
                 return new RedirectResponse($formEditorHelper->getEditorUrl($this->router));
             }
         }

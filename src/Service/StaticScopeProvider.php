@@ -3,6 +3,7 @@
 namespace Tzunghaor\SettingsBundle\Service;
 
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Tzunghaor\SettingsBundle\DependencyInjection\Configuration;
 use Tzunghaor\SettingsBundle\Model\Item;
 
@@ -12,39 +13,54 @@ use Tzunghaor\SettingsBundle\Model\Item;
 class StaticScopeProvider implements ScopeProviderInterface
 {
     /**
+     * we save data from config files and build other structures only on-demand, when the optionally
+     * injected $translator is likely to have default locale already set
+     */
+    private array $configScopeHierarchy;
+
+    private string $defaultScopeName;
+
+    /**
      * @var Item[]
      */
-    private array $scopeHierarchy;
+    private ?array $scopeHierarchy = null;
 
     /**
      * @var Item[] [$scopeName => Scope, ...]
      */
-    private array $scopeLookup;
+    private ?array $scopeLookup = null;
 
     /**
      * @var string[][] [$scopeName => [$topAncestor, ...], ...]
      */
-    private array $scopePathLookup;
+    private ?array $scopePathLookup = null;
 
-    private Item $defaultScope;
+    private ?Item $defaultScope = null;
+
+    private ?TranslatorInterface $translator = null;
 
     /**
-     * @param Item[] $scopeHierarchy
-     * @param string $defaultScopeName
+     * false means no translation - in that case $this->translator should not be set
+     * null means use default domain
+     */
+    private string|null|false $translationDomain = false;
+
+    /**
+     * @param array $scopeHierarchy array of scopes coming from bundle configuration
      */
     public function __construct(array $scopeHierarchy, string $defaultScopeName)
     {
-        // create scope lookup from config and pass it to the settings service
-        $scopeLookup = [];
-        $scopePathLookup = [];
-        $this->scopeHierarchy = $this->addToScopeLookup($scopeLookup, $scopePathLookup, $scopeHierarchy, []);
-        if (!array_key_exists($defaultScopeName, $scopeLookup)) {
-            throw new \LogicException(sprintf('Default scope "%s" is not found in available scopes', $defaultScopeName));
-        }
+        $this->configScopeHierarchy = $scopeHierarchy;
+        $this->defaultScopeName = $defaultScopeName;
+    }
 
-        $this->scopeLookup = $scopeLookup;
-        $this->defaultScope = $scopeLookup[$defaultScopeName];
-        $this->scopePathLookup = $scopePathLookup;
+    /**
+     * If translation is configured for a setting collection, then Dependency Injection will inject these parameters
+     */
+    public function setUpTranslation(TranslatorInterface $translator, string|null $domain): void
+    {
+        $this->translator = $translator;
+        $this->translationDomain = $domain;
     }
 
     /**
@@ -52,6 +68,8 @@ class StaticScopeProvider implements ScopeProviderInterface
      */
     public function getScope($subject = null): Item
     {
+        $this->ensureDataStructuresAreReady();
+
         if ($subject === null) {
             return $this->defaultScope;
         }
@@ -61,6 +79,7 @@ class StaticScopeProvider implements ScopeProviderInterface
         }
 
         return $this->scopeLookup[$subject];
+
     }
 
     /**
@@ -68,6 +87,8 @@ class StaticScopeProvider implements ScopeProviderInterface
      */
     public function getScopePath($subject = null): array
     {
+        $this->ensureDataStructuresAreReady();
+
         return $this->scopePathLookup[$subject ?? $this->defaultScope->getName()];
     }
 
@@ -76,12 +97,46 @@ class StaticScopeProvider implements ScopeProviderInterface
      */
     public function getScopeDisplayHierarchy(?string $searchString = null): array
     {
+        $this->ensureDataStructuresAreReady();
+
         if (empty($searchString)) {
             return $this->scopeHierarchy;
         }
 
         return $this->buildDisplayHierarchy($searchString, $this->scopeHierarchy);
     }
+
+    /**
+     * If data structures are not yet build, then it builds them from the saved config data
+     */
+    private function ensureDataStructuresAreReady(): void
+    {
+        if ($this->scopeHierarchy !== null) {
+            return;
+        }
+
+        // create scope lookup from config and pass it to the settings service
+        $scopeLookup = [];
+        $scopePathLookup = [];
+        $this->scopeHierarchy = $this->addToScopeLookup(
+            $scopeLookup,
+            $scopePathLookup,
+            $this->configScopeHierarchy,
+            []
+        );
+
+        if (!array_key_exists($this->defaultScopeName, $scopeLookup)) {
+            throw new \LogicException(sprintf(
+                'Default scope "%s" is not found in available scopes',
+                $this->defaultScopeName
+            ));
+        }
+
+        $this->scopeLookup = $scopeLookup;
+        $this->defaultScope = $scopeLookup[$this->defaultScopeName];
+        $this->scopePathLookup = $scopePathLookup;
+    }
+
 
     /**
      * Builds scope hierarchy subset that matches $searchString
@@ -97,7 +152,7 @@ class StaticScopeProvider implements ScopeProviderInterface
 
         foreach ($scopes as $scope) {
             $matchingChildren = $this->buildDisplayHierarchy($searchString, $scope->getChildren());
-            $isMatching = strpos($scope->getName(), $searchString) !== false;
+            $isMatching = mb_stripos($scope->getTitle(), $searchString) !== false;
 
             // if neither this scope name, nor any of the children names match, then skip this scope
             if (empty($matchingChildren) && !$isMatching) {
@@ -122,7 +177,7 @@ class StaticScopeProvider implements ScopeProviderInterface
      *
      * @return Item[] $scopeDefinitions tree turned into Scope object tree
      */
-    private function addToScopeLookup(array& $lookup, array& $pathLookup, array $scopeDefinitions, $scopePath): array
+    private function addToScopeLookup(array& $lookup, array& $pathLookup, array $scopeDefinitions, array $scopePath): array
     {
         // Symfony configuration doesn't fully support recursive structures,
         // so we have to take care of defaults ourselves
@@ -132,10 +187,13 @@ class StaticScopeProvider implements ScopeProviderInterface
             $scopeName = $scopeDefinition[Configuration::NAME];
             $childrenDef = $scopeDefinition[Configuration::CHILDREN] ?? null;
             $title = $scopeDefinition[Configuration::TITLE] ?? null;
+            if ($this->translator) {
+                $title = $this->translator->trans($title ?? $scopeName, domain: $this->translationDomain);
+            }
 
             if ($childrenDef !== null) {
                 $childrenPath = $scopePath;
-                array_push($childrenPath, $scopeName);
+                $childrenPath[] = $scopeName;
 
                 $children = $this->addToScopeLookup($lookup, $pathLookup, $childrenDef, $childrenPath);
             } else {

@@ -24,7 +24,7 @@ class Setting
     public ?string $help = null;
 
     /**
-     * By default symfony/property-info is used to extract the setting's data type, which can determine
+     * By default, symfony/property-info is used to extract the setting's data type, which can determine
      * * from default value
      * * from getter methods return type declaration
      * * from "@var" annotation if phpdocumentor/reflection-docblock is installed

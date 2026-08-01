@@ -10,25 +10,19 @@ namespace Tzunghaor\SettingsBundle\Attribute;
 class SettingSection
 {
     /**
-     * Label in editor form
-     * If phpdocumentor/reflection-docblock is installed, then the first line of the docblock can be used instead.
+     * @param string|null $label Label in editor form
+     *                           If phpdocumentor/reflection-docblock is installed, then the first line of the docblock
+     *                           can be used instead.
+     * @param string|null $help  Help text in editor form
+     *                           If phpdocumentor/reflection-docblock is installed, then the not-first line of the
+     *                           docblock can be used instead.
+     * @param array $extra       Extra data that you can use in your templates / extensions.
      */
-    public ?string $label = null;
+    public function __construct(
+        public ?string $label = null,
+        public ?string $help = null,
+        public array $extra = [],
+    ) {
 
-    /**
-     * Help text in editor form
-     * If phpdocumentor/reflection-docblock is installed, then the not-first line of the docblock can be used instead.
-     */
-    public ?string $help = null;
-
-    /**
-     * Extra data that you can use in your templates / extensions.
-     */
-    public ?array $extra = null;
-
-    public function __construct(?string $label = null, ?string $help = null, array $extra = []) {
-        $this->label = $label;
-        $this->help = $help;
-        $this->extra = $extra;
     }
 }

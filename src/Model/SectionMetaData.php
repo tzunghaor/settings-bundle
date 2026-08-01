@@ -8,21 +8,6 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class SectionMetaData
 {
-    private string $name;
-
-    private string $dataClass;
-
-    private string $description;
-
-    /**
-     * @var SettingMetaData[]
-     */
-    private array $settingMetaDataArray;
-
-    private string $title;
-
-    private array $extra;
-
     /**
      * @param string $name used as identifier in DB and url
      * @param string $title section title used in settings editor
@@ -32,19 +17,13 @@ class SectionMetaData
      * @param array $extra Extra data that you can use in your templates / extensions
      */
     public function __construct(
-        string $name,
-        string $title,
-        string $dataClass,
-        string $description,
-        array $settingMetaDataArray,
-        array $extra = []
+        private string $name,
+        private string $title,
+        private string $dataClass,
+        private string $description,
+        private array $settingMetaDataArray,
+        private array $extra = []
     ) {
-        $this->name = $name;
-        $this->dataClass = $dataClass;
-        $this->description = $description;
-        $this->settingMetaDataArray = $settingMetaDataArray;
-        $this->title = $title;
-        $this->extra = $extra;
     }
 
 

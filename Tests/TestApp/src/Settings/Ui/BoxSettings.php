@@ -6,10 +6,9 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use TestApp\Form\MessageType;
 use TestApp\Model\Message;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
+use Tzunghaor\SettingsBundle\Attribute\SettingSection;
 
-/**
- * UI Box Settings
- */
+#[SettingSection('UI Box Settings', extra: ['pos' => 20])]
 class BoxSettings
 {
     /**
