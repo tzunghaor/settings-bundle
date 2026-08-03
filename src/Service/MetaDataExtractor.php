@@ -5,6 +5,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 
 
 use ReflectionProperty;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -28,12 +29,9 @@ use Tzunghaor\SettingsBundle\Model\Type;
  */
 class MetaDataExtractor
 {
-    private PropertyInfoExtractorInterface $propertyInfo;
-
     public function __construct(
-        PropertyInfoExtractorInterface $propertyInfo
+        private PropertyInfoExtractorInterface $propertyInfo
     ) {
-        $this->propertyInfo = $propertyInfo;
     }
 
     /**
@@ -143,7 +141,7 @@ class MetaDataExtractor
                 $dataType = $ancestorMetaData ? $ancestorMetaData->getDataType() : $defaultDataType;
             }
 
-            // by default enum allows multi select
+            // Enum allows multi select if it is saved as an array
             if ($isEnum && $dataType->isCollection()) {
                 $formOptions['multiple'] = $formOptions['multiple'] ?? true;
             }
@@ -160,6 +158,16 @@ class MetaDataExtractor
 
             if ($formType === CollectionType::class) {
                 $formOptions = $this->getCollectionFormOptions($dataType, $formEntryType, $formOptions);
+            }
+
+            if ($formType === CheckboxType::class) {
+                $formOptions['false_values'] = $formOptions['false_values'] ?? [null, false, 0, '0', ''];
+            }
+
+            // Symfony normalizes '' to null by default.
+            // If we know that the setting accepts only string, then explicitly set empty string instead.
+            if ($formType === TextType::class && $dataType->getTypeIdentifier() === 'string' && !$dataType->isCollection()) {
+                $formOptions['empty_data'] = $formOptions['empty_data'] ?? '';
             }
 
             if ($ancestorMetaData) {

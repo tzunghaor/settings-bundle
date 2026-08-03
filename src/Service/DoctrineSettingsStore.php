@@ -9,17 +9,14 @@ use Tzunghaor\SettingsBundle\Model\PersistedSettingInterface;
  */
 class DoctrineSettingsStore implements SettingsStoreInterface
 {
-    private EntityManagerInterface $em;
-
     /**
-     * @var string class name, must be an entity implementing PersistedSettingInterface
+     * @param EntityManagerInterface $em
+     * @param string $entityClass class name, must be an entity implementing PersistedSettingInterface
      */
-    private string $entityClass;
-
-    public function __construct(EntityManagerInterface $em, string $entityClass)
-    {
-        $this->em = $em;
-        $this->entityClass = $entityClass;
+    public function __construct(
+        private EntityManagerInterface $em,
+        private string $entityClass
+    ) {
     }
 
 

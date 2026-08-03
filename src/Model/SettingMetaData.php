@@ -9,32 +9,14 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class SettingMetaData
 {
-    private string $name;
-
-    private Type $dataType;
-
-    private string $formType;
-
-    private array $formOptions;
-
-    private string $label;
-
-    private string $help;
-
     public function __construct(
-        string $name,
-        Type $dataType,
-        string $formType,
-        array $formOptions,
-        string $label,
-        string $help
+        private string $name,
+        private Type $dataType,
+        private string $formType,
+        private array $formOptions,
+        private string $label,
+        private string $help
     ) {
-        $this->name = $name;
-        $this->dataType = $dataType;
-        $this->formType = $formType;
-        $this->formOptions = $formOptions;
-        $this->label = $label;
-        $this->help = $help;
     }
 
     public function getName(): string

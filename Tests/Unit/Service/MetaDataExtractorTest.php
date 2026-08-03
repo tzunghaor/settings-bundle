@@ -41,7 +41,7 @@ class MetaDataExtractorTest extends TestCase
                         'foo',
                         new Type('string'),
                         TextType::class,
-                        [],
+                        ['empty_data' => ''],
                         'foo',
                         ''
                     ),
