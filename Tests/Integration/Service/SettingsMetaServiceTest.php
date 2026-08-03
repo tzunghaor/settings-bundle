@@ -33,11 +33,11 @@ class SettingsMetaServiceTest extends KernelTestCase
         $baseMetaDataArray = [
             'name' => new SettingMetaData(
                 'name', $stringType, TextType::class,
-                [], 'assets name label', ''
+                ['empty_data' => ''], 'assets name label', ''
             ),
             'address' => new SettingMetaData(
                 'address', $stringType, TextType::class,
-                [], 'private address label', ''
+                ['empty_data' => ''], 'private address label', ''
             ),
             'minimum' => new SettingMetaData(
                 'minimum', $intType, IntegerType::class,
@@ -60,11 +60,11 @@ class SettingsMetaServiceTest extends KernelTestCase
             ),
             'foo' => new SettingMetaData(
                 'foo', $stringType, TextType::class,
-                [], 'foo', ''
+                ['empty_data' => ''], 'foo', ''
             ),
             'bar' => new SettingMetaData(
                 'bar', $stringType, TextType::class,
-                [], 'bar', ''
+                ['empty_data' => ''], 'bar', ''
             ),
         ]);
 
@@ -85,7 +85,7 @@ class SettingsMetaServiceTest extends KernelTestCase
             array_merge($baseMetaDataArray, [
                 'reason' => new SettingMetaData(
                     'reason', $stringType, TextType::class,
-                    [], 'reason', ''
+                    ['empty_data' => ''], 'reason', ''
                 ),
             ]),
             ['foo' => 'bar']

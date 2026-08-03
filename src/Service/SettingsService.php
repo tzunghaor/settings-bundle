@@ -22,26 +22,17 @@ use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
  */
 class SettingsService
 {
-    private SettingsMetaService $settingsMetaService;
-
-    private CacheInterface $cache;
-
-    private SettingsStoreInterface $store;
-
     /**
      * @var SettingConverterInterface[]
      */
     private array $dataConverters;
 
     public function __construct(
-        SettingsMetaService $settingsMetaService,
-        SettingsStoreInterface $store,
+        private SettingsMetaService $settingsMetaService,
+        private SettingsStoreInterface $store,
         iterable $dataConverters,
-        CacheInterface $cache
+        private CacheInterface $cache
     ) {
-        $this->settingsMetaService = $settingsMetaService;
-        $this->store = $store;
-        $this->cache = $cache;
         $this->dataConverters = iterator_to_array($dataConverters);
     }
 

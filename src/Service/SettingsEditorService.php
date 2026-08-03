@@ -30,7 +30,7 @@ class SettingsEditorService
      * @var object|null
      * Optional Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface
      */
-    private $authorizationChecker;
+    private ?object $authorizationChecker = null;
 
     public function __construct(
         private ServiceLocator $settingsServiceLocator,
@@ -45,10 +45,8 @@ class SettingsEditorService
     /**
      * Instance of AuthorizationCheckerInterface can be passed.
      * Not using that interface as type-hint to avoid hard dependency on symfony/security-core.
-     *
-     * @param object $authorizationChecker
      */
-    public function setAuthorizationChecker($authorizationChecker): void
+    public function setAuthorizationChecker(object $authorizationChecker): void
     {
         if (!method_exists($authorizationChecker, 'isGranted')) {
             throw new \InvalidArgumentException('$authorizationChecker must have isGranted() method');
@@ -146,8 +144,10 @@ class SettingsEditorService
         // Make the request handled as PATCH, so that non-submitted values are not cleared,
         // but remain the current inherited values.
         // The form defines PATCH, but it doesn't work without `http_method_override` set to true in the config,
-        // and that is false by default, and I don't want to make people enable it only for this form.
-        $request->setMethod(Request::METHOD_PATCH);
+        // which is false by default, and I don't want to make people enable it only for this form.
+        if ($request->getMethod() === Request::METHOD_POST) {
+            $request->setMethod(Request::METHOD_PATCH);
+        }
 
         $route = $request->attributes->get('_route');
         $fixedParameters = $request->attributes->get('fixedParameters', []);

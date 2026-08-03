@@ -527,9 +527,8 @@ class SettingsEditorControllerTest extends WebTestCase
         foreach ($edits as $edit) {
             $crawler = $browser->request('get', $edit['uri']);
             $form = $crawler->selectButton('Save')->form();
-            $form->setValues($edit['formEdits']);
 
-            $browser->submit($form);
+            $browser->submit($form, $edit['formEdits']);
         }
     }
 

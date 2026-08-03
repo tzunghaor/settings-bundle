@@ -77,7 +77,7 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
             $generatedValueOptions = [
                 'label' => $settingMeta->getLabel(),
                 'help' => !empty($description) ? $description : null,
-                // make sure that property accessor handles it as class attribute and not as array index
+                // ensure that property accessor handles it as class attribute and not as array index
                 'property_path' => $settingName,
                 'row_attr' => ['class' => 'tzunghaor_setting_labeled_widget'],
             ];
@@ -107,8 +107,8 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
 
     public function onPreSubmit(FormEvent $event): void
     {
-        // empty form inputs (e.g. not checked checkbox) are not submitted, so we need to set them to empty here
-        // explicitly - otherwise their old value would be kept instead
+        // empty form inputs (e.g. not checked checkbox) are not submitted, especially since we are using PATCH,
+        // so we need to set them to empty here programmatically - otherwise their old value would be kept
         // todo: this doesn't happen in a single level form, so there could be a better solution for this
         $data = $event->getData();
         /** @var SectionMetaData $metaData */
@@ -133,12 +133,16 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
 
             // set empty input data based on setting type
             $settingType = $metaDataArray[$settingName]->getDataType();
-            if ($settingType->isCollection()) {
-                $emptyValue = [];
-            } else {
+            if ($settingType->isNullable()) {
                 $emptyValue = null;
+            } elseif ($settingType->isCollection()) {
+                $emptyValue = [];
+            } elseif ($settingType->getTypeIdentifier() === 'bool') {
+                $emptyValue = false;
+            } elseif ($settingType->getTypeIdentifier() === 'string') {
+                $emptyValue = '';
             }
-            $data[self::DATA_SETTINGS][$settingName] = $emptyValue;
+            $data[self::DATA_SETTINGS][$settingName] = $emptyValue ?? null;
         }
 
         $event->setData($data);
