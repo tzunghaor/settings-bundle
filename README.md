@@ -162,7 +162,7 @@ sensible default values for every class property as seen above.
 
 [More about setting classes](docs/define_section.md)
 
-Then tell specify in the bundle config where your setting classes are:
+Then specify in the bundle config where your setting classes are:
 
 ```yaml
 # config/packages/tzunghaor_settings.yaml
