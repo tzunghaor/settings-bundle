@@ -14,7 +14,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 /**
  * bool as a radio button - unlike a checkbox, this ensures that a value is submitted when 'no' is selected
  *
- * Symfony currently has a bug in handling expanded ChoiceType with PATCH form method, therefore we have a
+ * Some version of Symfony has a bug in handling expanded ChoiceType with PATCH form method, therefore we have a
  * custom data mapper.
  */
 class BoolType extends AbstractType implements DataMapperInterface

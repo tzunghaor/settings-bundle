@@ -18,6 +18,7 @@ use Tzunghaor\SettingsBundle\Attribute\Setting;
 use Tzunghaor\SettingsBundle\Attribute\SettingSection;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
+use Tzunghaor\SettingsBundle\Form\SettingClassType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\Type;
@@ -45,7 +46,26 @@ class MetaDataExtractor
         [$sectionTitle, $sectionDescription, $sectionExtra] = $this->extractSectionInfo($reflectionClass);
         $sectionTitle = empty($sectionTitle) ? $sectionName : $sectionTitle;
 
-        // collect properties, including ancestor classes private properties
+        $settingsMetaArray = $this->extractSettingMetaArray($sectionClass);
+
+        return new SectionMetaData(
+            $sectionName, $sectionTitle, $sectionClass, $sectionDescription, $settingsMetaArray, $sectionExtra
+        );
+    }
+
+
+    /**
+     * Collect metadata for class properties, including ancestor classes
+     *
+     * @return SettingMetaData[]
+     *
+     * @throws SettingsException
+     * @throws \ReflectionException
+     */
+    private function extractSettingMetaArray(string $className): array
+    {
+        $reflectionClass = new \ReflectionClass($className);
+
         // we will start with ancestors and allow subclasses to override properties
         $reflectionProperties = [];
         $currentReflectionClass = $reflectionClass;
@@ -53,17 +73,14 @@ class MetaDataExtractor
             $reflectionProperties = array_merge($currentReflectionClass->getProperties(), $reflectionProperties);
         } while ($currentReflectionClass = $currentReflectionClass->getParentClass());
 
-        $settingsMetaArray = $this->extractPropertyInfos($reflectionProperties);
-
-        return new SectionMetaData(
-            $sectionName, $sectionTitle, $sectionClass, $sectionDescription, $settingsMetaArray, $sectionExtra
-        );
+        return $this->extractPropertyInfos($reflectionProperties);
     }
 
     /**
      * Extracts settings metadata from class properties.
      * If multiple property reflections are passed with the same name, then non-empty extracted data from later ones
-     * will override earlier ones.
+     * will override earlier ones: so if you call this method for a class that extend other(s), then parent properties
+     * must come before child properties in $reflectionProperties array.
      *
      * @param ReflectionProperty[] $reflectionProperties
      * @return SettingMetaData[]
@@ -135,6 +152,8 @@ class MetaDataExtractor
                 (string) $this->propertyInfo->getLongDescription($sectionClass, $propertyName);
 
             // 3. End of extracting info from property: now applying defaults if something is not defined explicitly
+            // We expect parent class properties come in $reflectionProperties before child class properties, so it is
+            // possible that there is already parent class metadata for this property name in $settingsMetaArray:
             $ancestorMetaData = $settingsMetaArray[$propertyName] ?? null;
 
             if ($dataType === null) {
@@ -153,11 +172,19 @@ class MetaDataExtractor
                 $settingHelp = $ancestorMetaData->getHelp();
             }
             if (empty($formType)) {
-                $formType = $ancestorMetaData ? $ancestorMetaData->getFormType() : $this->getFormTypeByDataType($dataType);
+                $formType = $ancestorMetaData?->getFormType() ?? $this->getFormTypeByDataType($dataType);
             }
 
             if ($formType === CollectionType::class) {
                 $formOptions = $this->getCollectionFormOptions($dataType, $formEntryType, $formOptions);
+            }
+
+            // recursively collect metadata for SettingClassType if not explicitly declared
+            if ($formType === SettingClassType::class) {
+                $formOptions[SettingClassType::OPTION_META_ARRAY] =
+                    $formOptions[SettingClassType::OPTION_META_ARRAY] ??
+                    $this->extractSettingMetaArray($dataType->getClassName())
+                ;
             }
 
             if ($formType === CheckboxType::class) {
@@ -204,24 +231,16 @@ class MetaDataExtractor
      */
     private function getBaseFormTypeByDataType(Type $dataType): string
     {
-        switch ($dataType->getClassName()) {
-            case \DateTime::class:
-                return DateTimeType::class;
-        }
-
-        switch ($dataType->getTypeIdentifier()) {
-            case 'bool':
-                return BoolType::class;
-
-            case 'int':
-                return IntegerType::class;
-
-            case 'float':
-                return NumberType::class;
-
-            default:
-                return TextType::class;
-        }
+        return match ($dataType->getTypeIdentifier()) {
+            'object' => match ($dataType->getClassName()) {
+                \DateTime::class => DateTimeType::class,
+                default => SettingClassType::class,
+            },
+            'bool' => BoolType::class,
+            'int' => IntegerType::class,
+            'float' => NumberType::class,
+            default => TextType::class,
+        };
     }
 
     /**
@@ -243,6 +262,12 @@ class MetaDataExtractor
             'entry_type' => $formEntryType,
             'entry_options' => ['label' => false, 'row_attr' => ['class' => 'tzunghaor_settings_collection_row']],
         ];
+
+        if ($formEntryType === SettingClassType::class && !isset($formOptions[SettingClassType::OPTION_META_ARRAY])) {
+            $collectionFormOptions['entry_options'][SettingClassType::OPTION_META_ARRAY] =
+                $this->extractSettingMetaArray($dataType->getClassName())
+            ;
+        }
 
         return array_merge($collectionFormOptions, $formOptions);
     }

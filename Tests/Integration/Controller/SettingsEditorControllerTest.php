@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Contracts\Cache\CacheInterface;
 use TestApp\Entity\User;
 use TestApp\Model\Message;
+use TestApp\Settings\Ui\FooSettings;
 use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 use TestApp\Entity\OtherPersistedSetting;
@@ -133,6 +134,52 @@ class SettingsEditorControllerTest extends WebTestCase
                     'night' => $expectedComplexRootBoxSettings,
                     // root has custom value for padding and border
                     'root' => $expectedComplexRootBoxSettings,
+                ]
+            ],
+        ];
+
+        $defaultFooSettings = new FooSettings();
+        $expectedFooDaySettings = new FooSettings(
+            39,
+            new Message('info', 'Day'),
+            [new Message('error', 'Ugh')],
+        );
+
+        // test nested objects are edited correctly
+        $cases['nested_object'] = [
+            // prepare a message for edit because dom-crawler cannot use the javascript based "Add message" functionality
+            'preparations' => [[
+                'address' => ['scope' => 'day', 'class' => FooSettings::class],
+                'settings' => ['messages' => [['type' => '', 'text' => '', 'important' => true, 'tags' => ['one', 'two']]],]
+            ]],
+            'edits' => [
+                [
+                    'uri' => '/settings/edit/default/day/Ui.FooSettings',
+                    'formEdits' => [
+                        'settings_editor' => [
+                            'settings' => [
+                                'number' => 39,
+                                'mandatoryMessage' => ['type' => 'info', 'text' => 'Day'],
+                                'messages' => [['type' => 'error', 'text' => 'Ugh']],
+                            ],
+                            'in_scope' => ['number' => 1, 'mandatoryMessage' => 1, 'messages' => 1],
+                        ],
+                        'settings_editor[settings][messages][0][important]' => false,
+                        'settings_editor[settings][messages][0][tags]' => [],
+                    ],
+                ],
+            ],
+            'expectedSettings' => [
+                FooSettings::class => [
+                    // root scope is not changed: expected class default values
+                    'root' => $defaultFooSettings,
+                    // night not changed
+                    'night' => $defaultFooSettings,
+                    // day scope is changed: expected saved values
+                    'day' => $expectedFooDaySettings,
+                    // morning and afternoon are not changed: expected inherited values from day
+                    'morning' => $expectedFooDaySettings,
+                    'afternoon' => $expectedFooDaySettings,
                 ]
             ],
         ];

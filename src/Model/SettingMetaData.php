@@ -15,7 +15,7 @@ class SettingMetaData
         private string $formType,
         private array $formOptions,
         private string $label,
-        private string $help
+        private string $help,
     ) {
     }
 

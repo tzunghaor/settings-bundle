@@ -13,8 +13,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\PropertyAccess\PropertyAccess;
-use Tzunghaor\SettingsBundle\Helper\ObjectHydrator;
+use Tzunghaor\SettingsBundle\Helper\SettingTypeTrait;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 
 /**
@@ -22,6 +21,8 @@ use Tzunghaor\SettingsBundle\Model\SectionMetaData;
  */
 class SettingsEditorType extends AbstractType implements DataMapperInterface
 {
+    use SettingTypeTrait;
+
     /**
      * I want to support form validation with validation constraint attributes in the setting section class,
      * but I don't want to have the validation component as a hard dependency. Therefore, the data of this form type is
@@ -73,15 +74,7 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
         foreach ($metaData->getSettingMetaDataArray() as $settingMeta) {
             $settingName = $settingMeta->getName();
 
-            $description = $settingMeta->getHelp();
-            $generatedValueOptions = [
-                'label' => $settingMeta->getLabel(),
-                'help' => !empty($description) ? $description : null,
-                // ensure that property accessor handles it as class attribute and not as array index
-                'property_path' => $settingName,
-                'row_attr' => ['class' => 'tzunghaor_setting_labeled_widget'],
-            ];
-            $currentValueOptions = $parentValueOptions = array_merge($generatedValueOptions, $settingMeta->getFormOptions());
+            $currentValueOptions = $parentValueOptions = $this->makeFormOptions($settingMeta);
             $currentValueOptions['row_attr']['class'] .= ' tzunghaor_current_scope';
             $parentValueOptions['row_attr']['class'] .= ' tzunghaor_parent_scope';
 
@@ -133,16 +126,7 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
 
             // set empty input data based on setting type
             $settingType = $metaDataArray[$settingName]->getDataType();
-            if ($settingType->isNullable()) {
-                $emptyValue = null;
-            } elseif ($settingType->isCollection()) {
-                $emptyValue = [];
-            } elseif ($settingType->getTypeIdentifier() === 'bool') {
-                $emptyValue = false;
-            } elseif ($settingType->getTypeIdentifier() === 'string') {
-                $emptyValue = '';
-            }
-            $data[self::DATA_SETTINGS][$settingName] = $emptyValue ?? null;
+            $data[self::DATA_SETTINGS][$settingName] = $this->getEmptyData($settingType);
         }
 
         $event->setData($data);
@@ -158,34 +142,5 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
         $resolver->setAllowedTypes(self::OPTION_EDITOR_TRANSLATION_DOMAIN, ['string', 'null', 'bool']);
         // use PATCH so that non-submitted values are not cleared, but remain the current inherited values
         $resolver->setDefault('method', Request::METHOD_PATCH);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function mapDataToForms(mixed $viewData, \Traversable $forms): void
-    {
-        /** @var FormInterface[] $formsArray */
-        $formsArray = iterator_to_array($forms);
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-
-        foreach ($formsArray as $settingName => $childForm) {
-            $childForm->setData($propertyAccessor->getValue($viewData, $settingName));
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function mapFormsToData(\Traversable $forms, mixed &$viewData): void
-    {
-        $values = [];
-
-        /** @var \Traversable<FormInterface> $forms */
-        foreach ($forms as $settingName => $form) {
-            $values[$settingName] = $form->getData();
-        }
-
-        $viewData = ObjectHydrator::hydrate(get_class($viewData), $values);
     }
 }
