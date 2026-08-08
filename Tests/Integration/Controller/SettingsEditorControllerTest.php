@@ -556,7 +556,8 @@ class SettingsEditorControllerTest extends WebTestCase
         // add a message so that a MessageType entry is visible
         $settingsService->save(BoxSettings::class, 'root', ['messages' => [new Message('a', 'b')]]);
 
-        $crawler = $browser->request('get', '/settings/edit/' . $collection . '/root/Ui.BoxSettings');
+        // there is no explicit section in url, so first (Ui.BoxSettings) should be automatically selected
+        $crawler = $browser->request('get', '/settings/edit/' . $collection . '/root');
         foreach($expectations as $xpath => $texts) {
             $actualTexts = [];
             foreach ($crawler->filterXPath($xpath) as $element) {
