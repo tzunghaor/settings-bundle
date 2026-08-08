@@ -11,6 +11,7 @@ use Tzunghaor\SettingsBundle\Service\SettingsEditorService;
 
 /**
  * Helper class that makes it easier to write custom controller action for settings editor
+ * @see SettingsEditorService::handleRequest() returns an instance of this
  */
 class FormEditorHelper
 {

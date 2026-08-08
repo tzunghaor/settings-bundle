@@ -500,7 +500,7 @@ class SettingsEditorControllerTest extends WebTestCase
                     '//div[contains(@class, "tzunghaor_settings_scopes_list")]//li/a' => ['Root of All', 'Beautiful Day', 'night'],
                     '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' => ['UI Box Settings', 'UI Font Settings'],
                     '//div[contains(@class, "tzunghaor_setting_override")]//label' => ['set', 'inherit'],
-                    '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' => ['padding', 'margin', 'Type', 'Text']
+                    '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' => ['padding', 'margin', 'type', 'text']
                 ]
             ],
         ];
@@ -523,7 +523,7 @@ class SettingsEditorControllerTest extends WebTestCase
                         '//div[contains(@class, "tzunghaor_setting_override")]//label' =>
                             ['domain/en_GB/set', 'domain/en_GB/inherit'],
                         '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' =>
-                            ['tzunghaor/en_GB/padding', 'tzunghaor/en_GB/margin', 'tzunghaor/en_GB/Type', 'tzunghaor/en_GB/Text'],
+                            ['tzunghaor/en_GB/padding', 'tzunghaor/en_GB/margin', 'tzunghaor/en_GB/type', 'tzunghaor/en_GB/text'],
                     ]
                 ],
                 'extra sort' => [

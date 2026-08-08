@@ -5,7 +5,6 @@ namespace Tzunghaor\SettingsBundle\Helper;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\Type;
 
 /**
@@ -13,20 +12,6 @@ use Tzunghaor\SettingsBundle\Model\Type;
  */
 trait SettingTypeTrait
 {
-    protected function makeFormOptions(SettingMetaData $settingMeta): array {
-        $settingName = $settingMeta->getName();
-
-        $description = $settingMeta->getHelp();
-        $generatedValueOptions = [
-            'label' => $settingMeta->getLabel(),
-            'help' => !empty($description) ? $description : null,
-            // ensure that property accessor handles it as class attribute and not as array index
-            'property_path' => $settingName,
-            'row_attr' => ['class' => 'tzunghaor_setting_labeled_widget'],
-        ];
-        return array_merge($generatedValueOptions, $settingMeta->getFormOptions());
-    }
-
     protected function getEmptyData(Type $settingType): mixed
     {
         if ($settingType->isNullable()) {

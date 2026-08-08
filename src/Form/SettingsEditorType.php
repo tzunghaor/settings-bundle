@@ -69,30 +69,23 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
         $parentSettingsForm->setDataMapper($this);
 
         $builder->add(self::DATA_IN_SCOPE, FormType::class, ['label' => false]);
-        $overrideForm = $builder->get(self::DATA_IN_SCOPE);
+        $inScopeForm = $builder->get(self::DATA_IN_SCOPE);
 
         foreach ($metaData->getSettingMetaDataArray() as $settingMeta) {
             $settingName = $settingMeta->getName();
 
-            $currentValueOptions = $parentValueOptions = $this->makeFormOptions($settingMeta);
-            $currentValueOptions['row_attr']['class'] .= ' tzunghaor_current_scope';
-            $parentValueOptions['row_attr']['class'] .= ' tzunghaor_parent_scope';
-
-            $settingsForm->add($settingName, $settingMeta->getFormType(), $currentValueOptions);
-            $parentSettingsForm->add($settingName, $settingMeta->getFormType(), $parentValueOptions);
+            $settingsForm->add($settingName, $settingMeta->getFormType(), $settingMeta->getFormOptions());
+            $parentSettingsForm->add($settingName, $settingMeta->getFormType(), $settingMeta->getFormOptions());
 
             $overrideOptions = [
                 'required' => true,
                 'label' => false,
                 'expanded' => true,
                 'choices' => ['set' => true, 'inherit' => false],
-                'row_attr' => [
-                    'class' => 'tzunghaor_setting_override',
-                ],
                 'translation_domain' => $options[self::OPTION_EDITOR_TRANSLATION_DOMAIN],
             ];
 
-            $overrideForm->add($settingName, BoolType::class, $overrideOptions);
+            $inScopeForm->add($settingName, BoolType::class, $overrideOptions);
         }
 
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);

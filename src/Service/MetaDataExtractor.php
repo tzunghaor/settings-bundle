@@ -154,6 +154,7 @@ class MetaDataExtractor
             // 3. End of extracting info from property: now applying defaults if something is not defined explicitly
             // We expect parent class properties come in $reflectionProperties before child class properties, so it is
             // possible that there is already parent class metadata for this property name in $settingsMetaArray:
+            /** @var ?SettingMetaData $ancestorMetaData */
             $ancestorMetaData = $settingsMetaArray[$propertyName] ?? null;
 
             if ($dataType === null) {
@@ -166,11 +167,18 @@ class MetaDataExtractor
             }
 
             if (empty($settingLabel)) {
-                $settingLabel = $ancestorMetaData ? $ancestorMetaData->getLabel() : $propertyName;
+                $settingLabel = $ancestorMetaData?->getFormOptions()['label'] ?? $propertyName;
             }
+            $formOptions['label'] = $settingLabel;
+
             if (empty($settingHelp) && $ancestorMetaData) {
-                $settingHelp = $ancestorMetaData->getHelp();
+                $settingHelp = $ancestorMetaData?->getFormOptions()['help'] ?? null;
             }
+            if (!empty($settingHelp)) {
+                $formOptions['help'] = $settingHelp;
+            }
+
+
             if (empty($formType)) {
                 $formType = $ancestorMetaData?->getFormType() ?? $this->getFormTypeByDataType($dataType);
             }
@@ -185,6 +193,7 @@ class MetaDataExtractor
                     $formOptions[SettingClassType::OPTION_META_ARRAY] ??
                     $this->extractSettingMetaArray($dataType->getClassName())
                 ;
+                $formOptions['data_class'] = $dataType->getClassName();
             }
 
             if ($formType === CheckboxType::class) {
@@ -206,8 +215,6 @@ class MetaDataExtractor
                 $dataType,
                 $formType,
                 $formOptions,
-                $settingLabel,
-                $settingHelp
             );
         }
 
@@ -260,13 +267,14 @@ class MetaDataExtractor
             'allow_add' => true,
             'allow_delete' => true,
             'entry_type' => $formEntryType,
-            'entry_options' => ['label' => false, 'row_attr' => ['class' => 'tzunghaor_settings_collection_row']],
+            'entry_options' => ['label' => false],
         ];
 
         if ($formEntryType === SettingClassType::class && !isset($formOptions[SettingClassType::OPTION_META_ARRAY])) {
             $collectionFormOptions['entry_options'][SettingClassType::OPTION_META_ARRAY] =
                 $this->extractSettingMetaArray($dataType->getClassName())
             ;
+            $collectionFormOptions['entry_options']['data_class'] = $dataType->getClassName();
         }
 
         return array_merge($collectionFormOptions, $formOptions);

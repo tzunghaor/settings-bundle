@@ -48,8 +48,11 @@ class SettingsMetaServiceTest extends TestCase
             ->willReturnCallback(function ($key, $callable) { return $callable(new CacheItem()); })
         ;
 
-        $settingMetaData = new SettingMetaData('setting1', new Type('int'), NumberType::class, [],
-            'The Setting', 'Set this');
+        $settingMetaData = new SettingMetaData(
+            'setting1',
+            new Type('int'),
+            NumberType::class, ['label' => 'The Setting', 'help' => 'Set this'],
+            );
         $this->fakeSectionMeta['Class1'] = new SectionMetaData('foo1', 'bar1', 'data', 'desc', [$settingMetaData]);
         $this->fakeSectionMeta['Class2'] = new SectionMetaData('foo2', 'bar2', 'data', 'desc', []);
 

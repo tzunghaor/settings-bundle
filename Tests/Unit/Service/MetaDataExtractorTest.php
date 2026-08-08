@@ -41,9 +41,7 @@ class MetaDataExtractorTest extends TestCase
                         'foo',
                         new Type('string'),
                         TextType::class,
-                        ['empty_data' => ''],
-                        'foo',
-                        ''
+                        ['empty_data' => '', 'label' => 'foo'],
                     ),
                 ],
             ],
@@ -57,9 +55,7 @@ class MetaDataExtractorTest extends TestCase
                         'foo',
                         new Type('int'),
                         IntegerType::class,
-                        [],
-                        'cool number',
-                        'help for the number'
+                        ['label' => 'cool number', 'help' => 'help for the number'],
                     ),
                 ],
             ],
@@ -73,9 +69,7 @@ class MetaDataExtractorTest extends TestCase
                         'foo',
                         new Type('string'),
                         ChoiceType::class,
-                        ['choices' => ['one' => 'one', 'two' => 'two']],
-                        'simple choice',
-                        ''
+                        ['choices' => ['one' => 'one', 'two' => 'two'], 'label' => 'simple choice']
                     ),
                 ],
             ],
@@ -89,9 +83,8 @@ class MetaDataExtractorTest extends TestCase
                         'foo',
                         new Type('string', false, null, true),
                         ChoiceType::class,
-                        ['choices' => ['yay' => 'yay', 'nay' => 'nay'], 'multiple' => true],
-                        'foo',
-                        ''
+                        ['choices' => ['yay' => 'yay', 'nay' => 'nay'], 'multiple' => true,
+                            'label' => 'foo'],
                     ),
                 ],
             ],
@@ -119,9 +112,7 @@ class MetaDataExtractorTest extends TestCase
                         'foo',
                         new Type('object', false, \DateTime::class),
                         DateTimeType::class,
-                        [],
-                        'foo',
-                        ''
+                        ['label' => 'foo'],
                     ),
                 ],
             ],
@@ -135,9 +126,7 @@ class MetaDataExtractorTest extends TestCase
                         'foo',
                         new Type('bool'),
                         BoolType::class,
-                        ['attr' => 'yay'],
-                        'foo',
-                        ''
+                        ['attr' => 'yay', 'label' => 'foo'],
                     ),
                 ],
             ],
@@ -151,9 +140,7 @@ class MetaDataExtractorTest extends TestCase
                         'foo',
                         new Type('float'),
                         NumberType::class,
-                        [],
-                        'foo',
-                        ''
+                        ['label' => 'foo'],
                     ),
                 ],
             ],

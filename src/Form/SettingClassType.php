@@ -30,14 +30,13 @@ class SettingClassType extends AbstractType implements DataMapperInterface
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        /** @var SectionMetaData $metaData */
+        /** @var SettingMetaData[] $metaDataArray */
         $metaDataArray = $options[self::OPTION_META_ARRAY];
 
         foreach ($metaDataArray as $settingMeta) {
             $settingName = $settingMeta->getName();
-            $formOptions = $this->makeFormOptions($settingMeta);
 
-            $builder->add($settingName, $settingMeta->getFormType(), $formOptions);
+            $builder->add($settingName, $settingMeta->getFormType(), $settingMeta->getFormOptions());
         }
 
         $builder->setDataMapper($this);
