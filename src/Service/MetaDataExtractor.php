@@ -5,20 +5,11 @@ namespace Tzunghaor\SettingsBundle\Service;
 
 
 use ReflectionProperty;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
-use Symfony\Component\TypeInfo\Type\UnionType;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 use Tzunghaor\SettingsBundle\Attribute\SettingSection;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
-use Tzunghaor\SettingsBundle\Form\BoolType;
-use Tzunghaor\SettingsBundle\Form\SettingClassType;
+use Tzunghaor\SettingsBundle\Helper\SettingPropertyInfoCompiler;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\Type;
@@ -64,7 +55,7 @@ class MetaDataExtractor
      * @throws SettingsException
      * @throws \ReflectionException
      */
-    private function extractSettingMetaArray(string $className): array
+    public function extractSettingMetaArray(string $className): array
     {
         $reflectionClass = new \ReflectionClass($className);
 
@@ -93,89 +84,43 @@ class MetaDataExtractor
     private function extractPropertyInfos(array $reflectionProperties): array
     {
         $settingsMetaArray = [];
-        $defaultDataType = new Type('string');
 
         foreach ($reflectionProperties as $reflectionProperty) {
             $sectionClass = $reflectionProperty->class;
             $propertyName = $reflectionProperty->getName();
 
-            $settingLabel = null;
-            $settingHelp = null;
-            $dataType = null;
-            $formType = null;
-            $formEntryType = null;
-            $formOptions = [];
-            $isEnum = false;
-
-            // 1. If there is a #[Setting] attribute defined on the property, get the infos from there
-            $propertyAttributes = $reflectionProperty->getAttributes(Setting::class);
-            foreach ($propertyAttributes as $reflectionAttribute) {
-                $attribute = $reflectionAttribute->newInstance();
-                $formType = $attribute->formType;
-                $formEntryType = $attribute->formEntryType;
-                $formOptions = $attribute->formOptions ?? $formOptions;
-                if (is_array($attribute->enum)) {
-                    $formType = $formType ?? ChoiceType::class;
-                    $formOptions['choices'] = $formOptions['choices'] ?? array_combine($attribute->enum, $attribute->enum);
-                    $isEnum = true;
-                }
-                $settingLabel = $attribute->label;
-                $settingHelp = $attribute->help;
-                $dataType = $dataType ?? $this->dataTypeFromString($attribute->dataType);
-            }
-
-            // 2. If there is no #[Setting], or it didn't specify dataType, try to deduce it from class property
-            if ($dataType === null) {
-                $dataType = $this->extractPropertyDataType($sectionClass, $propertyName);
-            }
-
-            // If no label / help is defined in #[Setting] try to get it from properties docblock
-            $settingLabel = $settingLabel ??
-                trim((string) $this->propertyInfo->getShortDescription($sectionClass, $propertyName));
-            $settingHelp = $settingHelp ??
-                (string) $this->propertyInfo->getLongDescription($sectionClass, $propertyName);
-
-            // 3. End of extracting info from property: now applying defaults if something is not defined explicitly
-            // We expect parent class properties come in $reflectionProperties before child class properties, so it is
-            // possible that there is already parent class metadata for this property name in $settingsMetaArray:
+            // This function expects parent class properties come in $reflectionProperties before child class
+            // properties, and we fill $settingsMetaArray in that order, so it is possible that there is already parent
+            // class metadata for this property name in it
             /** @var ?SettingMetaData $ancestorMetaData */
             $ancestorMetaData = $settingsMetaArray[$propertyName] ?? null;
 
-            $dataType = $dataType ?? $ancestorMetaData?->getDataType() ?? $defaultDataType;
-
-            // Enum allows multi select if it is saved as an array
-            if ($isEnum && $dataType->isCollection()) {
-                $formOptions['multiple'] = $formOptions['multiple'] ?? true;
+            $propertyAttributes = $reflectionProperty->getAttributes(Setting::class);
+            $settingAttributes = [];
+            foreach ($propertyAttributes as $reflectionAttribute) {
+                /** @var Setting $attribute */
+                $settingAttributes[] = $reflectionAttribute->newInstance();
             }
 
-            if (empty($settingLabel)) {
-                $settingLabel = $ancestorMetaData?->getFormOptions()['label'] ?? $propertyName;
-            }
-            $formOptions['label'] = $settingLabel;
+            $commentLabel = trim((string) $this->propertyInfo->getShortDescription($sectionClass, $propertyName));
+            $docBlockHelp = trim((string) $this->propertyInfo->getLongDescription($sectionClass, $propertyName));
 
-            if (empty($settingHelp)) {
-                $settingHelp = $ancestorMetaData?->getFormOptions()['help'] ?? null;
-            }
-            if (!empty($settingHelp)) {
-                $formOptions['help'] = $settingHelp;
-            }
-
-            if (empty($formType)) {
-                $formType = $ancestorMetaData?->getFormType() ?? $this->getFormTypeByDataType($dataType);
-            }
-
-            $formOptions = $this->enrichFormOptions($formType, $dataType, $formEntryType, $formOptions);
-
-            // if this property is defined in ancestor class too, then inherit form options that are not set in this class
-            if ($ancestorMetaData) {
-                $formOptions = array_merge($ancestorMetaData->getFormOptions(), $formOptions);
-            }
+            $compiler = new SettingPropertyInfoCompiler(
+                $sectionClass,
+                $propertyName,
+                !empty($commentLabel) ? $commentLabel : null,
+                !empty($docBlockHelp) ? $docBlockHelp : null,
+                $this->extractPropertyDataType($sectionClass, $propertyName),
+                $settingAttributes,
+                $ancestorMetaData,
+                [$this, 'extractSettingMetaArray'],
+            );
 
             $settingsMetaArray[$propertyName] = new SettingMetaData(
                 $propertyName,
-                $dataType,
-                $formType,
-                $formOptions,
+                $compiler->getDataType(),
+                $compiler->getFormType(),
+                $compiler->getFormOptions(),
             );
         }
 
@@ -190,118 +135,13 @@ class MetaDataExtractor
         // backwards compatibility with older property-info method
         if (method_exists($this->propertyInfo, 'getTypes')) {
             $origDataTypes = $this->propertyInfo->getTypes($sectionClass, $propertyName);
-
-            if ($origDataTypes === null) {
-                $origDataType = null;
-            } elseif (count($origDataTypes) === 1) {
-                $origDataType = $origDataTypes[0];
-            } else {
-                throw new SettingsException(sprintf('Multiple types are not supported for setting %s in %s',
-                    $propertyName, $sectionClass));
-            }
+            $dataType = is_array($origDataTypes) ? Type::createFromPropertyInfoArray($origDataTypes) : null;
         } else {
             $origDataType = $this->propertyInfo->getType($sectionClass, $propertyName);
-            if ($origDataType instanceof UnionType) {
-                throw new SettingsException(sprintf('Multiple types are not supported for setting %s in %s',
-                    $propertyName, $sectionClass));
-            }
+            $dataType = $origDataType === null ? null : Type::createFromTypeInfo($origDataType);
         }
 
-        return $origDataType === null ? null : Type::createFromAnyType($origDataType);
-    }
-
-    /**
-     * Adds some form options for correct functioning and some workarounds
-     */
-    private function enrichFormOptions(
-        string $formType,
-        Type $dataType,
-        ?string $formEntryType,
-        array $formOptions,
-    ): array {
-        if ($formType === CollectionType::class) {
-            $formOptions = $this->getCollectionFormOptions($dataType, $formEntryType, $formOptions);
-        }
-
-        // recursively collect metadata for SettingClassType if not explicitly declared
-        if ($formType === SettingClassType::class) {
-            $formOptions[SettingClassType::OPTION_META_ARRAY] =
-                $formOptions[SettingClassType::OPTION_META_ARRAY] ??
-                $this->extractSettingMetaArray($dataType->getClassName())
-            ;
-            $formOptions['data_class'] = $dataType->getClassName();
-        }
-
-        if ($formType === CheckboxType::class) {
-            $formOptions['false_values'] = $formOptions['false_values'] ?? [null, false, 0, '0', ''];
-        }
-
-        // Symfony normalizes '' to null by default.
-        // If we know that the setting accepts only string, then explicitly set empty string instead.
-        if ($formType === TextType::class && $dataType->getTypeIdentifier() === 'string' && !$dataType->isCollection()) {
-            $formOptions['empty_data'] = $formOptions['empty_data'] ?? '';
-        }
-
-        return $formOptions;
-    }
-
-    /**
-     * Returns the default form type to be used for the given data type.
-     *
-     * @return string FQCN of form type
-     */
-    private function getFormTypeByDataType(Type $dataType): string
-    {
-        return $dataType->isCollection() ? CollectionType::class : $this->getBaseFormTypeByDataType($dataType);
-    }
-
-    /**
-     * Returns the default base form type (entry type in case of collection) to be used for the given data type
-     *
-     * @return string FQCN of form type
-     */
-    private function getBaseFormTypeByDataType(Type $dataType): string
-    {
-        return match ($dataType->getTypeIdentifier()) {
-            'object' => match ($dataType->getClassName()) {
-                \DateTime::class => DateTimeType::class,
-                default => SettingClassType::class,
-            },
-            'bool' => BoolType::class,
-            'int' => IntegerType::class,
-            'float' => NumberType::class,
-            default => TextType::class,
-        };
-    }
-
-    /**
-     * Adds form options needed by collection type
-     *
-     * @param Type $dataType datatype of setting
-     * @param string|null $formEntryType explicitly configured form entry type
-     * @param array $formOptions form options so far - these values won't be overwritten
-     *
-     * @return array form options enriched with options for collection type
-     */
-    private function getCollectionFormOptions(Type $dataType, ?string $formEntryType, array& $formOptions): array
-    {
-        $formEntryType = $formEntryType ?? $this->getBaseFormTypeByDataType($dataType);
-
-        $collectionFormOptions = [
-            'allow_add' => true,
-            'allow_delete' => true,
-            'entry_type' => $formEntryType,
-            'entry_options' => ['label' => false],
-        ];
-
-        if ($formEntryType === SettingClassType::class && !isset($formOptions[SettingClassType::OPTION_META_ARRAY])) {
-            $collectionFormOptions['entry_options'][SettingClassType::OPTION_META_ARRAY] =
-                $this->extractSettingMetaArray($dataType->getClassName())
-            ;
-            $collectionFormOptions['entry_options']['data_class'] = $dataType->getClassName();
-        }
-
-        return array_merge($collectionFormOptions, $formOptions);
+        return $dataType;
     }
 
     /**
@@ -347,33 +187,5 @@ class MetaDataExtractor
         }
 
         return [$sectionTitle ?? '', $sectionDescription ?? '', $sectionExtra ?? []];
-    }
-
-    /**
-     * Simple naive method to extract data type from a type definition string (e.g. "\DateTime[]")
-     *
-     * @throws SettingsException
-     */
-    private function dataTypeFromString(?string $dataTypeStringIn): ?Type
-    {
-        if ($dataTypeStringIn === null || empty($dataTypeString = trim($dataTypeStringIn))) {
-            return null;
-        }
-
-        $isCollection = false;
-        if (substr($dataTypeString, -2) === '[]') {
-            $isCollection = true;
-            $dataTypeString = substr($dataTypeString, 0, -2);
-        }
-
-        if (Type::isBuiltinType($dataTypeString)) {
-            return new Type($dataTypeString, false, null, $isCollection);
-        }
-
-        if (!class_exists($dataTypeString)) {
-            throw new SettingsException(sprintf('unknown #[Setting(dataType: "%s")]', $dataTypeStringIn));
-        }
-
-        return new Type('object', false, $dataTypeString, $isCollection);
     }
 }

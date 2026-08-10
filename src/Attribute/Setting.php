@@ -62,7 +62,7 @@ class Setting
         ?string $help = null,
         ?string $formType = null,
         ?string $formEntryType = null,
-        array   $formOptions = []
+        ?array  $formOptions = null,
     ) {
         $this->enum = $enum;
         $this->dataType = $dataType;

@@ -33,7 +33,6 @@ class MetaDataExtractorTest extends TestCase
         return [
             'default' => [
                 TestSimpleSetting::class,
-                true,
                 null,
                 false,
                 [
@@ -47,8 +46,7 @@ class MetaDataExtractorTest extends TestCase
             ],
             'number' =>  [
                 TestSingleNumberSetting::class,
-                false,
-                null,
+                [new Type('int'), new Type('string')],
                 false,
                 [
                     'foo' => new SettingMetaData(
@@ -61,8 +59,7 @@ class MetaDataExtractorTest extends TestCase
             ],
             'singleEnum' => [
                 TestSingleEnumSetting::class,
-                false,
-                null,
+                [new Type('int'), new Type('string')],
                 false,
                 [
                     'foo' => new SettingMetaData(
@@ -75,8 +72,7 @@ class MetaDataExtractorTest extends TestCase
             ],
             'multiEnum' => [
                 TestMultiEnumSetting::class,
-                false,
-                null,
+                [new Type('int'), new Type('string')],
                 false,
                 [
                     'foo' => new SettingMetaData(
@@ -90,22 +86,19 @@ class MetaDataExtractorTest extends TestCase
             ],
             'unknown type' => [
                 TestUnknowTypeSetting::class,
-                false,
                 null,
                 true,
                 null,
             ],
             'too many type' => [
                 TestSimpleSetting::class,
-                true,
                 [new Type('int'), new Type('string')],
                 true,
                 null,
             ],
             'datetime type' => [
                 TestDateTimeSetting::class,
-                false,
-                null,
+                [new Type('int'), new Type('string')],
                 false,
                 [
                     'foo' => new SettingMetaData(
@@ -118,7 +111,6 @@ class MetaDataExtractorTest extends TestCase
             ],
             'bool' => [
                 TestBoolSetting::class,
-                true,
                 [new Type('bool')],
                 false,
                 [
@@ -132,7 +124,6 @@ class MetaDataExtractorTest extends TestCase
             ],
             'float' => [
                 TestSimpleSetting::class,
-                true,
                 [new Type('float')],
                 false,
                 [
@@ -155,7 +146,6 @@ class MetaDataExtractorTest extends TestCase
      */
     public function testCreateSectionMetaData(
         string $settingClassName,
-        bool   $expectGetTypes,
         ?array $types,
         bool   $expectException,
         ?array $expectedSettingMetaDataArray
@@ -164,39 +154,31 @@ class MetaDataExtractorTest extends TestCase
 
         // PropertyInfo/Type and TypeInfo/Type era has different method in PropertyInfoExtractor, handle both cases
         if (method_exists(PropertyInfoExtractorInterface::class, 'getTypes')) {
-            if ($expectGetTypes) {
-                $propertyInfoTypes = is_array($types) ? array_map(fn(Type $type) => $type->getPropertyInfoType(), $types) : null;
+            $propertyInfoTypes = is_array($types) ? array_map(fn(Type $type) => $type->getPropertyInfoType(), $types) : null;
 
-                $propertyInfoMock
-                    ->expects($this->once())
-                    ->method('getTypes')
-                    ->willReturn($propertyInfoTypes)
-                ;
-            } else {
-                $propertyInfoMock->expects($this->never())->method('getTypes');
-            }
+            $propertyInfoMock
+                ->expects($this->once())
+                ->method('getTypes')
+                ->willReturn($propertyInfoTypes)
+            ;
         } else {
-            if ($expectGetTypes) {
-                $typeInfoTypes = is_array($types) ? array_map(fn(Type $type) => $type->getTypeInfoType(), $types) : null;
+            $typeInfoTypes = is_array($types) ? array_map(fn(Type $type) => $type->getTypeInfoType(), $types) : null;
 
-                if ($typeInfoTypes !== null) {
-                    if (count($typeInfoTypes) > 1) {
-                        $origTypes = UnionType::union(...$typeInfoTypes);
-                    } else {
-                        $origTypes = $typeInfoTypes[0] ?? null;
-                    }
+            if ($typeInfoTypes !== null) {
+                if (count($typeInfoTypes) > 1) {
+                    $origTypes = UnionType::union(...$typeInfoTypes);
                 } else {
-                    $origTypes = null;
+                    $origTypes = $typeInfoTypes[0] ?? null;
                 }
-
-                $propertyInfoMock
-                    ->expects($this->once())
-                    ->method('getType')
-                    ->willReturn($origTypes)
-                ;
             } else {
-                $propertyInfoMock->expects($this->never())->method('getType');
+                $origTypes = null;
             }
+
+            $propertyInfoMock
+                ->expects($this->once())
+                ->method('getType')
+                ->willReturn($origTypes)
+            ;
         }
 
         if ($expectException) {
