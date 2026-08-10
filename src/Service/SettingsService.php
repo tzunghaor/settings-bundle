@@ -105,8 +105,6 @@ class SettingsService
     /**
      * Returns a SettingsCacheEntry, loads from DB if it is not loaded yet.
      *
-     * @return SettingsCacheEntry
-     *
      * @throws SettingsException
      * @throws Throwable
      */

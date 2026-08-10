@@ -14,8 +14,6 @@ class SettingMetaData
         private Type $dataType,
         private string $formType,
         private array $formOptions,
-        private string $label,
-        private string $help
     ) {
     }
 
@@ -37,15 +35,5 @@ class SettingMetaData
     public function getFormOptions(): array
     {
         return $this->formOptions;
-    }
-
-    public function getLabel(): string
-    {
-        return $this->label;
-    }
-
-    public function getHelp(): string
-    {
-        return $this->help;
     }
 }

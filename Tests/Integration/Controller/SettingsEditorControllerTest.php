@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Contracts\Cache\CacheInterface;
 use TestApp\Entity\User;
 use TestApp\Model\Message;
+use TestApp\Settings\Ui\FooSettings;
 use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 use Tzunghaor\SettingsBundle\Service\SettingsService;
 use TestApp\Entity\OtherPersistedSetting;
@@ -133,6 +134,52 @@ class SettingsEditorControllerTest extends WebTestCase
                     'night' => $expectedComplexRootBoxSettings,
                     // root has custom value for padding and border
                     'root' => $expectedComplexRootBoxSettings,
+                ]
+            ],
+        ];
+
+        $defaultFooSettings = new FooSettings();
+        $expectedFooDaySettings = new FooSettings(
+            39,
+            new Message('info', 'Day'),
+            [new Message('error', 'Ugh')],
+        );
+
+        // test nested objects are edited correctly
+        $cases['nested_object'] = [
+            // prepare a message for edit because dom-crawler cannot use the javascript based "Add message" functionality
+            'preparations' => [[
+                'address' => ['scope' => 'day', 'class' => FooSettings::class],
+                'settings' => ['messages' => [['type' => '', 'text' => '', 'important' => true, 'tags' => ['one', 'two']]],]
+            ]],
+            'edits' => [
+                [
+                    'uri' => '/settings/edit/default/day/Ui.FooSettings',
+                    'formEdits' => [
+                        'settings_editor' => [
+                            'settings' => [
+                                'number' => 39,
+                                'mandatoryMessage' => ['type' => 'info', 'text' => 'Day'],
+                                'messages' => [['type' => 'error', 'text' => 'Ugh']],
+                            ],
+                            'in_scope' => ['number' => 1, 'mandatoryMessage' => 1, 'messages' => 1],
+                        ],
+                        'settings_editor[settings][messages][0][important]' => false,
+                        'settings_editor[settings][messages][0][tags]' => [],
+                    ],
+                ],
+            ],
+            'expectedSettings' => [
+                FooSettings::class => [
+                    // root scope is not changed: expected class default values
+                    'root' => $defaultFooSettings,
+                    // night not changed
+                    'night' => $defaultFooSettings,
+                    // day scope is changed: expected saved values
+                    'day' => $expectedFooDaySettings,
+                    // morning and afternoon are not changed: expected inherited values from day
+                    'morning' => $expectedFooDaySettings,
+                    'afternoon' => $expectedFooDaySettings,
                 ]
             ],
         ];
@@ -453,7 +500,7 @@ class SettingsEditorControllerTest extends WebTestCase
                     '//div[contains(@class, "tzunghaor_settings_scopes_list")]//li/a' => ['Root of All', 'Beautiful Day', 'night'],
                     '//div[contains(@class, "tzunghaor_settings_section_selector")]//li/a' => ['UI Box Settings', 'UI Font Settings'],
                     '//div[contains(@class, "tzunghaor_setting_override")]//label' => ['set', 'inherit'],
-                    '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' => ['padding', 'margin', 'Type', 'Text']
+                    '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' => ['padding', 'margin', 'type', 'text']
                 ]
             ],
         ];
@@ -476,7 +523,7 @@ class SettingsEditorControllerTest extends WebTestCase
                         '//div[contains(@class, "tzunghaor_setting_override")]//label' =>
                             ['domain/en_GB/set', 'domain/en_GB/inherit'],
                         '//div[contains(@class, "tzunghaor_setting_labeled_widget")]/label' =>
-                            ['tzunghaor/en_GB/padding', 'tzunghaor/en_GB/margin', 'tzunghaor/en_GB/Type', 'tzunghaor/en_GB/Text'],
+                            ['tzunghaor/en_GB/padding', 'tzunghaor/en_GB/margin', 'tzunghaor/en_GB/type', 'tzunghaor/en_GB/text'],
                     ]
                 ],
                 'extra sort' => [
@@ -509,7 +556,8 @@ class SettingsEditorControllerTest extends WebTestCase
         // add a message so that a MessageType entry is visible
         $settingsService->save(BoxSettings::class, 'root', ['messages' => [new Message('a', 'b')]]);
 
-        $crawler = $browser->request('get', '/settings/edit/' . $collection . '/root/Ui.BoxSettings');
+        // there is no explicit section in url, so first (Ui.BoxSettings) should be automatically selected
+        $crawler = $browser->request('get', '/settings/edit/' . $collection . '/root');
         foreach($expectations as $xpath => $texts) {
             $actualTexts = [];
             foreach ($crawler->filterXPath($xpath) as $element) {

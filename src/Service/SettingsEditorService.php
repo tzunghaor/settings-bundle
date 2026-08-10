@@ -229,7 +229,18 @@ class SettingsEditorService
 
         $formView = $form?->createView();
         if ($formView !== null) {
-            $this->addFormViewAttrs($formView);
+            $this->addFormViewAttrs(
+                $formView->offsetGet(SettingsEditorType::DATA_IN_SCOPE),
+                'tzunghaor_setting_override'
+            );
+            $this->addFormViewAttrs(
+                $formView->offsetGet(SettingsEditorType::DATA_SETTINGS),
+                'tzunghaor_current_scope'
+            );
+            $this->addFormViewAttrs(
+                $formView->offsetGet(SettingsEditorType::DATA_PARENT_SETTINGS),
+                'tzunghaor_parent_scope'
+            );
         }
 
         return [
@@ -248,22 +259,31 @@ class SettingsEditorService
 
     /**
      * Add HTML attributes to form view
+     *
+     * @param string|null $childrenClass if not null, add this to the class attribute of immediate children
      */
-    private function addFormViewAttrs(FormView $form): void
+    private function addFormViewAttrs(FormView $form, ?string $childrenClass = null): void
     {
-        $rowClass = 'tzunghaor_setting_labeled_widget';
-        $errorClass = 'has-error';
-        // top-level form elements already have appropriate row class set, set here for nested forms
-        if (!isset($form->vars['row_attr']['class'])) {
-            $form->vars['row_attr']['class'] = $rowClass;
-        }
+        foreach ($form->children as $childForm) {
+            $rowClass = [];
+            // currently only collection entries have no label
+            $rowClass[] = $childForm->vars['label'] === false ?
+                'tzunghaor_settings_collection_row' : 'tzunghaor_setting_labeled_widget';
+            if ($childrenClass !== null) {
+                $rowClass[] = $childrenClass;
+            }
+            if (count($childForm->vars['errors']) > 0) {
+                $rowClass[] = 'has-error';
+            }
+            if (isset($childForm->vars['row_attr']['class'])) {
+                $rowClass[] = $childForm->vars['row_attr']['class'];
+            }
 
-        if (count($form->vars['errors']) > 0) {
-            $form->vars['row_attr']['class'] .= ' ' . $errorClass;
-        }
+            $childForm->vars['row_attr']['class'] = implode(' ', $rowClass);
 
-        foreach ($form->children as $child) {
-            $this->addFormViewAttrs($child);
+            if (!empty($childForm->children)) {
+                $this->addFormViewAttrs($childForm);
+            }
         }
     }
 

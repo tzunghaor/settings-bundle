@@ -33,38 +33,38 @@ class SettingsMetaServiceTest extends KernelTestCase
         $baseMetaDataArray = [
             'name' => new SettingMetaData(
                 'name', $stringType, TextType::class,
-                ['empty_data' => ''], 'assets name label', ''
+                ['empty_data' => '', 'label' => 'assets name label']
             ),
             'address' => new SettingMetaData(
                 'address', $stringType, TextType::class,
-                ['empty_data' => ''], 'private address label', ''
+                ['empty_data' => '', 'label' => 'private address label']
             ),
             'minimum' => new SettingMetaData(
                 'minimum', $intType, IntegerType::class,
-                [], 'The minimum', 'This is the minimum description'
+                ['label' => 'The minimum', 'help' => 'This is the minimum description']
             ),
             'maximum' => new SettingMetaData(
                 'maximum', $intType, IntegerType::class,
-                ['attr' => ['class' => 'max']], 'The maximum', 'This is the maximum description',
+                ['attr' => ['class' => 'max'], 'label' => 'The maximum', 'help' => 'This is the maximum description']
             ),
         ];
 
         $funMetaDataArray = array_merge($baseMetaDataArray, [
             'minimum' => new SettingMetaData(
                 'minimum', $intType, IntegerType::class,
-                [], 'Fun minimum', 'Higher than normal minimum'
+                ['label' => 'Fun minimum', 'help' => 'Higher than normal minimum']
             ),
             'maximum' => new SettingMetaData(
                 'maximum', $intType, IntegerType::class,
-                ['attr' => ['class' => 'max']], 'Fun maximum', 'Higher than normal maximum'
+                ['attr' => ['class' => 'max'], 'label' => 'Fun maximum', 'help' => 'Higher than normal maximum']
             ),
             'foo' => new SettingMetaData(
                 'foo', $stringType, TextType::class,
-                ['empty_data' => ''], 'foo', ''
+                ['empty_data' => '', 'label' => 'foo']
             ),
             'bar' => new SettingMetaData(
                 'bar', $stringType, TextType::class,
-                ['empty_data' => ''], 'bar', ''
+                ['empty_data' => '', 'label' => 'bar']
             ),
         ]);
 
@@ -85,7 +85,7 @@ class SettingsMetaServiceTest extends KernelTestCase
             array_merge($baseMetaDataArray, [
                 'reason' => new SettingMetaData(
                     'reason', $stringType, TextType::class,
-                    ['empty_data' => ''], 'reason', ''
+                    ['empty_data' => '', 'label' => 'reason']
                 ),
             ]),
             ['foo' => 'bar']

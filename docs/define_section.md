@@ -116,12 +116,11 @@ Setting and section definition
 ------------------------------
 
 Every class property in your setting class will be used as a setting.
-You can fine tune the data type and how it is displayed in the editor GUI, but
+You can fine tune the data type and how it is displayed on the editor page, but
 the bundle also tries its best to provide sensible defaults for usual cases.
 
-You can add **Tzunghaor\SettingsBundle\Attribute\Setting** to all/any of your
-setting properties, whatever is defined with it takes precedence over any other
-method.
+You can add **Tzunghaor\SettingsBundle\Attribute\Setting** attribute to any of your
+setting properties: what you declare there will take precedence over the bundle's guesses.
 
 I suggest to install phpdocumentor/reflection-docblock, which gives you more, and 
 probably easier to read options for the fine-tuning:
@@ -176,15 +175,14 @@ These are used in the editor GUI.
    
 ### Setting form type and options
 
-These are used in the editor GUI.
+These are used on the editor page.
 
 1. You can define **formType** and **formOptions** with the **Setting** attribute.
 2. You can define **enum** with the **Setting** attribute: it is just a convenience
    feature, it will set `formType: "choice", 
    formOptions: ["choices" => ["enum1" => "enum1", ...]]`. 
-   If the dataType is array, then it 
-   also adds 'multiple' to the formOptions
-3. Otherwise, the bundle chooses the formType based on the dataType
+   If the dataType is array, then it also adds 'multiple' to the formOptions.
+3. Otherwise, the bundle chooses the formType based on the dataType.
 
 Validation
 ----------

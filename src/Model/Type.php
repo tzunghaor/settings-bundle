@@ -20,6 +20,8 @@ class Type
     private bool $nullable;
     private ?string $className;
     private bool $collection;
+    // original type definition has more types that are not covered by this object
+    private bool $incomplete = false;
 
 
     /**
@@ -56,6 +58,21 @@ class Type
         return $instance;
     }
 
+
+    public static function createFromPropertyInfoArray(array $propertyInfoTypeArray): self
+    {
+        $firstType = $propertyInfoTypeArray[0];
+        $type = self::createFromPropertyInfo($firstType);
+
+        // multiple types (union type) is not supported (yet)
+        if (count($propertyInfoTypeArray) > 1) {
+            $type->incomplete = true;
+        }
+
+        return $type;
+    }
+
+
     public static function createFromTypeInfo(TypeInfoType $typeInfoType): self
     {
         $nullable = $typeInfoType->isNullable();
@@ -72,14 +89,22 @@ class Type
         $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
         $instance->typeInfoType = $typeInfoType;
 
+        // union type is not supported (yet)
+        if ($typeInfoType instanceof TypeInfoType\UnionType) {
+            $instance->incomplete = true;
+        }
+
         return $instance;
     }
 
-    public static function createFromAnyType(TypeInfoType | PropertyInfoType $anyType): self
+    public static function createFromAnyType(TypeInfoType | PropertyInfoType $anyType, bool $incomplete = false): self
     {
-        return $anyType instanceof TypeInfoType ?
+        $type = $anyType instanceof TypeInfoType ?
             self::createFromTypeInfo($anyType) :
             self::createFromPropertyInfo($anyType);
+        $type->incomplete = $incomplete;
+
+        return $type;
     }
 
     public static function isBuiltinType(string $dataTypeString): bool
@@ -109,6 +134,11 @@ class Type
     public function isNullable(): bool
     {
         return $this->nullable;
+    }
+
+    public function isIncomplete(): bool
+    {
+        return $this->incomplete;
     }
 
     public function getTypeInfoType(): TypeInfoType
