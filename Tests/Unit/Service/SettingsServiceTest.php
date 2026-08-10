@@ -57,7 +57,7 @@ class SettingsServiceTest extends TestCase
         ;
 
 
-        $this->settingsService = new SettingsService($mockSettingsMetaService, $mockSettingsStore, [], $mockCache);
+        $this->settingsService = new SettingsService($mockSettingsMetaService, $mockSettingsStore, new \ArrayIterator([]), $mockCache);
     }
 
     public function testGetSectionAddress(): void
