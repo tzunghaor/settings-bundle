@@ -58,7 +58,7 @@ class SettingClassType extends AbstractType implements DataMapperInterface
         // empty form inputs (e.g. not checked checkbox) are not submitted, especially since we are using PATCH,
         // so we need to set them to empty here programmatically - otherwise their old value would be kept
         $data = $event->getData();
-        /** @var SectionMetaData $metaData */
+        /** @var SettingMetaData[] $metaDataArray */
         $metaDataArray = $event->getForm()->getConfig()->getOption(self::OPTION_META_ARRAY);
 
         foreach ($metaDataArray as $settingMeta) {

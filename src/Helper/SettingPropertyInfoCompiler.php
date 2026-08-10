@@ -21,7 +21,7 @@ use Tzunghaor\SettingsBundle\Model\Type;
  */
 class SettingPropertyInfoCompiler
 {
-    private ?Type $dataType;
+    private Type $dataType;
 
     private ?string $formType;
 

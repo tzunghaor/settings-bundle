@@ -96,9 +96,9 @@ class MetaDataExtractor
             $ancestorMetaData = $settingsMetaArray[$propertyName] ?? null;
 
             $propertyAttributes = $reflectionProperty->getAttributes(Setting::class);
+            /** @var Setting[] $settingAttributes */
             $settingAttributes = [];
             foreach ($propertyAttributes as $reflectionAttribute) {
-                /** @var Setting $attribute */
                 $settingAttributes[] = $reflectionAttribute->newInstance();
             }
 
