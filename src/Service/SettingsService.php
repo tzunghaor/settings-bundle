@@ -272,7 +272,7 @@ class SettingsService
                 }
             }
 
-            if (!isset($convertedValues[$settingName])) {
+            if (!array_key_exists($settingName, $convertedValues)) {
                 throw new SettingsException(sprintf('Could not find converter for setting %s', $settingName));
             }
         }

@@ -266,12 +266,20 @@ class SettingsEditorService
     {
         foreach ($form->children as $childForm) {
             $rowClass = [];
-            // currently only collection entries have no label
-            $rowClass[] = $childForm->vars['label'] === false ?
-                'tzunghaor_settings_collection_row' : 'tzunghaor_setting_labeled_widget';
+            $role = $childForm->vars['row_attr']['data-tzhs-role'] ?? null;
+
             if ($childrenClass !== null) {
                 $rowClass[] = $childrenClass;
             }
+
+            if (!in_array($role, ['in-scope-setter', 'collection-row', 'nullable-setter'])) {
+                $rowClass[] = 'tzunghaor_setting_labeled_widget';
+            }
+
+            if ($role === 'collection-row') {
+                $rowClass[] = 'tzunghaor_settings_collection_row';
+            }
+
             if (count($childForm->vars['errors']) > 0) {
                 $rowClass[] = 'has-error';
             }
@@ -279,7 +287,9 @@ class SettingsEditorService
                 $rowClass[] = $childForm->vars['row_attr']['class'];
             }
 
-            $childForm->vars['row_attr']['class'] = implode(' ', $rowClass);
+            if (!empty($rowClass)) {
+                $childForm->vars['row_attr']['class'] = implode(' ', $rowClass);
+            }
 
             if (!empty($childForm->children)) {
                 $this->addFormViewAttrs($childForm);

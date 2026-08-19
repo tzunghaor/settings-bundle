@@ -19,6 +19,8 @@ class FooSettings
     #[Setting(dataType: Message::class . '[]')]
     private array $messages;
 
+    private ?\DateTime $date = null;
+
     public function getNumber(): int
     {
         return $this->number;
@@ -34,10 +36,16 @@ class FooSettings
         return $this->messages;
     }
 
-    public function __construct(int $number = 0, ?Message $mandatoryMessage = null, array $messages = [])
+    public function getDate(): ?\DateTime
+    {
+        return $this->date;
+    }
+
+    public function __construct(int $number = 0, ?Message $mandatoryMessage = null, array $messages = [], ?\DateTime $date = null)
     {
         $this->number = $number;
         $this->mandatoryMessage = $mandatoryMessage ?? new Message('', '');
         $this->messages = $messages;
+        $this->date = $date;
     }
 }

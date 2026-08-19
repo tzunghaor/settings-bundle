@@ -42,7 +42,11 @@ The following is a list of the translatable strings defined in this bundle.
 # These strings are in PHP code
 'set': ''
 'inherit': ''
+'unset': ''
 'Settings saved': ''
+#   These two are used by BoolType which is used only if you have bool settings
+'yes': ''
+'no': ''
 
 # These strings are in the Twig templates
 'Collections': ''

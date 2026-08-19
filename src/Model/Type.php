@@ -76,33 +76,38 @@ class Type
     public static function createFromTypeInfo(TypeInfoType $typeInfoType): self
     {
         $nullable = $typeInfoType->isNullable();
-        $isCollection = $typeInfoType instanceof TypeInfoType\CollectionType;
-        if ($typeInfoType instanceof TypeInfoType\CollectionType) {
-            $itemType = $typeInfoType->getCollectionValueType();
+        if ($nullable && $typeInfoType instanceof TypeInfoType\NullableType) {
+            $baseType = $typeInfoType->getWrappedType();
         } else {
-            $itemType = $typeInfoType;
+            $baseType = $typeInfoType;
         }
-        $typeIdentifier = method_exists($itemType, 'getTypeIdentifier') ?
-            $itemType->getTypeIdentifier()->value : '';
-        $className = $itemType instanceof TypeInfoType\ObjectType ? $itemType->getClassName() : null;
+
+        $isCollection = $baseType instanceof TypeInfoType\CollectionType;
+        if ($baseType instanceof TypeInfoType\CollectionType) {
+            $baseType = $baseType->getCollectionValueType();
+        }
+
+        $typeIdentifier = method_exists($baseType, 'getTypeIdentifier') ?
+            $baseType->getTypeIdentifier()->value : '';
+        $className = $baseType instanceof TypeInfoType\ObjectType ? $baseType->getClassName() : null;
 
         $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
         $instance->typeInfoType = $typeInfoType;
 
         // union type is not supported (yet)
-        if ($typeInfoType instanceof TypeInfoType\UnionType) {
+        if ($baseType instanceof TypeInfoType\UnionType) {
             $instance->incomplete = true;
         }
 
         return $instance;
     }
 
-    public static function createFromAnyType(TypeInfoType | PropertyInfoType $anyType, bool $incomplete = false): self
+    public static function createFromAnyType(TypeInfoType | PropertyInfoType $anyType): self
     {
         $type = $anyType instanceof TypeInfoType ?
             self::createFromTypeInfo($anyType) :
-            self::createFromPropertyInfo($anyType);
-        $type->incomplete = $incomplete;
+            self::createFromPropertyInfo($anyType)
+        ;
 
         return $type;
     }

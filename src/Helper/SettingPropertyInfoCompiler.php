@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
+use Tzunghaor\SettingsBundle\Form\NullableType;
 use Tzunghaor\SettingsBundle\Form\SettingClassType;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\Type;
@@ -115,6 +116,17 @@ class SettingPropertyInfoCompiler
             $this->formOptions = array_merge($collectionFormOptions, $this->formOptions);
         }
 
+        if ($this->formType === NullableType::class) {
+            $this->formOptions[NullableType::OPTION_WRAPPED_TYPE] =
+                $this->formOptions[NullableType::OPTION_WRAPPED_TYPE] ??
+                $this->getBaseFormTypeByDataType($this->dataType)
+            ;
+            $this->formOptions[NullableType::OPTION_WRAPPED_OPTIONS] =
+                $this->formOptions[NullableType::OPTION_WRAPPED_OPTIONS] ??
+                []
+            ;
+        }
+
         if ($this->formType === CheckboxType::class) {
             $this->formOptions['false_values'] = $this->formOptions['false_values'] ?? [null, false, 0, '0', ''];
         }
@@ -132,20 +144,27 @@ class SettingPropertyInfoCompiler
             $this->formOptions = array_merge($ancestorMetaData->getFormOptions(), $this->formOptions);
         }
 
-        // form is for a single object using SettingClassType and meta_array is not yet set
-        if ($this->formType === SettingClassType::class && !isset($this->formOptions[SettingClassType::OPTION_META_ARRAY])) {
-            $dataClass = $this->dataType->getClassName();
-            $this->formOptions[SettingClassType::OPTION_META_ARRAY] = $metaArrayExtractor($dataClass);
-            $this->formOptions['data_class'] = $dataClass;
+        // If the form or a wrapped form is SettingClassType and necessary form options are not filled, then do it now
+        // Look out, form options arrays are passed as reference
+        $typesAndOptions = ['direct' => [$this->formType, &$this->formOptions]];
+        $wrappedOptions = [
+            'entry_type' => 'entry_options',
+            NullableType::OPTION_WRAPPED_TYPE => NullableType::OPTION_WRAPPED_OPTIONS
+        ];
+        foreach ($wrappedOptions as $typeOption => $wrappedOption) {
+            if (isset($this->formOptions[$wrappedOption])) {
+                $typesAndOptions[$typeOption] = [$this->formOptions[$typeOption] ?? null, &$this->formOptions[$wrappedOption]];
+            }
         }
 
-        // form is for an array of objects using SettingClassType and meta_array is not yet set
-        $entryType = $this->formOptions['entry_type'] ?? null;
-        if ($entryType === SettingClassType::class && !isset($this->formOptions['entry_options'][SettingClassType::OPTION_META_ARRAY])) {
-            $dataClass = $this->dataType->getClassName();
-            $this->formOptions['entry_options'][SettingClassType::OPTION_META_ARRAY] = $metaArrayExtractor($dataClass);
-            $this->formOptions['entry_options']['data_class'] = $dataClass;
+        foreach ($typesAndOptions as $name => [$formType, &$formOptions]) {
+            if ($formType === SettingClassType::class && !isset($formOptions[SettingClassType::OPTION_META_ARRAY])) {
+                $dataClass = $this->dataType->getClassName();
+                $formOptions[SettingClassType::OPTION_META_ARRAY] = $metaArrayExtractor($dataClass);
+                $formOptions['data_class'] = $dataClass;
+            }
         }
+        // -- here ends SettingClassType form options filling
     }
 
 
@@ -220,7 +239,14 @@ class SettingPropertyInfoCompiler
      */
     private function getFormTypeByDataType(Type $dataType): string
     {
-        return $dataType->isCollection() ? CollectionType::class : $this->getBaseFormTypeByDataType($dataType);
+        if ($dataType->isCollection()) {
+            return CollectionType::class;
+        }
+        if ($dataType->isNullable()) {
+            return NullableType::class;
+        }
+
+        return $this->getBaseFormTypeByDataType($dataType);
     }
 
     /**
@@ -239,7 +265,7 @@ class SettingPropertyInfoCompiler
             'allow_add' => true,
             'allow_delete' => true,
             'entry_type' => $formEntryType,
-            'entry_options' => ['label' => false],
+            'entry_options' => ['label' => false, 'row_attr' => ['data-tzhs-role' => 'collection-row']],
         ];
     }
 
