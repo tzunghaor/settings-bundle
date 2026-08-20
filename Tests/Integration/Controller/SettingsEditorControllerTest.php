@@ -143,6 +143,13 @@ class SettingsEditorControllerTest extends WebTestCase
             39,
             new Message('info', 'Day'),
             [new Message('error', 'Ugh')],
+            new \DateTime('2012-11-10T09:08'),
+        );
+        $expectedFooAfternoonSettings = new FooSettings(
+            42,
+            new Message('info', 'Afternoon'),
+            [new Message('error', 'Ugh')],
+            null,
         );
 
         // test nested objects are edited correctly
@@ -152,7 +159,9 @@ class SettingsEditorControllerTest extends WebTestCase
                 'address' => ['scope' => 'day', 'class' => FooSettings::class],
                 'settings' => ['messages' => [['type' => '', 'text' => '', 'important' => true, 'tags' => ['one', 'two']]],]
             ]],
+
             'edits' => [
+                // 1. settings in day
                 [
                     'uri' => '/settings/edit/default/day/Ui.FooSettings',
                     'formEdits' => [
@@ -161,8 +170,28 @@ class SettingsEditorControllerTest extends WebTestCase
                                 'number' => 39,
                                 'mandatoryMessage' => ['type' => 'info', 'text' => 'Day'],
                                 'messages' => [['type' => 'error', 'text' => 'Ugh']],
+                                'date' => ['set' => 1, 'value' => '2012-11-10T09:08'],
                             ],
-                            'in_scope' => ['number' => 1, 'mandatoryMessage' => 1, 'messages' => 1],
+                            'in_scope' => ['number' => 1, 'mandatoryMessage' => 1, 'messages' => 1, 'date' => 1],
+                        ],
+                        'settings_editor[settings][messages][0][important]' => false,
+                        'settings_editor[settings][messages][0][tags]' => [],
+                    ],
+                ],
+
+                // 2. overwrite some settings in afternoon
+                [
+                    'uri' => '/settings/edit/default/afternoon/Ui.FooSettings',
+                    'formEdits' => [
+                        'settings_editor' => [
+                            'settings' => [
+                                'number' => 42,
+                                'mandatoryMessage' => ['type' => 'info', 'text' => 'Afternoon'],
+                                'messages' => [['type' => 'info', 'text' => 'Ignore: in_scope is not 1']],
+                                // nullable type: if 'set' input is 0, then 'value' input is ignored
+                                'date' => ['set' => 0, 'value' => '2012-11-10T09:08'],
+                            ],
+                            'in_scope' => ['number' => 1, 'mandatoryMessage' => 1, 'messages' => 0, 'date' => 1],
                         ],
                         'settings_editor[settings][messages][0][important]' => false,
                         'settings_editor[settings][messages][0][tags]' => [],
@@ -177,12 +206,15 @@ class SettingsEditorControllerTest extends WebTestCase
                     'night' => $defaultFooSettings,
                     // day scope is changed: expected saved values
                     'day' => $expectedFooDaySettings,
-                    // morning and afternoon are not changed: expected inherited values from day
+                    // morning not changed: expected inherited values from day
                     'morning' => $expectedFooDaySettings,
-                    'afternoon' => $expectedFooDaySettings,
+                    // afternoon has some values changed
+                    'afternoon' => $expectedFooAfternoonSettings,
                 ]
             ],
         ];
+
+        return [$cases['nested_object']];
 
         return $cases;
     }
