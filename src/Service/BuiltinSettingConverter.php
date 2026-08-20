@@ -41,35 +41,28 @@ class BuiltinSettingConverter implements SettingConverterInterface, SettingValue
             return json_encode($value);
         }
 
-        if ($type->isNullable() && $value === null) {
+        if ($value === null && $type->isNullable()) {
             return '';
         }
 
         if ($type->isCollection()) {
             if ($type->getClassName() === DateTime::class) {
-                $stringifiedDates = [];
-                foreach ($value as $date) {
-                    /** @var \DateTime $date */
-                    $stringifiedDates[] = $date->format(DATE_ATOM);
-                }
-                $value = $stringifiedDates;
+                $value = array_map(fn (DateTime $date) => $date->format(DATE_ATOM), $value);
             }
 
             return json_encode(array_values($value));
         }
 
-        if ($type->getClassName() === \DateTime::class) {
-            /** @var \DateTime $value */
+        if ($type->getClassName() === DateTime::class) {
+            /** @var DateTime $value */
             return $value->format(DATE_ATOM);
         }
 
-        switch ($type->getTypeIdentifier()) {
-            case 'bool':
-                return $value ? '1' : '0';
-
-            default:
-                return (string) $value;
+        if ($type->getTypeIdentifier() === 'bool') {
+            return $value ? '1' : '0';
         }
+
+        return (string) $value;
     }
 
     /**
@@ -89,27 +82,21 @@ class BuiltinSettingConverter implements SettingConverterInterface, SettingValue
 
         if ($type->isCollection()) {
             if ($type->getClassName() === DateTime::class) {
-                $dates = [];
-                foreach (json_decode($value, true) as $dateString) {
-                    $dates[] = new DateTime($dateString);
-                }
-
-                return $dates;
+                return array_map(
+                    fn (string $dateString) => new DateTime($dateString),
+                    json_decode($value, true)
+                );
             }
 
             return json_decode($value, true);
         }
 
-        if ($type->getClassName() === \DateTime::class) {
-            if ($type->isNullable() && $value === '') {
-                return null;
-            }
-
-            return new \DateTime($value);
+        if ($value === '' && $type->isNullable()) {
+            return null;
         }
 
-        if ($type->isNullable() && $value === '') {
-            return null;
+        if ($type->getClassName() === DateTime::class) {
+            return new DateTime($value);
         }
 
         return match ($type->getTypeIdentifier()) {

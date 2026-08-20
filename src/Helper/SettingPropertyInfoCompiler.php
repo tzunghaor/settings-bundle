@@ -219,16 +219,21 @@ class SettingPropertyInfoCompiler
             $isCollection = true;
             $dataTypeString = substr($dataTypeString, 0, -2);
         }
+        $isNullable = false;
+        if (str_starts_with($dataTypeString, '?')) {
+            $isNullable = true;
+            $dataTypeString = substr($dataTypeString, 1);
+        }
 
         if (Type::isBuiltinType($dataTypeString)) {
-            return new Type($dataTypeString, false, null, $isCollection);
+            return new Type($dataTypeString, $isNullable, null, $isCollection);
         }
 
         if (!class_exists($dataTypeString)) {
             throw new SettingsException(sprintf('unknown #[Setting(dataType: "%s")]', $dataTypeStringIn));
         }
 
-        return new Type('object', false, $dataTypeString, $isCollection);
+        return new Type('object', $isNullable, $dataTypeString, $isCollection);
     }
 
 

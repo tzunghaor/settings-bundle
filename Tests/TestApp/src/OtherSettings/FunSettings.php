@@ -2,6 +2,7 @@
 
 namespace TestApp\OtherSettings;
 
+use TestApp\Model\FooBar;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 
 /**
@@ -25,4 +26,6 @@ class FunSettings extends AbstractBaseSettings
      * Higher than normal maximum
      */
     protected int $maximum = 200;
+
+    public ?FooBar $fooBar = null;
 }

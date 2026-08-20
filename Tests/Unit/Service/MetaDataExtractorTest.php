@@ -15,12 +15,16 @@ use Symfony\Component\TypeInfo\Type\UnionType;
 use TestApp\UnitSettings\TestBoolSetting;
 use TestApp\UnitSettings\TestDateTimeSetting;
 use TestApp\UnitSettings\TestMultiEnumSetting;
+use TestApp\UnitSettings\TestNullableSetting;
+use TestApp\UnitSettings\TestNullableFooBarSetting2;
 use TestApp\UnitSettings\TestSimpleSetting;
 use TestApp\UnitSettings\TestSingleEnumSetting;
 use TestApp\UnitSettings\TestSingleNumberSetting;
 use TestApp\UnitSettings\TestUnknowTypeSetting;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
+use Tzunghaor\SettingsBundle\Form\NullableType;
+use Tzunghaor\SettingsBundle\Form\SettingClassType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\Type;
@@ -135,11 +139,33 @@ class MetaDataExtractorTest extends TestCase
                     ),
                 ],
             ],
+            'nullable' => [
+                TestNullableSetting::class,
+                [new Type('int', true)],
+                false,
+                [
+                    'number' => new SettingMetaData(
+                        'number',
+                        new Type('int', true),
+                        NullableType::class,
+                        [
+                            'label' => 'number',
+                            NullableType::OPTION_WRAPPED_TYPE => IntegerType::class,
+                            NullableType::OPTION_WRAPPED_OPTIONS => [],
+                        ],
+                    ),
+                ],
+            ],
         ];
     }
 
     /**
      * @dataProvider createSectionMetaDataProvider
+     *
+     * @param string  $settingClassName the setting class that will be extracted
+     * @param ?Type[] $types the propertyInfo mock service shall return these types
+     * @param bool $expectException whether we expect an exception to be thrown
+     * @param ?array $expectedSettingMetaDataArray expected result of metadata extraction
      *
      * @throws SettingsException
      * @throws \ReflectionException

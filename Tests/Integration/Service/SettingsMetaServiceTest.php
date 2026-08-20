@@ -5,8 +5,11 @@ namespace Tzunghaor\SettingsBundle\Test\Integration\Service;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use TestApp\Model\FooBar;
 use TestApp\OtherSettings\SadSettings;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
+use Tzunghaor\SettingsBundle\Form\NullableType;
+use Tzunghaor\SettingsBundle\Form\SettingClassType;
 use Tzunghaor\SettingsBundle\Model\SectionMetaData;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\Type;
@@ -29,6 +32,14 @@ class SettingsMetaServiceTest extends KernelTestCase
 
         $stringType = new Type('string');
         $intType = new Type('int');
+        $nullableFoobarType = new Type('object', true, FooBar::class);
+
+        $expectedFooBarMetaArray = [
+            'foo' => new SettingMetaData('foo', $intType, IntegerType::class,
+                ['label' => 'foo']),
+            'bar' => new SettingMetaData('bar', $stringType, TextType::class,
+                ['label' => 'bar', 'empty_data' => '']),
+        ];
 
         $baseMetaDataArray = [
             'name' => new SettingMetaData(
@@ -49,7 +60,7 @@ class SettingsMetaServiceTest extends KernelTestCase
             ),
         ];
 
-        $funMetaDataArray = array_merge($baseMetaDataArray, [
+        $expectedFunMetaDataArray = array_merge($baseMetaDataArray, [
             'minimum' => new SettingMetaData(
                 'minimum', $intType, IntegerType::class,
                 ['label' => 'Fun minimum', 'help' => 'Higher than normal minimum']
@@ -66,15 +77,44 @@ class SettingsMetaServiceTest extends KernelTestCase
                 'bar', $stringType, TextType::class,
                 ['empty_data' => '', 'label' => 'bar']
             ),
+            'fooBar' => new SettingMetaData(
+                'fooBar', $nullableFoobarType, NullableType::class,
+                [
+                    NullableType::OPTION_WRAPPED_TYPE => SettingClassType::class,
+                    NullableType::OPTION_WRAPPED_OPTIONS => [
+                        SettingClassType::OPTION_META_ARRAY => $expectedFooBarMetaArray,
+                        'data_class' => FooBar::class,
+                    ],
+                    'label' => 'fooBar',
+                ],
+            ),
         ]);
 
+        $expectedSadMetaDataArray = array_merge($baseMetaDataArray, [
+            'reason' => new SettingMetaData(
+                'reason', $stringType, TextType::class,
+                ['empty_data' => '', 'label' => 'reason']
+            ),
+            'fooBar' => new SettingMetaData(
+                'fooBar', $nullableFoobarType, NullableType::class,
+                [
+                    NullableType::OPTION_WRAPPED_TYPE => SettingClassType::class,
+                    NullableType::OPTION_WRAPPED_OPTIONS => [
+                        SettingClassType::OPTION_META_ARRAY => $expectedFooBarMetaArray,
+                        'data_class' => FooBar::class,
+                        'row_attr' => ['class' => 'foo-bar'],
+                    ],
+                    'label' => 'Foo Bar',
+                ],
+            ),
+        ]);
 
         $expectedFunMetaData = new SectionMetaData(
             'FunSettings',
             'FunYeah',
             FunSettings::class,
             "Description\nin two lines",
-            $funMetaDataArray,
+            $expectedFunMetaDataArray,
         );
 
         $expectedSadMetaData = new SectionMetaData(
@@ -82,12 +122,7 @@ class SettingsMetaServiceTest extends KernelTestCase
             'Sadness',
             SadSettings::class,
             'Sadness gives no help',
-            array_merge($baseMetaDataArray, [
-                'reason' => new SettingMetaData(
-                    'reason', $stringType, TextType::class,
-                    ['empty_data' => '', 'label' => 'reason']
-                ),
-            ]),
+            $expectedSadMetaDataArray,
             ['foo' => 'bar']
         );
 
