@@ -26,6 +26,9 @@ class SettingPropertyInfoCompiler
 
     private ?string $formType;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $formOptions;
 
     /**
@@ -178,6 +181,9 @@ class SettingPropertyInfoCompiler
         return $this->formType;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getFormOptions(): array
     {
         return $this->formOptions;
@@ -186,6 +192,8 @@ class SettingPropertyInfoCompiler
     /**
      * It doesn't actually make sense to define multiple #[Setting] for a property, but if it happens we 
      * merge them "first defined value wins"
+     *
+     * @param Setting[] $settingAttributes
      */
     private function mergeSettingAttributes(array $settingAttributes): Setting
     {
@@ -260,7 +268,7 @@ class SettingPropertyInfoCompiler
      * @param Type $dataType datatype of setting
      * @param string|null $formEntryType explicitly configured form entry type
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getCollectionFormOptions(Type $dataType, ?string $formEntryType): array
     {

@@ -28,11 +28,15 @@ class Item
     private array $children;
 
     /**
-     * @var array Extra data that you can use in your templates / extensions. Array keys defined as Item::EXTRA_* const
-     *            are read by the bundle, but you don't need to set them.
+     * @var array<mixed> Extra data that you can use in your templates / extensions. Array keys defined as
+     *                   Item::EXTRA_* const are read by the bundle, but you don't need to set them.
      */
     private array $extra;
 
+    /**
+     * @param Item[] $children
+     * @param array<mixed> $extra
+     */
     public function __construct(
         string $name,
         ?string $customTitle = null,
@@ -65,7 +69,9 @@ class Item
         return $this->children;
     }
 
-
+    /**
+     * @return array<mixed>
+     */
     public function getExtra(): array
     {
         return $this->extra;

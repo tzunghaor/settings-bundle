@@ -59,6 +59,9 @@ class Type
     }
 
 
+    /**
+     * @param PropertyInfoType[] $propertyInfoTypeArray
+     */
     public static function createFromPropertyInfoArray(array $propertyInfoTypeArray): self
     {
         $firstType = $propertyInfoTypeArray[0];

@@ -14,7 +14,7 @@ class ObjectHydrator
      * pass null.
      *
      * @param string $class fully qualified class name
-     * @param array  $values [$name => $value, ...] not needed to have element for every attribute of $class
+     * @param array<string, mixed> $values [$name => $value, ...] not needed to have element for every attribute of $class
      *
      * @return object instance of $class
      *

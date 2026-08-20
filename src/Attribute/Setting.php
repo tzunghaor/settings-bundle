@@ -48,15 +48,23 @@ class Setting
     /**
      * Options to be passed to the form element of this setting in the setting editor.
      * The bundle tries to set some reasonable defaults based on the data and form type.
+     *
+     * @var null|array<string, mixed>
      */
     public ?array $formOptions = null;
 
     /**
      * Shorthand for formType=ChoiceType::class, formOptions={"choices": {"val1": "val1", ...}}
      * If the setting data type is array, then "multiple" form option is automatically set.
+     *
+     * @var null|string[]
      */
     public ?array $enum = null;
 
+    /**
+     * @param null|string[] $enum
+     * @param null|array<string, mixed> $formOptions
+     */
     public function __construct(
         ?string $label = null,
         ?array  $enum = null,

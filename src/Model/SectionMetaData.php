@@ -14,7 +14,7 @@ class SectionMetaData
      * @param string $dataClass php class that defines/stores this section
      * @param string $description description used in settings editor
      * @param SettingMetaData[] $settingMetaDataArray metadata array of the settings in this section
-     * @param array $extra Extra data that you can use in your templates / extensions
+     * @param array<mixed> $extra Extra data that you can use in your templates / extensions
      */
     public function __construct(
         private string $name,
@@ -58,7 +58,9 @@ class SectionMetaData
         return $this->settingMetaDataArray;
     }
 
-
+    /**
+     * @return array<mixed>
+     */
     public function getExtra(): array
     {
         return $this->extra;

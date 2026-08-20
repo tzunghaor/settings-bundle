@@ -82,6 +82,9 @@ class TzunghaorSettingsExtension extends Extension
         }
     }
 
+    /**
+     * @param mixed[] $config
+     */
     private function configureCollection(
         string            $name,
         array             $config,
@@ -215,10 +218,10 @@ class TzunghaorSettingsExtension extends Extension
     /**
      * Retrieves the sectionName => $sectionClass mapping based on config
      *
-     * @param array $mappings
+     * @param array<string, array<string, string>> $mappings
      * @param string $defaultMappingName
      *
-     * @return array
+     * @return array<string, string>
      */
     private function getSectionClasses(array $mappings, string $defaultMappingName): array
     {

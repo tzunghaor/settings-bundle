@@ -24,7 +24,7 @@ You have to do at least the following things to be able to use this settings edi
 1. [Install](#installation) - This is the usual Symfony bundle installation with some additional 
    suggested packages which you might already have installed.
 2. [Database Setup](#database-setup) - You will need a table where the settings are stored.
-3. [Defining Settings](#defining-setting-classes) - Define your editable settings as PHP classes, and
+3. [Defining Settings](#defining-setting-section-classes) - Define your editable settings as PHP classes, and
    tell this bundle about them in its configuration file.
 4. [Setting up the editor](#setting-up-the-editor) - Add the editor controller to your router. 
 

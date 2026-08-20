@@ -23,10 +23,13 @@ use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 class SettingsService
 {
     /**
-     * @var SettingConverterInterface[]
+     * @var array<SettingConverterInterface|SettingValueConverterInterface>
      */
     private array $dataConverters;
 
+    /**
+     * @param iterable<SettingConverterInterface|SettingValueConverterInterface> $dataConverters
+     */
     public function __construct(
         private SettingsMetaService $settingsMetaService,
         private SettingsStoreInterface $store,
@@ -47,7 +50,7 @@ class SettingsService
      * @throws SettingsException
      * @throws Throwable
      */
-    public function getSection(string $sectionClass, $subject = null)
+    public function getSection(string $sectionClass, mixed $subject = null)
     {
         $scopeName = $this->settingsMetaService->getScope($subject)->getName();
 
@@ -59,7 +62,7 @@ class SettingsService
      * arguments.
      * This address can be used for isGranted() checks
      */
-    public function getSectionAddress(string $sectionClass, $subject = null): SettingSectionAddress
+    public function getSectionAddress(string $sectionClass, mixed $subject = null): SettingSectionAddress
     {
         return new SettingSectionAddress(
             $this->settingsMetaService->getCollectionName(),
@@ -72,7 +75,7 @@ class SettingsService
      * Tells in which section are defined the setting values returned by self::getSection($sectionClass, $scope).
      * If a setting is not in the returned array, then that uses the default value defined in the section class.
      *
-     * @return array [$settingName => $scopeName, ... ]
+     * @return array<string, string> [$settingName => $scopeName, ... ]
      *
      * @throws SettingsException
      * @throws Throwable
@@ -85,7 +88,8 @@ class SettingsService
     /**
      * Saves settings to DB
      *
-     * @param array $values [$settingName => $value, ...] type of values should be what is defined in the section class
+     * @param array<string, mixed> $values [$settingName => $value, ...] type of values should be what is defined
+     *                                     in the section class
      *
      * @throws SettingsException
      * @throws Throwable
@@ -152,6 +156,7 @@ class SettingsService
      * To call this method, you already need to have the SettingsCacheEntry of the parent scope.
      * This method is used only in case of nested scopes alongside of getCacheEntry() to avoid recursion
      *
+     * @param string[] $cacheKeys
      * @param SettingsCacheEntry|null $parentEntry null for top-level scopes
      *
      * @throws Throwable
@@ -231,8 +236,10 @@ class SettingsService
     /**
      * Converts the DB persisted values to the type defined in the section class
      *
-     * @param array $persistedValues [$settingName => $value, ...]
+     * @param array<string, string> $persistedValues [$settingName => $value, ...]
      * @param SettingMetaData[] $settingMetaArray
+     *
+     * @return array<string, mixed>
      *
      * @throws SettingsException
      */
@@ -248,14 +255,15 @@ class SettingsService
 
             $type = $settingMetaArray[$settingName]->getDataType();
             foreach ($this->dataConverters as $dataConverter) {
+
                 if (
                     class_exists(TypeInfoType::class) &&
-                    class_implements($dataConverter,  SettingValueConverterInterface::class)
+                    $dataConverter instanceof SettingValueConverterInterface
                 ) {
                     $origType = $type->getTypeInfoType();
                 } elseif (
                     class_exists(PropertyInfoType::class) &&
-                    class_implements($dataConverter,  SettingConverterInterface::class)
+                    $dataConverter instanceof SettingConverterInterface
                 ) {
                     $origType = $type->getPropertyInfoType();
                 } else {
@@ -283,8 +291,10 @@ class SettingsService
     /**
      * Converts the values of types defined in the setting section class to values that can be persisted in DB
      *
-     * @param array $values [$settingName => $value, ...]
+     * @param array<string, mixed> $values [$settingName => $value, ...]
      * @param SettingMetaData[] $settingMetaArray
+     *
+     * @return array<string, string>
      *
      * @throws SettingsException
      */
@@ -297,12 +307,12 @@ class SettingsService
             foreach ($this->dataConverters as $dataConverter) {
                 if (
                     class_exists(TypeInfoType::class) &&
-                    class_implements($dataConverter,  SettingValueConverterInterface::class)
+                    $dataConverter instanceof SettingValueConverterInterface
                 ) {
                     $origType = $type->getTypeInfoType();
                 } elseif (
                     class_exists(PropertyInfoType::class) &&
-                    class_implements($dataConverter,  SettingConverterInterface::class)
+                    $dataConverter instanceof SettingConverterInterface
                 ) {
                     $origType = $type->getPropertyInfoType();
                 } else {

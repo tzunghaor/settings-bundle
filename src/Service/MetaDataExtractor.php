@@ -147,8 +147,9 @@ class MetaDataExtractor
     /**
      * Simple naive method to extract title, description and extra data from a docblock of a class
      *
-     * @return array [$title, $description, $extraArray]
+     * @return array<mixed> [$title, $description, $extraArray]
      */
+    // @phpstan-ignore missingType.generics (by design we don't care about which class it is)
     private function extractSectionInfo(\ReflectionClass $reflectionClass): array
     {
         $sectionAttributes = $reflectionClass->getAttributes(SettingSection::class);

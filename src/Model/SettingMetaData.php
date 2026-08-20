@@ -9,6 +9,9 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class SettingMetaData
 {
+    /**
+     * @param array<string, mixed> $formOptions
+     */
     public function __construct(
         private string $name,
         private Type $dataType,
@@ -32,6 +35,9 @@ class SettingMetaData
         return $this->formType;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getFormOptions(): array
     {
         return $this->formOptions;

@@ -16,7 +16,7 @@ class SettingSection
      * @param string|null $help  Help text in editor form
      *                           If phpdocumentor/reflection-docblock is installed, then the not-first line of the
      *                           docblock can be used instead.
-     * @param array $extra       Extra data that you can use in your templates / extensions.
+     * @param mixed[] $extra       Extra data that you can use in your templates / extensions.
      */
     public function __construct(
         public ?string $label = null,

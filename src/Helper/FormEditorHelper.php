@@ -15,6 +15,9 @@ use Tzunghaor\SettingsBundle\Service\SettingsEditorService;
  */
 class FormEditorHelper
 {
+    /**
+     * @param string[] $fixedParameters
+     */
     public function __construct(
         private bool                  $isSuccessfulSubmit,
         private SettingSectionAddress $sectionAddress,
@@ -51,11 +54,17 @@ class FormEditorHelper
         return $this->searchUrl;
     }
 
+    /**
+     * @return string[]
+     */
     public function getFixedParameters(): array
     {
         return $this->fixedParameters;
     }
 
+    /**
+     * @param string[] $extraParameters
+     */
     public function getEditorUrl(RouterInterface $router, array $extraParameters = []): string
     {
         $routeParameters = [
