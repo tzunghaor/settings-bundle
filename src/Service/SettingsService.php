@@ -42,6 +42,7 @@ class SettingsService
     /**
      * Retrieves the setting section object filled with values for the given scope
      *
+     * @param class-string $sectionClass
      * @param mixed|null $subject Can be scope name or an object or anything your ScopeProvider supports.
      *                            If null, default scope is used.
      *
@@ -61,6 +62,8 @@ class SettingsService
      * Creates a SettingSectionAddress object to the setting section returned by self::getSection() with the same
      * arguments.
      * This address can be used for isGranted() checks
+     *
+     * @param class-string $sectionClass
      */
     public function getSectionAddress(string $sectionClass, mixed $subject = null): SettingSectionAddress
     {
@@ -75,6 +78,8 @@ class SettingsService
      * Tells in which section are defined the setting values returned by self::getSection($sectionClass, $scope).
      * If a setting is not in the returned array, then that uses the default value defined in the section class.
      *
+     * @param class-string $sectionClass
+     *
      * @return array<string, string> [$settingName => $scopeName, ... ]
      *
      * @throws SettingsException
@@ -88,6 +93,7 @@ class SettingsService
     /**
      * Saves settings to DB
      *
+     * @param class-string $sectionClass
      * @param array<string, mixed> $values [$settingName => $value, ...] type of values should be what is defined
      *                                     in the section class
      *
@@ -108,6 +114,8 @@ class SettingsService
 
     /**
      * Returns a SettingsCacheEntry, loads from DB if it is not loaded yet.
+     *
+     * @param class-string $sectionClass
      *
      * @throws SettingsException
      * @throws Throwable
@@ -157,6 +165,7 @@ class SettingsService
      * This method is used only in case of nested scopes alongside of getCacheEntry() to avoid recursion
      *
      * @param string[] $cacheKeys
+     * @param class-string $sectionClass
      * @param SettingsCacheEntry|null $parentEntry null for top-level scopes
      *
      * @throws Throwable
@@ -168,6 +177,9 @@ class SettingsService
         ?SettingsCacheEntry $parentEntry
     ): SettingsCacheEntry {
         $cacheKey = end($cacheKeys);
+        if (!is_string($cacheKey)) {
+            throw new SettingsException('Cache key must be a string');
+        }
 
         return $this->cache->get(
             $cacheKey,
@@ -181,6 +193,8 @@ class SettingsService
 
     /**
      * Invalidates cached values for the given $sectionClass in the given $scope and all descendant scopes
+     *
+     * @param class-string $sectionClass
      *
      * @throws Throwable
      */
@@ -197,6 +211,7 @@ class SettingsService
     /**
      * Loads settings for a section + scope pair from DB
      *
+     * @param class-string $sectionClass
      * @param SettingsCacheEntry|null $parentEntry values not saved for current scope should be inherited from this entry
      *
      * @throws \ReflectionException
@@ -226,6 +241,8 @@ class SettingsService
 
     /**
      * Generates a cache key
+     *
+     * @param class-string $sectionClass
      */
     private function getCacheKey(string $sectionClass, string $scope): string
     {

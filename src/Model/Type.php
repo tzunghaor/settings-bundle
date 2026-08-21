@@ -5,6 +5,7 @@ namespace Tzunghaor\SettingsBundle\Model;
 use Symfony\Component\PropertyInfo\Type as PropertyInfoType;
 use Symfony\Component\TypeInfo\Type as TypeInfoType;
 use Symfony\Component\TypeInfo\TypeIdentifier;
+use Tzunghaor\SettingsBundle\Exception\SettingsException;
 
 /**
  * Abstraction layer to support both old symfony/property-info and the new symfony/type-info Type.
@@ -26,6 +27,8 @@ class Type
 
     /**
      * For arrays $collection should be set to true and $typeIdentifier / $className should be the array item type / class
+     *
+     * @param class-string|null $className
      */
     public function __construct(
         string  $typeIdentifier,
@@ -94,6 +97,7 @@ class Type
             $baseType->getTypeIdentifier()->value : '';
         $className = $baseType instanceof TypeInfoType\ObjectType ? $baseType->getClassName() : null;
 
+        // @phpstan-ignore argument.type ($className IS class-string)
         $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
         $instance->typeInfoType = $typeInfoType;
 
@@ -197,6 +201,9 @@ class Type
         ;
     }
 
+    /**
+     * @throws SettingsException
+     */
     public function __toString(): string
     {
         $array = [
@@ -206,6 +213,12 @@ class Type
             'nullable' => $this->nullable,
         ];
 
-        return json_encode($array);
+        $encoded = json_encode($array);
+
+        if ($encoded === false) {
+            throw new SettingsException('Unable to convert Type to string.');
+        }
+
+        return $encoded;
     }
 }

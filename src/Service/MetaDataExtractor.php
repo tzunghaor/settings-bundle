@@ -29,6 +29,8 @@ class MetaDataExtractor
     /**
      * Analyses the $sectionClass and its properties and creates a SectionMetaData based on it.
      *
+     * @param class-string $sectionClass
+     *
      * @throws SettingsException
      * @throws \ReflectionException
      */
@@ -49,6 +51,8 @@ class MetaDataExtractor
 
     /**
      * Collect metadata for class properties, including inherited properties defined in ancestor classes
+     *
+     * @param class-string $className
      *
      * @return SettingMetaData[]
      *
@@ -129,6 +133,8 @@ class MetaDataExtractor
 
     /**
      * Attempts to extract data type of the given class property
+     *
+     * @param class-string $sectionClass
      */
     private function extractPropertyDataType(string $sectionClass, string $propertyName): ?Type
     {

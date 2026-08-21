@@ -26,7 +26,7 @@ class SettingsMetaService implements CacheWarmerInterface
     private Item $collectionItem;
 
     /**
-     * @var SectionMetaData[] [$sectionClass => $metaData, ...]
+     * @var array<class-string, SectionMetaData> [$sectionClass => $metaData, ...]
      */
     private ?array $sectionMetaDataArray = null;
 
@@ -41,7 +41,7 @@ class SettingsMetaService implements CacheWarmerInterface
     private ?\Closure $sectionSorter = null;
 
     /**
-     * @param array<string, string> $sectionClasses [$sectionName => $sectionClass, ...]
+     * @param array<string, class-string> $sectionClasses [$sectionName => $sectionClass, ...]
      * @param array<mixed> $collectionExtra
      */
     public function __construct(
@@ -159,6 +159,7 @@ class SettingsMetaService implements CacheWarmerInterface
         foreach ($sections as $sectionName => $sectionMetaData) {
             $translatedSections[$sectionName] = new SectionMetaData(
                 $sectionMetaData->getName(),
+                // @phpstan-ignore argument.type (we check $this->translationDomain before we call translateSectionMetaDataArray)
                 $this->translator->trans($sectionMetaData->getTitle(), domain: $this->translationDomain),
                 $sectionMetaData->getDataClass(),
                 $sectionMetaData->getDescription(),
@@ -217,7 +218,7 @@ class SettingsMetaService implements CacheWarmerInterface
     /**
      * Returns the setting metadata of a setting section class
      *
-     * @param string $sectionClass
+     * @param class-string $sectionClass
      *
      * @return SectionMetaData
      *

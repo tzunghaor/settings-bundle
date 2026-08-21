@@ -91,7 +91,8 @@ class DoctrineSettingsStore implements SettingsStoreInterface
         $persistedSettingsWithKey = [];
 
         foreach ($persistedSettings as $persistedSetting) {
-            $settingName = substr(strrchr($persistedSetting->getPath(), '.'), 1);
+            $pathFromLastDot = strrchr($persistedSetting->getPath(), '.');
+            $settingName = $pathFromLastDot === false ? $persistedSetting->getPath() : substr($pathFromLastDot, 1);
             $persistedSettingsWithKey[$settingName] = $persistedSetting;
         }
 

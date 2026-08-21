@@ -7,6 +7,7 @@ namespace Tzunghaor\SettingsBundle\Service;
 use DateTime;
 use Symfony\Component\PropertyInfo\Type as PropertyInfoType;
 use Symfony\Component\TypeInfo\Type as TypeInfoType;
+use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Model\Type;
 
 /**
@@ -32,13 +33,20 @@ class BuiltinSettingConverter implements SettingConverterInterface, SettingValue
      * @param mixed $value value used in setting section object
      *
      * @return string value persisted in DB
+     *
+     * @throws SettingsException
      */
     public function convertToString(PropertyInfoType | TypeInfoType $type, $value): string
     {
         $type = Type::createFromAnyType($type);
 
         if ($type->getTypeIdentifier() === 'string' && $type->isNullable()) {
-            return json_encode($value);
+            $encoded = json_encode($value);
+            if ($encoded === false) {
+                throw new SettingsException('Unable to convert setting value to string.');
+            }
+
+            return $encoded;
         }
 
         if ($value === null && $type->isNullable()) {
@@ -50,7 +58,12 @@ class BuiltinSettingConverter implements SettingConverterInterface, SettingValue
                 $value = array_map(fn (DateTime $date) => $date->format(DATE_ATOM), $value);
             }
 
-            return json_encode(array_values($value));
+            $encoded = json_encode(array_values($value));
+            if ($encoded === false) {
+                throw new SettingsException('Unable to convert setting value to string.');
+            }
+
+            return $encoded;
         }
 
         if ($type->getClassName() === DateTime::class) {

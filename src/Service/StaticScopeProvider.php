@@ -189,7 +189,7 @@ class StaticScopeProvider implements ScopeProviderInterface
             $scopeName = $scopeDefinition[Configuration::NAME];
             $childrenDef = $scopeDefinition[Configuration::CHILDREN] ?? null;
             $title = $scopeDefinition[Configuration::TITLE] ?? null;
-            if ($this->translator) {
+            if ($this->translator && $this->translationDomain !== false) {
                 $title = $this->translator->trans($title ?? $scopeName, domain: $this->translationDomain);
             }
 

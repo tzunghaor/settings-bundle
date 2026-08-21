@@ -3,6 +3,8 @@
 
 namespace Tzunghaor\SettingsBundle\Attribute;
 
+use Symfony\Component\Form\FormTypeInterface;
+
 /***
  * Attribute to set custom values for a setting (a property in a setting section class).
  */
@@ -29,12 +31,16 @@ class Setting
      * * from getter methods return type declaration
      * * from "@var" annotation if phpdocumentor/reflection-docblock is installed
      * If none of these fits your needs, then you can define the data type here.
+     *
+     * @var class-string|null
      */
     public ?string $dataType = null;
 
     /**
      * FQCN of a form type (which implements FormTypeInterface) - used in the editor for this setting.
      * By default, the bundle tries to determine it based on the data type.
+     *
+     * @var class-string<FormTypeInterface>|null
      */
     public ?string $formType = null;
 
@@ -42,6 +48,8 @@ class Setting
      * FQCN of a form type (which implements FormTypeInterface)
      * If the setting is a collection, then this will be used in the editor for each setting entry.
      * By default, the bundle tries to determine it based on the data type.
+     *
+     * @var class-string<FormTypeInterface>|null
      */
     public ?string $formEntryType = null;
 
@@ -63,6 +71,9 @@ class Setting
 
     /**
      * @param null|string[] $enum
+     * @param class-string|null $dataType
+     * @param class-string<FormTypeInterface>|null $formType
+     * @param class-string<FormTypeInterface>|null $formEntryType
      * @param null|array<string, mixed> $formOptions
      */
     public function __construct(

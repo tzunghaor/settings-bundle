@@ -4,12 +4,15 @@
 namespace Tzunghaor\SettingsBundle\Model;
 
 
+use Symfony\Component\Form\FormTypeInterface;
+
 /**
  * metadata about a single setting
  */
 class SettingMetaData
 {
     /**
+     * @param class-string<FormTypeInterface> $formType
      * @param array<string, mixed> $formOptions
      */
     public function __construct(
@@ -30,6 +33,9 @@ class SettingMetaData
         return $this->dataType;
     }
 
+    /**
+     * @return class-string<FormTypeInterface>
+     */
     public function getFormType(): string
     {
         return $this->formType;

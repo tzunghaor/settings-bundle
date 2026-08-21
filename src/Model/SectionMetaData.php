@@ -11,7 +11,7 @@ class SectionMetaData
     /**
      * @param string $name used as identifier in DB and url
      * @param string $title section title used in settings editor
-     * @param string $dataClass php class that defines/stores this section
+     * @param class-string $dataClass php class that defines/stores this section
      * @param string $description description used in settings editor
      * @param SettingMetaData[] $settingMetaDataArray metadata array of the settings in this section
      * @param array<mixed> $extra Extra data that you can use in your templates / extensions
@@ -38,7 +38,9 @@ class SectionMetaData
         return $this->title;
     }
 
-
+    /**
+     * @return class-string
+     */
     public function getDataClass(): string
     {
         return $this->dataClass;

@@ -536,6 +536,7 @@ class SettingsEditorService
         $settingMetaService = $this->settingsMetaServiceLocator->get($sectionAddress->getCollectionName());
         [$attribute, $subject] = $settingMetaService->getIsGrantedArguments($sectionAddress);
 
+        // @phpstan-ignore method.notFound (presence of isGranted is checked in authorizationChecker setter)
         return $this->authorizationChecker->isGranted($attribute, $subject);
     }
 }

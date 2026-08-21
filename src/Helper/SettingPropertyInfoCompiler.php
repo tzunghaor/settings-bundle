@@ -9,6 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormTypeInterface;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
@@ -24,6 +25,9 @@ class SettingPropertyInfoCompiler
 {
     private Type $dataType;
 
+    /**
+     * @var class-string<FormTypeInterface>|null
+     */
     private ?string $formType;
 
     /**
@@ -32,6 +36,7 @@ class SettingPropertyInfoCompiler
     private array $formOptions;
 
     /**
+     * @param class-string $sectionClass
      * @param string|null $docBlockLabel first line in docblock - null if it does not exist or it is empty
      * @param string|null $docBlockHelp other lines in docblock - null if it does not exist or it is empty
      * @param Type|null $propertyType type discovered by propertyInfo
@@ -176,6 +181,9 @@ class SettingPropertyInfoCompiler
         return $this->dataType;
     }
 
+    /**
+     * @return class-string<FormTypeInterface>
+     */
     public function getFormType(): string
     {
         return $this->formType;
@@ -248,7 +256,7 @@ class SettingPropertyInfoCompiler
     /**
      * Returns the default form type to be used for the given data type.
      *
-     * @return string FQCN of form type
+     * @return class-string<FormTypeInterface> FQCN of form type
      */
     private function getFormTypeByDataType(Type $dataType): string
     {
@@ -266,7 +274,7 @@ class SettingPropertyInfoCompiler
      * Adds form options needed by collection type
      *
      * @param Type $dataType datatype of setting
-     * @param string|null $formEntryType explicitly configured form entry type
+     * @param class-string|null $formEntryType explicitly configured form entry type
      *
      * @return array<string, mixed>
      */
@@ -285,7 +293,7 @@ class SettingPropertyInfoCompiler
     /**
      * Returns the default base form type (entry type in case of collection) to be used for the given data type
      *
-     * @return string FQCN of form type
+     * @return class-string<FormTypeInterface> FQCN of form type
      */
     private function getBaseFormTypeByDataType(Type $dataType): string
     {
