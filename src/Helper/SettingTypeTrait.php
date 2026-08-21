@@ -59,6 +59,7 @@ trait SettingTypeTrait
             $values[$settingName] = $form->getData();
         }
 
+        // @phpstan-ignore argument.type (since PHP 8 get_class does not return false)
         $viewData = ObjectHydrator::hydrate(get_class($viewData), $values);
     }
 }

@@ -5,6 +5,7 @@ namespace Tzunghaor\SettingsBundle\Model;
 use Symfony\Component\PropertyInfo\Type as PropertyInfoType;
 use Symfony\Component\TypeInfo\Type as TypeInfoType;
 use Symfony\Component\TypeInfo\TypeIdentifier;
+use Tzunghaor\SettingsBundle\Exception\SettingsException;
 
 /**
  * Abstraction layer to support both old symfony/property-info and the new symfony/type-info Type.
@@ -26,6 +27,8 @@ class Type
 
     /**
      * For arrays $collection should be set to true and $typeIdentifier / $className should be the array item type / class
+     *
+     * @param class-string|null $className
      */
     public function __construct(
         string  $typeIdentifier,
@@ -59,6 +62,9 @@ class Type
     }
 
 
+    /**
+     * @param PropertyInfoType[] $propertyInfoTypeArray
+     */
     public static function createFromPropertyInfoArray(array $propertyInfoTypeArray): self
     {
         $firstType = $propertyInfoTypeArray[0];
@@ -76,33 +82,39 @@ class Type
     public static function createFromTypeInfo(TypeInfoType $typeInfoType): self
     {
         $nullable = $typeInfoType->isNullable();
-        $isCollection = $typeInfoType instanceof TypeInfoType\CollectionType;
-        if ($typeInfoType instanceof TypeInfoType\CollectionType) {
-            $itemType = $typeInfoType->getCollectionValueType();
+        if ($nullable && $typeInfoType instanceof TypeInfoType\NullableType) {
+            $baseType = $typeInfoType->getWrappedType();
         } else {
-            $itemType = $typeInfoType;
+            $baseType = $typeInfoType;
         }
-        $typeIdentifier = method_exists($itemType, 'getTypeIdentifier') ?
-            $itemType->getTypeIdentifier()->value : '';
-        $className = $itemType instanceof TypeInfoType\ObjectType ? $itemType->getClassName() : null;
 
+        $isCollection = $baseType instanceof TypeInfoType\CollectionType;
+        if ($baseType instanceof TypeInfoType\CollectionType) {
+            $baseType = $baseType->getCollectionValueType();
+        }
+
+        $typeIdentifier = method_exists($baseType, 'getTypeIdentifier') ?
+            $baseType->getTypeIdentifier()->value : '';
+        $className = $baseType instanceof TypeInfoType\ObjectType ? $baseType->getClassName() : null;
+
+        // @phpstan-ignore argument.type ($className IS class-string)
         $instance = new self($typeIdentifier, $nullable, $className, $isCollection);
         $instance->typeInfoType = $typeInfoType;
 
         // union type is not supported (yet)
-        if ($typeInfoType instanceof TypeInfoType\UnionType) {
+        if ($baseType instanceof TypeInfoType\UnionType) {
             $instance->incomplete = true;
         }
 
         return $instance;
     }
 
-    public static function createFromAnyType(TypeInfoType | PropertyInfoType $anyType, bool $incomplete = false): self
+    public static function createFromAnyType(TypeInfoType | PropertyInfoType $anyType): self
     {
         $type = $anyType instanceof TypeInfoType ?
             self::createFromTypeInfo($anyType) :
-            self::createFromPropertyInfo($anyType);
-        $type->incomplete = $incomplete;
+            self::createFromPropertyInfo($anyType)
+        ;
 
         return $type;
     }
@@ -189,6 +201,9 @@ class Type
         ;
     }
 
+    /**
+     * @throws SettingsException
+     */
     public function __toString(): string
     {
         $array = [
@@ -198,6 +213,12 @@ class Type
             'nullable' => $this->nullable,
         ];
 
-        return json_encode($array);
+        $encoded = json_encode($array);
+
+        if ($encoded === false) {
+            throw new SettingsException('Unable to convert Type to string.');
+        }
+
+        return $encoded;
     }
 }

@@ -8,8 +8,14 @@ namespace Tzunghaor\SettingsBundle\Model;
  */
 class SettingsCacheEntry
 {
+    /**
+     * @var array<string, mixed>
+     */
     private array $values;
 
+    /**
+     * @var array<string, string>
+     */
     private array $valueScopes;
 
     /**
@@ -18,8 +24,8 @@ class SettingsCacheEntry
     private $object;
 
     /**
-     * @param array  $values [$attributeName => $value, ...]
-     * @param array  $valueScopes [$attributeName => $scope, ...] which scope defines the value - can be used to
+     * @param array<string, mixed>  $values [$attributeName => $value, ...]
+     * @param array<string, string> $valueScopes [$attributeName => $scope, ...] which scope defines the value - can be used to
      *                            determine whether the value is inherited
      * @param object $object the settings object
      */
@@ -31,12 +37,17 @@ class SettingsCacheEntry
     }
 
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getValues(): array
     {
         return $this->values;
     }
 
-
+    /**
+     * @return array<string, string>
+     */
     public function getValueScopes(): array
     {
         return $this->valueScopes;

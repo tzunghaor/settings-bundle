@@ -12,7 +12,7 @@ interface SettingsStoreInterface
      * @param string $sectionName
      * @param string $scope
      *
-     * @return array [$settingName => $value, ... ]
+     * @return array<string, mixed> [$settingName => $value, ... ]
      */
     public function getValues(string $sectionName, string $scope): array;
 
@@ -21,7 +21,7 @@ interface SettingsStoreInterface
      *
      * @param string $sectionName
      * @param string $scope
-     * @param array $values [$settingName => $value, ...]
+     * @param array<string, mixed> $values [$settingName => $value, ...]
      */
     public function saveValues(string $sectionName, string $scope, array $values): void;
 }

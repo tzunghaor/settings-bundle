@@ -32,6 +32,10 @@ class SettingsEditorService
      */
     private ?object $authorizationChecker = null;
 
+    /**
+     * @param ServiceLocator<SettingsService> $settingsServiceLocator
+     * @param ServiceLocator<SettingsMetaService> $settingsMetaServiceLocator
+     */
     public function __construct(
         private ServiceLocator $settingsServiceLocator,
         private ServiceLocator $settingsMetaServiceLocator,
@@ -190,7 +194,9 @@ class SettingsEditorService
      * Returns an array that contains the expected variables of editor_page.html.twig
      *
      * @param string|null $searchUrl url of scope search ajax call, null if that functionality should be disabled
-     * @param array $fixedParameters these route parameters cannot be changed for this route
+     * @param array<string,string> $fixedParameters these route parameters cannot be changed for this route
+     *
+     * @return array<string, mixed>
      *
      * @throws Throwable
      */
@@ -266,12 +272,20 @@ class SettingsEditorService
     {
         foreach ($form->children as $childForm) {
             $rowClass = [];
-            // currently only collection entries have no label
-            $rowClass[] = $childForm->vars['label'] === false ?
-                'tzunghaor_settings_collection_row' : 'tzunghaor_setting_labeled_widget';
+            $role = $childForm->vars['row_attr']['data-tzhs-role'] ?? null;
+
             if ($childrenClass !== null) {
                 $rowClass[] = $childrenClass;
             }
+
+            if (!in_array($role, ['in-scope-setter', 'collection-row', 'nullable-setter'])) {
+                $rowClass[] = 'tzunghaor_setting_labeled_widget';
+            }
+
+            if ($role === 'collection-row') {
+                $rowClass[] = 'tzunghaor_settings_collection_row';
+            }
+
             if (count($childForm->vars['errors']) > 0) {
                 $rowClass[] = 'has-error';
             }
@@ -279,7 +293,9 @@ class SettingsEditorService
                 $rowClass[] = $childForm->vars['row_attr']['class'];
             }
 
-            $childForm->vars['row_attr']['class'] = implode(' ', $rowClass);
+            if (!empty($rowClass)) {
+                $childForm->vars['row_attr']['class'] = implode(' ', $rowClass);
+            }
 
             if (!empty($childForm->children)) {
                 $this->addFormViewAttrs($childForm);
@@ -289,6 +305,8 @@ class SettingsEditorService
 
     /**
      * Searches scopes matching $searchString and returns an array that contains the expected variables of list.html.twig
+     *
+     * @return array<string, mixed>
      */
     public function getSearchScopeTwigContext(
         string $searchString,
@@ -310,6 +328,8 @@ class SettingsEditorService
     /**
      * Filters the setting collections with isGranted if available.
      * Returns an array as expected in the twig templates.
+     *
+     * @param string[] $collectionNames
      *
      * @return ViewItem[]
      */
@@ -447,7 +467,7 @@ class SettingsEditorService
     /**
      * Saves the form data to database
      *
-     * @param array $formData of SettingsEditorType
+     * @param array<mixed> $formData of SettingsEditorType
      * @param SettingSectionAddress $sectionAddress must be complete address
      *
      * @throws SettingsException
@@ -516,6 +536,7 @@ class SettingsEditorService
         $settingMetaService = $this->settingsMetaServiceLocator->get($sectionAddress->getCollectionName());
         [$attribute, $subject] = $settingMetaService->getIsGrantedArguments($sectionAddress);
 
+        // @phpstan-ignore method.notFound (presence of isGranted is checked in authorizationChecker setter)
         return $this->authorizationChecker->isGranted($attribute, $subject);
     }
 }

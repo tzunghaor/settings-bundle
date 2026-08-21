@@ -13,8 +13,8 @@ class ObjectHydrator
      * If the $class constructor has non-optional parameters that have no element in $values, the hydrator will
      * pass null.
      *
-     * @param string $class fully qualified class name
-     * @param array  $values [$name => $value, ...] not needed to have element for every attribute of $class
+     * @param class-string $class fully qualified class name
+     * @param array<string, mixed> $values [$name => $value, ...] not needed to have element for every attribute of $class
      *
      * @return object instance of $class
      *

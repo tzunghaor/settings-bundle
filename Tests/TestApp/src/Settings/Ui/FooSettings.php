@@ -5,6 +5,7 @@ namespace TestApp\Settings\Ui;
 use TestApp\Model\Message;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 use Tzunghaor\SettingsBundle\Attribute\SettingSection;
+use Tzunghaor\SettingsBundle\Form\NullableType;
 
 #[SettingSection(extra: ['pos' => 10])]
 class FooSettings
@@ -18,6 +19,9 @@ class FooSettings
 
     #[Setting(dataType: Message::class . '[]')]
     private array $messages;
+
+    #[Setting(formOptions: [NullableType::OPTION_WRAPPED_OPTIONS => ['widget' => 'single_text']])]
+    private ?\DateTime $date = null;
 
     public function getNumber(): int
     {
@@ -34,10 +38,16 @@ class FooSettings
         return $this->messages;
     }
 
-    public function __construct(int $number = 0, ?Message $mandatoryMessage = null, array $messages = [])
+    public function getDate(): ?\DateTime
+    {
+        return $this->date;
+    }
+
+    public function __construct(int $number = 0, ?Message $mandatoryMessage = null, array $messages = [], ?\DateTime $date = null)
     {
         $this->number = $number;
         $this->mandatoryMessage = $mandatoryMessage ?? new Message('', '');
         $this->messages = $messages;
+        $this->date = $date;
     }
 }

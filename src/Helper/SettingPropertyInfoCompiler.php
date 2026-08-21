@@ -9,9 +9,11 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormTypeInterface;
 use Tzunghaor\SettingsBundle\Attribute\Setting;
 use Tzunghaor\SettingsBundle\Exception\SettingsException;
 use Tzunghaor\SettingsBundle\Form\BoolType;
+use Tzunghaor\SettingsBundle\Form\NullableType;
 use Tzunghaor\SettingsBundle\Form\SettingClassType;
 use Tzunghaor\SettingsBundle\Model\SettingMetaData;
 use Tzunghaor\SettingsBundle\Model\Type;
@@ -23,11 +25,18 @@ class SettingPropertyInfoCompiler
 {
     private Type $dataType;
 
+    /**
+     * @var class-string<FormTypeInterface>|null
+     */
     private ?string $formType;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $formOptions;
 
     /**
+     * @param class-string $sectionClass
      * @param string|null $docBlockLabel first line in docblock - null if it does not exist or it is empty
      * @param string|null $docBlockHelp other lines in docblock - null if it does not exist or it is empty
      * @param Type|null $propertyType type discovered by propertyInfo
@@ -115,6 +124,17 @@ class SettingPropertyInfoCompiler
             $this->formOptions = array_merge($collectionFormOptions, $this->formOptions);
         }
 
+        if ($this->formType === NullableType::class) {
+            $this->formOptions[NullableType::OPTION_WRAPPED_TYPE] =
+                $this->formOptions[NullableType::OPTION_WRAPPED_TYPE] ??
+                $this->getBaseFormTypeByDataType($this->dataType)
+            ;
+            $this->formOptions[NullableType::OPTION_WRAPPED_OPTIONS] =
+                $this->formOptions[NullableType::OPTION_WRAPPED_OPTIONS] ??
+                []
+            ;
+        }
+
         if ($this->formType === CheckboxType::class) {
             $this->formOptions['false_values'] = $this->formOptions['false_values'] ?? [null, false, 0, '0', ''];
         }
@@ -132,20 +152,27 @@ class SettingPropertyInfoCompiler
             $this->formOptions = array_merge($ancestorMetaData->getFormOptions(), $this->formOptions);
         }
 
-        // form is for a single object using SettingClassType and meta_array is not yet set
-        if ($this->formType === SettingClassType::class && !isset($this->formOptions[SettingClassType::OPTION_META_ARRAY])) {
-            $dataClass = $this->dataType->getClassName();
-            $this->formOptions[SettingClassType::OPTION_META_ARRAY] = $metaArrayExtractor($dataClass);
-            $this->formOptions['data_class'] = $dataClass;
+        // If the form or a wrapped form is SettingClassType and necessary form options are not filled, then do it now
+        // Look out, form options arrays are passed as reference
+        $typesAndOptions = ['direct' => [$this->formType, &$this->formOptions]];
+        $wrappedOptions = [
+            'entry_type' => 'entry_options',
+            NullableType::OPTION_WRAPPED_TYPE => NullableType::OPTION_WRAPPED_OPTIONS
+        ];
+        foreach ($wrappedOptions as $typeOption => $wrappedOption) {
+            if (isset($this->formOptions[$wrappedOption])) {
+                $typesAndOptions[$typeOption] = [$this->formOptions[$typeOption] ?? null, &$this->formOptions[$wrappedOption]];
+            }
         }
 
-        // form is for an array of objects using SettingClassType and meta_array is not yet set
-        $entryType = $this->formOptions['entry_type'] ?? null;
-        if ($entryType === SettingClassType::class && !isset($this->formOptions['entry_options'][SettingClassType::OPTION_META_ARRAY])) {
-            $dataClass = $this->dataType->getClassName();
-            $this->formOptions['entry_options'][SettingClassType::OPTION_META_ARRAY] = $metaArrayExtractor($dataClass);
-            $this->formOptions['entry_options']['data_class'] = $dataClass;
+        foreach ($typesAndOptions as $name => [$formType, &$formOptions]) {
+            if ($formType === SettingClassType::class && !isset($formOptions[SettingClassType::OPTION_META_ARRAY])) {
+                $dataClass = $this->dataType->getClassName();
+                $formOptions[SettingClassType::OPTION_META_ARRAY] = $metaArrayExtractor($dataClass);
+                $formOptions['data_class'] = $dataClass;
+            }
         }
+        // -- here ends SettingClassType form options filling
     }
 
 
@@ -154,11 +181,17 @@ class SettingPropertyInfoCompiler
         return $this->dataType;
     }
 
+    /**
+     * @return class-string<FormTypeInterface>
+     */
     public function getFormType(): string
     {
         return $this->formType;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getFormOptions(): array
     {
         return $this->formOptions;
@@ -167,6 +200,8 @@ class SettingPropertyInfoCompiler
     /**
      * It doesn't actually make sense to define multiple #[Setting] for a property, but if it happens we 
      * merge them "first defined value wins"
+     *
+     * @param Setting[] $settingAttributes
      */
     private function mergeSettingAttributes(array $settingAttributes): Setting
     {
@@ -200,36 +235,48 @@ class SettingPropertyInfoCompiler
             $isCollection = true;
             $dataTypeString = substr($dataTypeString, 0, -2);
         }
+        $isNullable = false;
+        if (str_starts_with($dataTypeString, '?')) {
+            $isNullable = true;
+            $dataTypeString = substr($dataTypeString, 1);
+        }
 
         if (Type::isBuiltinType($dataTypeString)) {
-            return new Type($dataTypeString, false, null, $isCollection);
+            return new Type($dataTypeString, $isNullable, null, $isCollection);
         }
 
         if (!class_exists($dataTypeString)) {
             throw new SettingsException(sprintf('unknown #[Setting(dataType: "%s")]', $dataTypeStringIn));
         }
 
-        return new Type('object', false, $dataTypeString, $isCollection);
+        return new Type('object', $isNullable, $dataTypeString, $isCollection);
     }
 
 
     /**
      * Returns the default form type to be used for the given data type.
      *
-     * @return string FQCN of form type
+     * @return class-string<FormTypeInterface> FQCN of form type
      */
     private function getFormTypeByDataType(Type $dataType): string
     {
-        return $dataType->isCollection() ? CollectionType::class : $this->getBaseFormTypeByDataType($dataType);
+        if ($dataType->isCollection()) {
+            return CollectionType::class;
+        }
+        if ($dataType->isNullable()) {
+            return NullableType::class;
+        }
+
+        return $this->getBaseFormTypeByDataType($dataType);
     }
 
     /**
      * Adds form options needed by collection type
      *
      * @param Type $dataType datatype of setting
-     * @param string|null $formEntryType explicitly configured form entry type
+     * @param class-string|null $formEntryType explicitly configured form entry type
      *
-     * @return array
+     * @return array<string, mixed>
      */
     private function getCollectionFormOptions(Type $dataType, ?string $formEntryType): array
     {
@@ -239,14 +286,14 @@ class SettingPropertyInfoCompiler
             'allow_add' => true,
             'allow_delete' => true,
             'entry_type' => $formEntryType,
-            'entry_options' => ['label' => false],
+            'entry_options' => ['label' => false, 'row_attr' => ['data-tzhs-role' => 'collection-row']],
         ];
     }
 
     /**
      * Returns the default base form type (entry type in case of collection) to be used for the given data type
      *
-     * @return string FQCN of form type
+     * @return class-string<FormTypeInterface> FQCN of form type
      */
     private function getBaseFormTypeByDataType(Type $dataType): string
     {

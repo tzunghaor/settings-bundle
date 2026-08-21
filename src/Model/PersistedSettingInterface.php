@@ -10,13 +10,16 @@ interface PersistedSettingInterface
 {
     public function getScope(): string;
 
+    // @phpstan-ignore missingType.return (backward compatibility)
     public function setScope(string $scope);
 
     public function getPath(): string;
 
+    // @phpstan-ignore missingType.return (backward compatibility)
     public function setPath(string $path);
 
     public function getValue(): string;
 
+    // @phpstan-ignore missingType.return (backward compatibility)
     public function setValue(string $value);
 }

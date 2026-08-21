@@ -26,7 +26,7 @@ class SettingsMetaService implements CacheWarmerInterface
     private Item $collectionItem;
 
     /**
-     * @var SectionMetaData[] [$sectionClass => $metaData, ...]
+     * @var array<class-string, SectionMetaData> [$sectionClass => $metaData, ...]
      */
     private ?array $sectionMetaDataArray = null;
 
@@ -41,7 +41,8 @@ class SettingsMetaService implements CacheWarmerInterface
     private ?\Closure $sectionSorter = null;
 
     /**
-     * @param array $sectionClasses [$sectionName => $sectionClass, ...]
+     * @param array<string, class-string> $sectionClasses [$sectionName => $sectionClass, ...]
+     * @param array<mixed> $collectionExtra
      */
     public function __construct(
         private CacheInterface         $cache,
@@ -158,6 +159,7 @@ class SettingsMetaService implements CacheWarmerInterface
         foreach ($sections as $sectionName => $sectionMetaData) {
             $translatedSections[$sectionName] = new SectionMetaData(
                 $sectionMetaData->getName(),
+                // @phpstan-ignore argument.type (we check $this->translationDomain before we call translateSectionMetaDataArray)
                 $this->translator->trans($sectionMetaData->getTitle(), domain: $this->translationDomain),
                 $sectionMetaData->getDataClass(),
                 $sectionMetaData->getDescription(),
@@ -174,7 +176,7 @@ class SettingsMetaService implements CacheWarmerInterface
      *
      * @param string|null $searchString entered by user
      *
-     * @return array nested array of scopes
+     * @return Item[] nested array of scopes
      */
     public function getScopeDisplayHierarchy(?string $searchString = null): array
     {
@@ -195,7 +197,7 @@ class SettingsMetaService implements CacheWarmerInterface
     /**
      * @param mixed $scope
      *
-     * @return array inheritance path of the scope [$topScope, ... , $parentScope]
+     * @return string[] inheritance path of the scope [$topScope, ... , $parentScope]
      */
     public function getScopePath($scope): array
     {
@@ -216,7 +218,7 @@ class SettingsMetaService implements CacheWarmerInterface
     /**
      * Returns the setting metadata of a setting section class
      *
-     * @param string $sectionClass
+     * @param class-string $sectionClass
      *
      * @return SectionMetaData
      *
@@ -292,7 +294,7 @@ class SettingsMetaService implements CacheWarmerInterface
     /**
      * Returns arguments to check whether current user has right to edit settings pointed by $sectionAddress
      *
-     * @return array [$attribute, $subject] to be used in Symfony AuthorizationCheckerInterface::isGranted($attribute, $subject)
+     * @return array<mixed> [$attribute, $subject] to be used in Symfony AuthorizationCheckerInterface::isGranted($attribute, $subject)
      */
     public function getIsGrantedArguments(SettingSectionAddress $sectionAddress): array
     {

@@ -15,6 +15,8 @@ class StaticScopeProvider implements ScopeProviderInterface
     /**
      * we save data from config files and build other structures only on-demand, when the optionally
      * injected $translator is likely to have default locale already set
+     *
+     * @var array<mixed>
      */
     private array $configScopeHierarchy;
 
@@ -46,7 +48,7 @@ class StaticScopeProvider implements ScopeProviderInterface
     private string|null|false $translationDomain = false;
 
     /**
-     * @param array $scopeHierarchy array of scopes coming from bundle configuration
+     * @param array<mixed> $scopeHierarchy array of scopes coming from bundle configuration
      */
     public function __construct(array $scopeHierarchy, string $defaultScopeName)
     {
@@ -144,7 +146,7 @@ class StaticScopeProvider implements ScopeProviderInterface
      * @param string $searchString
      * @param Item[] $scopes
      *
-     * @return array
+     * @return Item[]
      */
     private function buildDisplayHierarchy(string $searchString, array $scopes): array
     {
@@ -170,10 +172,10 @@ class StaticScopeProvider implements ScopeProviderInterface
     /**
      * Turns the hierarchical scope definition into flat lookup
      *
-     * @param array $lookup
-     * @param array $pathLookup
-     * @param array $scopeDefinitions
-     * @param array $scopePath name of ancestor scopes
+     * @param Item[] $lookup
+     * @param string[][] $pathLookup
+     * @param array<array<string, mixed>> $scopeDefinitions
+     * @param string[] $scopePath name of ancestor scopes
      *
      * @return Item[] $scopeDefinitions tree turned into Scope object tree
      */
@@ -187,7 +189,7 @@ class StaticScopeProvider implements ScopeProviderInterface
             $scopeName = $scopeDefinition[Configuration::NAME];
             $childrenDef = $scopeDefinition[Configuration::CHILDREN] ?? null;
             $title = $scopeDefinition[Configuration::TITLE] ?? null;
-            if ($this->translator) {
+            if ($this->translator && $this->translationDomain !== false) {
                 $title = $this->translator->trans($title ?? $scopeName, domain: $this->translationDomain);
             }
 

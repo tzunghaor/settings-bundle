@@ -82,6 +82,9 @@ class TzunghaorSettingsExtension extends Extension
         }
     }
 
+    /**
+     * @param mixed[] $config
+     */
     private function configureCollection(
         string            $name,
         array             $config,
@@ -93,6 +96,9 @@ class TzunghaorSettingsExtension extends Extension
         $defaultSettingsMetaServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_meta_service');
         $defaultSettingsServiceDefinition = $container->getDefinition('tzunghaor_settings.settings_service');
         $defaultMappingName = $container->getParameter('tzunghaor_settings.default_mapping');
+        if (!is_string($defaultMappingName)) {
+            throw new InvalidConfigurationException('tzunghaor_settings.default_mapping should be a string.');
+        }
 
         if ($isDefault) {
             $settingsServiceId = 'tzunghaor_settings.settings_service.' . $name;
@@ -164,7 +170,8 @@ class TzunghaorSettingsExtension extends Extension
         if (isset($config[Configuration::ENTITY])) {
             $entityClass = $config[Configuration::ENTITY];
             $expectedInterface = PersistedSettingInterface::class;
-            if (!in_array($expectedInterface, class_implements($entityClass), true)) {
+            $implementedInterfaces = class_implements($entityClass);
+            if ($implementedInterfaces === false || !in_array($expectedInterface, $implementedInterfaces, true)) {
                 throw new InvalidConfigurationException(
                     sprintf('%s.%s must implement %s',
                             Configuration::CONFIG_ROOT, Configuration::ENTITY, $expectedInterface)
@@ -215,10 +222,10 @@ class TzunghaorSettingsExtension extends Extension
     /**
      * Retrieves the sectionName => $sectionClass mapping based on config
      *
-     * @param array $mappings
+     * @param array<string, array<string, string>> $mappings
      * @param string $defaultMappingName
      *
-     * @return array
+     * @return array<string, string>
      */
     private function getSectionClasses(array $mappings, string $defaultMappingName): array
     {
@@ -237,6 +244,7 @@ class TzunghaorSettingsExtension extends Extension
                 $nameArray = empty($path) ? [] : explode(DIRECTORY_SEPARATOR, $path);
                 $nameArray[] = $file->getFilenameWithoutExtension();
 
+                /** @var class-string $sectionClass */
                 $sectionClass = $prefix . implode('\\', $nameArray);
                 $sectionName = implode('.', $nameArray);
                 // default mapping's name is not prepended to section name
@@ -247,6 +255,7 @@ class TzunghaorSettingsExtension extends Extension
                 // abstract classes are not usable as setting sections (but they might be used as parents)
                 try {
                     $reflectionClass = new \ReflectionClass($sectionClass);
+                    // @phpstan-ignore catch.neverThrown (according to doc, ReflectionClass constructor might throw exception)
                 } catch (\ReflectionException $e) {
                     $message = sprintf('Error analysing section class "%s" in mapping "%s"',
                                        $sectionClass, $mappingName);

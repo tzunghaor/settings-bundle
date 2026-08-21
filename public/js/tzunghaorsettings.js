@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Sets all input elements inside container enabled/disabled
+     * Does not enable elements that are inside an element having data-tzsh-disabled attribute
      *
      * @param {Element} container
      * @param {boolean} enabled
@@ -25,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const inputElement of inputElements) {
 
             if (inputElement.closest('.tzunghaor_setting_override')) {
+                continue;
+            }
+            if (enabled && (inputElement.closest('[data-tzhs-disabled]') !== null)) {
                 continue;
             }
 
@@ -136,6 +140,47 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         collectionElement.appendChild(addButton);
         collectionElement.dataset.index = index;
+    }
+
+    // javascript for nullable type
+    const applyNullable = function(input) {
+        const nullableValueContainer = input
+            .closest('[data-tzhs-role="nullable-container"]')
+            .querySelector('[data-tzhs-role="nullable-value"]')
+        ;
+        const isSetChecked = input.value === '1';
+
+        if (isSetChecked) {
+            delete nullableValueContainer.dataset.tzhsDisabled;
+        } else {
+            nullableValueContainer.dataset.tzhsDisabled = '1';
+        }
+
+        nullableValueContainer.style.display = isSetChecked ? null : 'none';
+        setFormElementsEnabled(nullableValueContainer, isSetChecked && !input.disabled);
+    }
+
+    const onNullableSetterInputChange = function (event) {
+        const input = event.target;
+        if (!input.checked) {
+            return;
+        }
+        applyNullable(input);
+    }
+
+    // Iterate through all in-scope nullable setters
+    for (const nullableSetter of document.querySelectorAll('.tzunghaor_current_scope [data-tzhs-role="nullable-setter"] input')) {
+        nullableSetter.addEventListener('change', onNullableSetterInputChange);
+        if (nullableSetter.checked) {
+            applyNullable(nullableSetter);
+        }
+    }
+
+    // Iterate through all parent nullable setters to hide value inputs when needed
+    for (const nullableSetter of document.querySelectorAll('.tzunghaor_parent_scope [data-tzhs-role="nullable-setter"] input')) {
+        if (nullableSetter.checked) {
+            applyNullable(nullableSetter);
+        }
     }
 
     /**

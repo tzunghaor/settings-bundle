@@ -77,15 +77,16 @@ class SettingsEditorType extends AbstractType implements DataMapperInterface
             $settingsForm->add($settingName, $settingMeta->getFormType(), $settingMeta->getFormOptions());
             $parentSettingsForm->add($settingName, $settingMeta->getFormType(), $settingMeta->getFormOptions());
 
-            $overrideOptions = [
+            $inScopeOptions = [
                 'required' => true,
                 'label' => false,
                 'expanded' => true,
                 'choices' => ['set' => true, 'inherit' => false],
                 'translation_domain' => $options[self::OPTION_EDITOR_TRANSLATION_DOMAIN],
+                'row_attr' => ['data-tzhs-role' => 'in-scope-setter'],
             ];
 
-            $inScopeForm->add($settingName, BoolType::class, $overrideOptions);
+            $inScopeForm->add($settingName, BoolType::class, $inScopeOptions);
         }
 
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);

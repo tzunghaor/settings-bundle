@@ -35,7 +35,7 @@
     flex-direction: column;
 }
 
-.tzunghaor_setting_labeled_widget label {
+.tzunghaor_setting_labeled_widget > label {
     padding-right: 1rem;
     font-weight: bold;
 }

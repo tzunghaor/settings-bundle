@@ -18,7 +18,11 @@ class TzunghaorSettingsBundle extends Bundle
         if (!isset($this->path)) {
             $reflected = new \ReflectionObject($this);
             // use the modern directory structure
-            $this->path = \dirname($reflected->getFileName(), 2);
+            $filename = $reflected->getFileName();
+            if ($filename === false) {
+                throw new \RuntimeException('Unable to find path of TzunghaorSettingsBundle');
+            }
+            $this->path = \dirname($filename, 2);
         }
 
         return $this->path;

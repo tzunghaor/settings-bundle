@@ -23,10 +23,13 @@ use Tzunghaor\SettingsBundle\Model\SettingSectionAddress;
 class SettingsService
 {
     /**
-     * @var SettingConverterInterface[]
+     * @var array<SettingConverterInterface|SettingValueConverterInterface>
      */
     private array $dataConverters;
 
+    /**
+     * @param iterable<SettingConverterInterface|SettingValueConverterInterface> $dataConverters
+     */
     public function __construct(
         private SettingsMetaService $settingsMetaService,
         private SettingsStoreInterface $store,
@@ -39,6 +42,7 @@ class SettingsService
     /**
      * Retrieves the setting section object filled with values for the given scope
      *
+     * @param class-string $sectionClass
      * @param mixed|null $subject Can be scope name or an object or anything your ScopeProvider supports.
      *                            If null, default scope is used.
      *
@@ -47,7 +51,7 @@ class SettingsService
      * @throws SettingsException
      * @throws Throwable
      */
-    public function getSection(string $sectionClass, $subject = null)
+    public function getSection(string $sectionClass, mixed $subject = null)
     {
         $scopeName = $this->settingsMetaService->getScope($subject)->getName();
 
@@ -58,8 +62,10 @@ class SettingsService
      * Creates a SettingSectionAddress object to the setting section returned by self::getSection() with the same
      * arguments.
      * This address can be used for isGranted() checks
+     *
+     * @param class-string $sectionClass
      */
-    public function getSectionAddress(string $sectionClass, $subject = null): SettingSectionAddress
+    public function getSectionAddress(string $sectionClass, mixed $subject = null): SettingSectionAddress
     {
         return new SettingSectionAddress(
             $this->settingsMetaService->getCollectionName(),
@@ -72,7 +78,9 @@ class SettingsService
      * Tells in which section are defined the setting values returned by self::getSection($sectionClass, $scope).
      * If a setting is not in the returned array, then that uses the default value defined in the section class.
      *
-     * @return array [$settingName => $scopeName, ... ]
+     * @param class-string $sectionClass
+     *
+     * @return array<string, string> [$settingName => $scopeName, ... ]
      *
      * @throws SettingsException
      * @throws Throwable
@@ -85,7 +93,9 @@ class SettingsService
     /**
      * Saves settings to DB
      *
-     * @param array $values [$settingName => $value, ...] type of values should be what is defined in the section class
+     * @param class-string $sectionClass
+     * @param array<string, mixed> $values [$settingName => $value, ...] type of values should be what is defined
+     *                                     in the section class
      *
      * @throws SettingsException
      * @throws Throwable
@@ -104,6 +114,8 @@ class SettingsService
 
     /**
      * Returns a SettingsCacheEntry, loads from DB if it is not loaded yet.
+     *
+     * @param class-string $sectionClass
      *
      * @throws SettingsException
      * @throws Throwable
@@ -152,6 +164,8 @@ class SettingsService
      * To call this method, you already need to have the SettingsCacheEntry of the parent scope.
      * This method is used only in case of nested scopes alongside of getCacheEntry() to avoid recursion
      *
+     * @param string[] $cacheKeys
+     * @param class-string $sectionClass
      * @param SettingsCacheEntry|null $parentEntry null for top-level scopes
      *
      * @throws Throwable
@@ -163,6 +177,9 @@ class SettingsService
         ?SettingsCacheEntry $parentEntry
     ): SettingsCacheEntry {
         $cacheKey = end($cacheKeys);
+        if (!is_string($cacheKey)) {
+            throw new SettingsException('Cache key must be a string');
+        }
 
         return $this->cache->get(
             $cacheKey,
@@ -176,6 +193,8 @@ class SettingsService
 
     /**
      * Invalidates cached values for the given $sectionClass in the given $scope and all descendant scopes
+     *
+     * @param class-string $sectionClass
      *
      * @throws Throwable
      */
@@ -192,6 +211,7 @@ class SettingsService
     /**
      * Loads settings for a section + scope pair from DB
      *
+     * @param class-string $sectionClass
      * @param SettingsCacheEntry|null $parentEntry values not saved for current scope should be inherited from this entry
      *
      * @throws \ReflectionException
@@ -221,6 +241,8 @@ class SettingsService
 
     /**
      * Generates a cache key
+     *
+     * @param class-string $sectionClass
      */
     private function getCacheKey(string $sectionClass, string $scope): string
     {
@@ -231,8 +253,10 @@ class SettingsService
     /**
      * Converts the DB persisted values to the type defined in the section class
      *
-     * @param array $persistedValues [$settingName => $value, ...]
+     * @param array<string, string> $persistedValues [$settingName => $value, ...]
      * @param SettingMetaData[] $settingMetaArray
+     *
+     * @return array<string, mixed>
      *
      * @throws SettingsException
      */
@@ -248,14 +272,15 @@ class SettingsService
 
             $type = $settingMetaArray[$settingName]->getDataType();
             foreach ($this->dataConverters as $dataConverter) {
+
                 if (
                     class_exists(TypeInfoType::class) &&
-                    class_implements($dataConverter,  SettingValueConverterInterface::class)
+                    $dataConverter instanceof SettingValueConverterInterface
                 ) {
                     $origType = $type->getTypeInfoType();
                 } elseif (
                     class_exists(PropertyInfoType::class) &&
-                    class_implements($dataConverter,  SettingConverterInterface::class)
+                    $dataConverter instanceof SettingConverterInterface
                 ) {
                     $origType = $type->getPropertyInfoType();
                 } else {
@@ -272,7 +297,7 @@ class SettingsService
                 }
             }
 
-            if (!isset($convertedValues[$settingName])) {
+            if (!array_key_exists($settingName, $convertedValues)) {
                 throw new SettingsException(sprintf('Could not find converter for setting %s', $settingName));
             }
         }
@@ -283,8 +308,10 @@ class SettingsService
     /**
      * Converts the values of types defined in the setting section class to values that can be persisted in DB
      *
-     * @param array $values [$settingName => $value, ...]
+     * @param array<string, mixed> $values [$settingName => $value, ...]
      * @param SettingMetaData[] $settingMetaArray
+     *
+     * @return array<string, string>
      *
      * @throws SettingsException
      */
@@ -297,12 +324,12 @@ class SettingsService
             foreach ($this->dataConverters as $dataConverter) {
                 if (
                     class_exists(TypeInfoType::class) &&
-                    class_implements($dataConverter,  SettingValueConverterInterface::class)
+                    $dataConverter instanceof SettingValueConverterInterface
                 ) {
                     $origType = $type->getTypeInfoType();
                 } elseif (
                     class_exists(PropertyInfoType::class) &&
-                    class_implements($dataConverter,  SettingConverterInterface::class)
+                    $dataConverter instanceof SettingConverterInterface
                 ) {
                     $origType = $type->getPropertyInfoType();
                 } else {

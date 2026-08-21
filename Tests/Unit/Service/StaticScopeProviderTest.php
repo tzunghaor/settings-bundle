@@ -114,7 +114,6 @@ class StaticScopeProviderTest extends TestCase
 
         $hierarchy = $provider->getScopeDisplayHierarchy($searchString);
 
-        // todo: avoid testing extra path
         self::assertEquals($expected, $hierarchy);
     }
 
